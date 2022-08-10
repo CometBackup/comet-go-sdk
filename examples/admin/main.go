@@ -3,7 +3,7 @@ package main
 /*
 	EXAMPLE ADMIN CODE
 
-	This quick commandline tool allows you list and download any available CometBackup Clients
+	This quick commandline tool allows you to list and download any available CometBackup Clients
 	hosted on the Comet Server you're sending requests to.
 */
 
@@ -14,14 +14,16 @@ import (
 	"log"
 	"sort"
 	"strings"
+
+	sdk "github.com/CometBackup/comet-go-sdk/cometsdk"
 )
 
 type Client struct {
-	client *CometAPIClient
+	client *sdk.CometAPIClient
 }
 
 func NewClient(url, username, password string) (*Client, error) {
-	client, err := NewAdminCometAPIClient(url, username, password)
+	client, err := sdk.NewCometAPIClient(url, username, password)
 	if err != nil {
 		return nil, err
 	}
@@ -32,10 +34,10 @@ func NewClient(url, username, password string) (*Client, error) {
 }
 
 func (c *Client) DownloadBrandedClient(platform int) ([]byte, error) {
-	return c.client.AdminBrandingGenerateClientByPlatform(&platform, nil)
+	return c.client.AdminBrandingGenerateClientByPlatform(platform, nil)
 }
 
-func (c *Client) FindPlatform(platform int) (*AvailableDownload, error) {
+func (c *Client) FindPlatform(platform int) (*sdk.AvailableDownload, error) {
 	platforms, err := c.client.AdminBrandingAvailablePlatforms()
 	if err != nil {
 		return nil, err
@@ -59,7 +61,7 @@ func (c *Client) ListAndPrintPlatforms() error {
 
 	fmt.Println("| INDEX | RECOMMEND | CATEGORY | DESCRIPTION")
 	for _, i := range indexes {
-		fmt.Printf("| %5d | %11t | %8s | %s\n", i, platforms[i].Recommended, platforms[i].Category, platforms[i].Description)
+		fmt.Printf("| %5d | %-9t | %-8s | %s\n", i, platforms[i].Recommended, platforms[i].Category, platforms[i].Description)
 	}
 
 	return nil

@@ -1,5 +1,7 @@
 # EXPERIMENTAL: Comet Go SDK
 
+[![@CometBackup on Twitter](http://img.shields.io/badge/twitter-%40CometBackup-blue.svg?style=flat)](https://twitter.com/CometBackup)
+
 This project is a SDK and base client for Comet Server API using Golang.
 
 ## Getting Started
@@ -19,3 +21,9 @@ Read `go.mod` to see the latest Go version this SDK was built with
 - Run `go test ./...`
 - Tag the release to the new version
 - Push to tag the hosted repo
+
+## Getting Help
+
+Bug reports and pull requests are welcome on GitHub at [https://github.com/CometBackup/comet-go-sdk](https://github.com/CometBackup/comet-go-sdk).
+
+You may also submit issues via the ticket system at [cometbackup.com](https://cometbackup.com/).
