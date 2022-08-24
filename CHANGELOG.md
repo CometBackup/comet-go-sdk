@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 2022-08-24 v1.0.0
+- Initial public release
+
 ## 2022-08-21 v0.0.2
 - Added UserWeb examples
 - Moved cometsdk to its own lib module
