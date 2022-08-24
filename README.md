@@ -1,4 +1,4 @@
-# EXPERIMENTAL: Comet Go SDK
+# Comet Go SDK
 
 [![@CometBackup on Twitter](http://img.shields.io/badge/twitter-%40CometBackup-blue.svg?style=flat)](https://twitter.com/CometBackup)
 
@@ -6,8 +6,8 @@ This project is a SDK and base client for Comet Server API using Golang.
 
 ## Getting Started
 
-1. Import this repo into you Go program
-2. Run 'go mod tidy' to download it (or let your IDE do it for you)
+1. Import this repo into your Go program
+2. Run `go mod tidy` to download it (or let your IDE do it for you)
 3. You're ready to go!
 
 ## Development environment
