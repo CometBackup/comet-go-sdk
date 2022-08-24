@@ -15,7 +15,7 @@ import (
 	"sort"
 	"strings"
 
-	sdk "github.com/CometBackup/comet-go-sdk/cometsdk"
+	sdk "github.com/CometBackup/comet-go-sdk"
 )
 
 type Client struct {

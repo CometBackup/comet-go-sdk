@@ -13,7 +13,7 @@ import (
 	"io/ioutil"
 	"log"
 
-	"github.com/CometBackup/comet-go-sdk/cometsdk"
+	cometsdk "github.com/CometBackup/comet-go-sdk"
 )
 
 type Client struct {
