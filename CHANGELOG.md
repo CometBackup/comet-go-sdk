@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 2022-09-08 v1.0.1
+- Now based on Comet Server 22.9.0
+
 ## 2022-08-24 v1.0.0
 - Initial public release
 

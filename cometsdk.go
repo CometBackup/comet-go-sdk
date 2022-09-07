@@ -16,10 +16,10 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "22.6.9"
+const APPLICATION_VERSION string = "22.9.0"
 const APPLICATION_VERSION_MAJOR int = 22
-const APPLICATION_VERSION_MINOR int = 6
-const APPLICATION_VERSION_REVISION int = 9
+const APPLICATION_VERSION_MINOR int = 9
+const APPLICATION_VERSION_REVISION int = 0
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
@@ -80,6 +80,7 @@ const DESTINATIONTYPE_LOCALCOPY uint64 = 1002
 const DESTINATIONTYPE_S3 uint64 = 1000
 const DESTINATIONTYPE_SFTP uint64 = 1001
 const DESTINATIONTYPE_SPANNED uint64 = 1006
+const DESTINATIONTYPE_STORJ uint64 = 1009
 const DESTINATIONTYPE_SWIFT uint64 = 1007
 const DESTINATIONTYPE___INVALID uint64 = 0
 
@@ -320,6 +321,9 @@ const REMOTESERVER_LDAP RemoteServerType = "ldap"
 const REMOTESERVER_S3_GENERIC RemoteServerType = "s3"
 
 // RemoteServerType:
+const REMOTESERVER_STORJ RemoteServerType = "storj"
+
+// RemoteServerType:
 const REMOTESERVER_WASABI RemoteServerType = "wasabi"
 
 // ReplicatorDisplayClass:
@@ -366,6 +370,9 @@ const RESTORETYPE_FILE_ARCHIVE RestoreType = 5
 
 // RestoreType:
 const RESTORETYPE_INVALID RestoreType = -1
+
+// RestoreType:
+const RESTORETYPE_MYSQL RestoreType = 10
 
 // RestoreType:
 const RESTORETYPE_NULL RestoreType = 1
@@ -781,6 +788,8 @@ type AdminUserPermissions struct {
 	PreventChangePassword     bool `json:",omitempty"`
 	AllowEditBranding         bool `json:",omitempty"`
 	AllowEditRemoteStorage    bool `json:",omitempty"`
+	AllowEditWebhooks         bool `json:",omitempty"`
+	DenyConstellationRole     bool `json:",omitempty"`
 }
 
 type AdminWebAuthnRegistration struct {
@@ -1190,6 +1199,7 @@ type DestinationConfig struct {
 	LocalcopyWinSMBPasswordFormat    uint64
 	Swift                            SwiftDestinationLocation
 	B2                               B2DestinationLocation
+	Storj                            StorjDestinationLocation
 	SpanTargets                      []DestinationLocation
 	SpanUseStaticSlots               bool
 	EncryptionKeyEncryptionMethod    uint64
@@ -1243,6 +1253,7 @@ type DestinationLocation struct {
 	LocalcopyWinSMBPasswordFormat    uint64
 	Swift                            SwiftDestinationLocation
 	B2                               B2DestinationLocation
+	Storj                            StorjDestinationLocation
 	SpanTargets                      []DestinationLocation
 	SpanUseStaticSlots               bool
 }
@@ -1350,6 +1361,7 @@ type ExternalAuthenticationSource struct {
 	S3            S3GenericVirtualStorageRole              `json:",omitempty"`
 	// Amazon AWS - Virtual Storage Role
 	AWS                AmazonAWSVirtualStorageRoleSettings `json:",omitempty"`
+	Storj              StorjVirtualStorageRoleSetting      `json:",omitempty"`
 	NewUserPermissions AdminUserPermissions
 }
 
@@ -1639,6 +1651,7 @@ type Organization struct {
 	SoftwareBuildRole SoftwareBuildRoleOptions
 	Branding          BrandingOptions
 	RemoteStorage     []RemoteStorageOption
+	ConstellationRole ConstellationRoleOptions
 	WebhookOptions    map[string]WebhookOption
 	Email             EmailOptions
 	IsSuspended       bool
@@ -1737,7 +1750,8 @@ type RemoteServerAddress struct {
 	Custom        CustomRemoteBucketSettings               `json:",omitempty"`
 	S3            S3GenericVirtualStorageRole              `json:",omitempty"`
 	// Amazon AWS - Virtual Storage Role
-	AWS AmazonAWSVirtualStorageRoleSettings `json:",omitempty"`
+	AWS   AmazonAWSVirtualStorageRoleSettings `json:",omitempty"`
+	Storj StorjVirtualStorageRoleSetting      `json:",omitempty"`
 }
 
 type RemoteStorageOption struct {
@@ -1753,6 +1767,7 @@ type RemoteStorageOption struct {
 	S3            S3GenericVirtualStorageRole              `json:",omitempty"`
 	// Amazon AWS - Virtual Storage Role
 	AWS                 AmazonAWSVirtualStorageRoleSettings `json:",omitempty"`
+	Storj               StorjVirtualStorageRoleSetting      `json:",omitempty"`
 	StorageLimitEnabled bool
 	StorageLimitBytes   int64
 	RebrandStorage      bool
@@ -1771,6 +1786,7 @@ type ReplicaServer struct {
 	S3            S3GenericVirtualStorageRole              `json:",omitempty"`
 	// Amazon AWS - Virtual Storage Role
 	AWS                     AmazonAWSVirtualStorageRoleSettings `json:",omitempty"`
+	Storj                   StorjVirtualStorageRoleSetting      `json:",omitempty"`
 	ReplicaDeletionStrategy ReplicaDeletionStrategy             `json:",omitempty"`
 }
 
@@ -1804,6 +1820,15 @@ type RestoreJobAdvancedOptions struct {
 	ExactDestPaths         []string
 	ArchiveFormat          RestoreArchiveFormat
 	Office365Credential    RestoreOffice365Credential `json:",omitempty"`
+	Username               string
+	Password               string
+	Host                   string
+	Port                   string
+	UseSsl                 bool
+	SslAllowInvalid        bool
+	SslCaFile              string
+	SslCrtFile             string
+	SslKeyFile             string
 }
 
 type RetentionPolicy struct {
@@ -1960,6 +1985,8 @@ type ServerMetaVersionInfo struct {
 	ServerStartHash                                string
 	CurrentTime                                    int64
 	ServerLicenseHash                              string
+	ServerLicenseFeaturesAll                       bool
+	ServerLicenseFeatureSet                        uint32
 	LicenseValidUntil                              int64
 	EmailsSentSuccessfully                         int64
 	EmailsSentErrors                               int64
@@ -2087,6 +2114,21 @@ type StoredObject struct {
 	RecursiveFiles      uint64 `json:"f,omitempty"`
 	RecursiveBytes      uint64 `json:"b,omitempty"`
 	RecursiveFolders    uint64 `json:"d,omitempty"`
+}
+
+type StorjDestinationLocation struct {
+	SatelliteAddress  string
+	APIKey            string
+	Passphrase        string
+	StorjBucket       string
+	StorjBucketPrefix string `json:",omitempty"`
+}
+
+type StorjVirtualStorageRoleSetting struct {
+	SatelliteAddress string
+	APIKey           string
+	Passphrase       string
+	Bucket           string
 }
 
 type StreamableEvent struct {
@@ -2751,8 +2793,8 @@ func (this *CometAPIClient) AdminAccountU2fRequestRegistrationChallenge(SelfAddr
 // U2FClientData: U2F response data supplied by hardware token
 // U2FRegistrationData: U2F response data supplied by hardware token
 // U2FVersion: U2F response data supplied by hardware token
-// Description: Optional description of the token
-func (this *CometAPIClient) AdminAccountU2fSubmitChallengeResponse(U2FChallengeID string, U2FClientData string, U2FRegistrationData string, U2FVersion string, Description string) (*CometAPIResponseMessage, error) {
+// Description: (Optional) Description of the token
+func (this *CometAPIClient) AdminAccountU2fSubmitChallengeResponse(U2FChallengeID string, U2FClientData string, U2FRegistrationData string, U2FVersion string, Description *string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -2764,7 +2806,9 @@ func (this *CometAPIClient) AdminAccountU2fSubmitChallengeResponse(U2FChallengeI
 
 	data["U2FVersion"] = []string{U2FVersion}
 
-	data["Description"] = []string{Description}
+	if Description != nil {
+		data["Description"] = []string{*Description}
+	}
 
 	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/u2f/submit-challenge-response", data)
 	if err != nil {
@@ -3465,8 +3509,6 @@ func (this *CometAPIClient) AdminBulletinSubmit(Subject string, Content string) 
 // AdminConstellationLastReport: Get Constellation bucket usage report (cached)
 //
 // You must supply administrator authentication credentials to use this API.
-// This API is only available for administrator accounts in the top-level Organization, not in any
-// other Organization.
 // This API requires the Constellation Role to be enabled.
 func (this *CometAPIClient) AdminConstellationLastReport() (*ConstellationCheckReport, error) {
 	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/constellation/last-report", nil)
@@ -3486,8 +3528,6 @@ func (this *CometAPIClient) AdminConstellationLastReport() (*ConstellationCheckR
 // AdminConstellationNewReport: Get Constellation bucket usage report (regenerate)
 //
 // You must supply administrator authentication credentials to use this API.
-// This API is only available for administrator accounts in the top-level Organization, not in any
-// other Organization.
 // This API requires the Constellation Role to be enabled.
 func (this *CometAPIClient) AdminConstellationNewReport() (*ConstellationCheckReport, error) {
 	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/constellation/new-report", nil)
@@ -3528,8 +3568,6 @@ func (this *CometAPIClient) AdminConstellationPruneNow() (*CometAPIResponseMessa
 // AdminConstellationStatus: Get Constellation status
 //
 // You must supply administrator authentication credentials to use this API.
-// This API is only available for administrator accounts in the top-level Organization, not in any
-// other Organization.
 // This API requires the Constellation Role to be enabled.
 func (this *CometAPIClient) AdminConstellationStatus() (*ConstellationStatusAPIResponse, error) {
 	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/constellation/status", nil)
@@ -5434,6 +5472,57 @@ func (this *CometAPIClient) AdminMetaBuildConfigSet(SoftwareBuildRoleConfig Soft
 	return result, nil
 }
 
+// AdminMetaConstellationConfigGet: Get Constellation configuration for the current organization
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Constellation Role to be enabled.
+func (this *CometAPIClient) AdminMetaConstellationConfigGet() (*ConstellationRoleOptions, error) {
+	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/constellation/config/get", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &ConstellationRoleOptions{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminMetaConstellationConfigSet: Set Constellation configuration for the current organization
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Constellation Role to be enabled.
+//
+// - Params
+// ConstellationRoleOptions: Constellation role options to set
+func (this *CometAPIClient) AdminMetaConstellationConfigSet(ConstellationRoleOptions ConstellationRoleOptions) (*CometAPIResponseMessage, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	b, err = json.Marshal(ConstellationRoleOptions)
+	if err != nil {
+		return nil, err
+	}
+	data["ConstellationRoleOptions"] = []string{string(b)}
+
+	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/constellation/config/set", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CometAPIResponseMessage{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // AdminMetaListAvailableLogDays: Get log files
 //
 // You must supply administrator authentication credentials to use this API.
@@ -6411,8 +6500,9 @@ func (this *CometAPIClient) AdminRequestStorageVaultProviders(TargetOrganization
 // - Params
 // TargetUser: Selected account username
 // NewPassword: New account password
-// OldPassword: Old account password (optional)
-func (this *CometAPIClient) AdminResetUserPassword(TargetUser string, NewPassword string, OldPassword string) (*CometAPIResponseMessage, error) {
+// OldPassword: (Optional) Old account password. Required if no recovery code is present for the
+// user account.
+func (this *CometAPIClient) AdminResetUserPassword(TargetUser string, NewPassword string, OldPassword *string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -6420,7 +6510,9 @@ func (this *CometAPIClient) AdminResetUserPassword(TargetUser string, NewPasswor
 
 	data["NewPassword"] = []string{NewPassword}
 
-	data["OldPassword"] = []string{OldPassword}
+	if OldPassword != nil {
+		data["OldPassword"] = []string{*OldPassword}
+	}
 
 	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/reset-user-password", data)
 	if err != nil {
