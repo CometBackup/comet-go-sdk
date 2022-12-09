@@ -1,5 +1,11 @@
 # CHANGELOG
 
+# 2022-12-09 v1.1.0
+- Based on 22.11.1
+- New features for PSAs, remote URLs and MS SQL Server restores.
+- New features for exporting a self backup for single tenant.
+- Fix an issue with detecting errors in API responses.
+
 ## 2022-09-08 v1.0.1
 - Now based on Comet Server 22.9.0
 
