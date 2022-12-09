@@ -16,10 +16,10 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "22.9.0"
+const APPLICATION_VERSION string = "22.11.2"
 const APPLICATION_VERSION_MAJOR int = 22
-const APPLICATION_VERSION_MINOR int = 9
-const APPLICATION_VERSION_REVISION int = 0
+const APPLICATION_VERSION_MINOR int = 11
+const APPLICATION_VERSION_REVISION int = 2
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
@@ -140,7 +140,6 @@ const FTPS_MODE_IMPLICIT FtpsModeType = 1
 
 // FtpsModeType:
 const FTPS_MODE_PLAINTEXT FtpsModeType = 0
-const InstallerMetadataFile string = "installer.json"
 
 // JobClassification:
 const JOB_CLASSIFICATION_BACKUP JobClassification = 4001
@@ -273,6 +272,12 @@ const MSSQL_METHOD_OLEDB_32 MSSQLMethod = "OLEDB_32"
 
 // MSSQLMethod:
 const MSSQL_METHOD_OLEDB_NATIVE MSSQLMethod = "OLEDB_NATIVE"
+
+// MSSQLRestoreOpt:
+const MSSQL_RESTORE_NORECOVERY MSSQLRestoreOpt = "NO_RECOVERY"
+
+// MSSQLRestoreOpt:
+const MSSQL_RESTORE_RECOVERY MSSQLRestoreOpt = "RECOVERY"
 const OFFICE365_REGION_CHINA string = "ChinaCloud"
 const OFFICE365_REGION_GERMANY string = "GermanCloud"
 const OFFICE365_REGION_PUBLIC string = "GlobalPublicCloud"
@@ -297,7 +302,13 @@ const OS_ONLY_WINDOWS_X8632 ExtraFileExclusionOSRestriction = 2
 // ExtraFileExclusionOSRestriction:
 const OS_ONLY_WINDOWS_X8664 ExtraFileExclusionOSRestriction = 3
 const PASSWORD_FORMAT_PLAINTEXT int = 0
-const RELEASE_CODENAME string = "Voyager"
+
+// PSAType:
+const PSA_TYPE_GENERIC PSAType = 0
+
+// PSAType:
+const PSA_TYPE_GRADIENT PSAType = 1
+const RELEASE_CODENAME string = "Ananke"
 
 // RemoteServerType:
 const REMOTESERVER_AWS RemoteServerType = "aws"
@@ -370,6 +381,9 @@ const RESTORETYPE_FILE_ARCHIVE RestoreType = 5
 
 // RestoreType:
 const RESTORETYPE_INVALID RestoreType = -1
+
+// RestoreType:
+const RESTORETYPE_MSSQL RestoreType = 11
 
 // RestoreType:
 const RESTORETYPE_MYSQL RestoreType = 10
@@ -713,8 +727,10 @@ type LiveUserConnectionMap map[LiveUserConnectionID]LiveUserConnection
 type LogDay int
 type MSSQLAuthMode string
 type MSSQLMethod string
+type MSSQLRestoreOpt string
 type MacOSCodesignLevel int
 type NewsEntries map[string]NewsEntry
+type PSAType int
 type RemoteServerType string
 type ReplicaDeletionStrategy string
 type ReplicatorDisplayClass int
@@ -1519,6 +1535,15 @@ type MSSQLConnection struct {
 	Method       string
 }
 
+type MSSQLLoginArgs struct {
+	Instance           string
+	AuthMode           MSSQLAuthMode
+	Username           string
+	Password           string
+	MethodIsOledb32Bit bool
+	RestoreNoRecovery  bool
+}
+
 type MacOSCodeSignProperties struct {
 	Level                 MacOSCodesignLevel
 	SignLocally           bool
@@ -1646,15 +1671,21 @@ type Office365ObjectInfo struct {
 }
 
 type Organization struct {
-	Name              string
-	Hosts             []string
-	SoftwareBuildRole SoftwareBuildRoleOptions
-	Branding          BrandingOptions
-	RemoteStorage     []RemoteStorageOption
-	ConstellationRole ConstellationRoleOptions
-	WebhookOptions    map[string]WebhookOption
-	Email             EmailOptions
-	IsSuspended       bool
+	Name                string
+	Hosts               []string
+	SoftwareBuildRole   SoftwareBuildRoleOptions
+	Branding            BrandingOptions
+	RemoteStorage       []RemoteStorageOption
+	ConstellationRole   ConstellationRoleOptions
+	WebhookOptions      map[string]WebhookOption
+	PSAConfigs          []PSAConfig
+	Email               EmailOptions
+	IsSuspended         bool
+	ExperimentalOptions []string `json:",omitempty"`
+}
+
+type OrganizationLoginURLResponse struct {
+	LoginURL string
 }
 
 type OrganizationResponse struct {
@@ -1662,6 +1693,13 @@ type OrganizationResponse struct {
 	Message      string
 	ID           string
 	Organization Organization
+}
+
+type PSAConfig struct {
+	URL           string
+	CustomHeaders map[string]string `json:",omitempty"`
+	Type          PSAType
+	PartnerKey    string `json:",omitempty"`
 }
 
 type Partition struct {
@@ -1829,6 +1867,7 @@ type RestoreJobAdvancedOptions struct {
 	SslCaFile              string
 	SslCrtFile             string
 	SslKeyFile             string
+	MsSqlConnection        MSSQLLoginArgs `json:",omitempty"`
 }
 
 type RetentionPolicy struct {
@@ -1907,6 +1946,16 @@ type SearchClause struct {
 	ClauseChildren []SearchClause `json:",omitempty"`
 }
 
+type SelfBackupExportOptions struct {
+	Location              DestinationLocation
+	EncryptionKey         string
+	EncryptionKeyFormat   uint64
+	Compression           CompressMode
+	ExcludeJobsDB         bool
+	RestrictToSingleOrgID string `json:",omitempty"`
+	Index                 int
+}
+
 type SelfBackupOptions struct {
 	Targets []SelfBackupTarget
 }
@@ -1920,19 +1969,22 @@ type SelfBackupStatistics struct {
 }
 
 type SelfBackupTarget struct {
-	Location            DestinationLocation
-	Schedule            []ScheduleConfig
-	ScheduleTimezone    string
-	RetentionPolicy     RetentionPolicy
-	EncryptionKey       string
-	EncryptionKeyFormat uint64
-	Compression         CompressMode
-	ExcludeJobsDB       bool
+	Schedule              []ScheduleConfig
+	ScheduleTimezone      string
+	RetentionPolicy       RetentionPolicy
+	Location              DestinationLocation
+	EncryptionKey         string
+	EncryptionKeyFormat   uint64
+	Compression           CompressMode
+	ExcludeJobsDB         bool
+	RestrictToSingleOrgID string `json:",omitempty"`
+	Index                 int
 }
 
 type ServerConfigOptions struct {
 	ExperimentalOptions      []string `json:",omitempty"`
 	WebhookOptions           map[string]WebhookOption
+	PSAConfigs               []PSAConfig
 	License                  LicenseOptions
 	Branding                 BrandingOptions
 	AdminUsers               []AllowedAdminUser
@@ -2593,7 +2645,7 @@ func (this *CometAPIClient) Request(contentType, method, path string, data map[s
 	// Test for CometAPIResponseMessage (Error)
 	carm := &CometAPIResponseMessage{}
 	err = json.Unmarshal(respBody, carm)
-	if err == nil && carm.Status != 0 && (carm.Status < 200 || carm.Status >= 300) {
+	if err == nil && carm.Message != "" && carm.Status != 0 && carm.Status >= 400 {
 		return nil, fmt.Errorf("Error returned from API (code %d): %s", carm.Status, carm.Message)
 	}
 
@@ -3173,6 +3225,33 @@ func (this *CometAPIClient) AdminBrandingGenerateClientLinuxgeneric(SelfAddress 
 	}
 
 	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/linuxgeneric", data)
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
+}
+
+// AdminBrandingGenerateClientMacosArm64: Download software (macOS arm64 pkg)
+//
+// This API requires administrator authentication credentials, unless the server is configured to
+// allow unauthenticated software downloads.
+// This API requires the Software Build Role to be enabled.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// SelfAddress: (Optional) The external URL of this server, used to resolve conflicts
+func (this *CometAPIClient) AdminBrandingGenerateClientMacosArm64(SelfAddress *string) ([]byte, error) {
+	data := map[string][]string{}
+	var err error
+
+	if SelfAddress == nil {
+		data["SelfAddress"] = []string{this.ServerURL}
+	} else {
+		data["SelfAddress"] = []string{*SelfAddress}
+	}
+
+	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/macos-arm64", data)
 	if err != nil {
 		return nil, err
 	}
@@ -3888,6 +3967,35 @@ func (this *CometAPIClient) AdminDispatcherEmailPreview(TargetID string, Snapsho
 	}
 
 	result := &EmailReportGeneratedPreview{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminDispatcherGetDefaultLoginUrl: Get the default login URL for a tenant
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+// This API is only available for administrator accounts in the top-level Organization, not in any
+// other Organization.
+//
+// - Params
+// OrganizationID: Target organization
+func (this *CometAPIClient) AdminDispatcherGetDefaultLoginUrl(OrganizationID string) (*OrganizationLoginURLResponse, error) {
+	data := map[string][]string{}
+	var err error
+
+	data["OrganizationID"] = []string{OrganizationID}
+
+	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/get-default-login-url", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &OrganizationLoginURLResponse{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err
@@ -4922,13 +5030,23 @@ func (this *CometAPIClient) AdminDispatcherUnlock(TargetID string, Destination s
 // - Params
 // TargetID: The live connection GUID
 // NewURL: The new external URL of this server
-func (this *CometAPIClient) AdminDispatcherUpdateLoginUrl(TargetID string, NewURL string) (*CometAPIResponseMessage, error) {
+// Force: (Optional) No checks will be done using previous URL
+func (this *CometAPIClient) AdminDispatcherUpdateLoginUrl(TargetID string, NewURL string, Force *bool) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
+	var b []byte
 	var err error
 
 	data["TargetID"] = []string{TargetID}
 
 	data["NewURL"] = []string{NewURL}
+
+	if Force != nil {
+		b, err = json.Marshal(Force)
+		if err != nil {
+			return nil, err
+		}
+		data["Force"] = []string{string(b)}
+	}
 
 	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/update-login-url", data)
 	if err != nil {
@@ -5543,6 +5661,75 @@ func (this *CometAPIClient) AdminMetaListAvailableLogDays() ([]LogDay, error) {
 	return result, nil
 }
 
+// AdminMetaPsaConfigListGet: Get the server PSA configuration
+//
+// You must supply administrator authentication credentials to use this API.
+func (this *CometAPIClient) AdminMetaPsaConfigListGet() ([]PSAConfig, error) {
+	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/psa-config-list/get", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := []PSAConfig{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminMetaPsaConfigListSet: Update the server PSA configuration
+//
+// You must supply administrator authentication credentials to use this API.
+//
+// - Params
+// PSAConfigList: The replacement PSA configuration list
+func (this *CometAPIClient) AdminMetaPsaConfigListSet(PSAConfigList []PSAConfig) (*CometAPIResponseMessage, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	b, err = json.Marshal(PSAConfigList)
+	if err != nil {
+		return nil, err
+	}
+	data["PSAConfigList"] = []string{string(b)}
+
+	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/psa-config-list/set", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CometAPIResponseMessage{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminMetaPsaConfigListSyncNow: Synchronize all PSA services now
+// This API applies to the current Organization's PSAConfig's only.
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+func (this *CometAPIClient) AdminMetaPsaConfigListSyncNow() (*CometAPIResponseMessage, error) {
+	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/psa-config-list/sync-now", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CometAPIResponseMessage{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // AdminMetaReadAllLogs: Get a ZIP file of all of the server's log files
 // On non-Windows platforms, log content uses LF line endings. On Windows, Comet changed from LF to
 // CRLF line endings in 18.3.2.
@@ -6103,6 +6290,39 @@ func (this *CometAPIClient) AdminOrganizationDelete(OrganizationID *string, Unin
 	return result, nil
 }
 
+// AdminOrganizationExport: Run self-backup for a specific tenant
+//
+// You must supply administrator authentication credentials to use this API.
+// This API is only available for administrator accounts in the top-level Organization, not in any
+// other Organization.
+//
+// - Params
+// Options: The export config options
+func (this *CometAPIClient) AdminOrganizationExport(Options SelfBackupExportOptions) (*CometAPIResponseMessage, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	b, err = json.Marshal(Options)
+	if err != nil {
+		return nil, err
+	}
+	data["Options"] = []string{string(b)}
+
+	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/organization/export", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CometAPIResponseMessage{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // AdminOrganizationList: List Organizations
 //
 // You must supply administrator authentication credentials to use this API.
@@ -6547,6 +6767,26 @@ func (this *CometAPIClient) AdminRevokeDevice(TargetUser string, TargetDevice st
 	data["TargetDevice"] = []string{TargetDevice}
 
 	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/revoke-device", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CometAPIResponseMessage{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminSelfBackupStart: Run self-backup on all targets
+//
+// You must supply administrator authentication credentials to use this API.
+// This API is only available for administrator accounts in the top-level Organization, not in any
+// other Organization.
+func (this *CometAPIClient) AdminSelfBackupStart() (*CometAPIResponseMessage, error) {
+	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/self-backup/start", nil)
 	if err != nil {
 		return nil, err
 	}
