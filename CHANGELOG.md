@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 2023-01-11 v1.2.0
+- Based on 22.12.2
+- Add new `AdminCountJobsForCustomSearchRequest` API to count total number of jobs for a given search query
+- Add new `AdminMetaEmailOptionsGetRequest` / `AdminMetaEmailOptionsSetRequest` / `AdminMetaSendTestReportRequest` APIs for managing tenant email settings
+- Add new O365 Protected Accounts quota option in the `UserProfileConfig`
+- Add new tenant admin permission `AllowEditEmailOptions`
+
 # 2022-12-09 v1.1.0
 - Based on 22.11.1
 - New features for PSAs, remote URLs and MS SQL Server restores.
