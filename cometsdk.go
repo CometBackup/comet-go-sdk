@@ -16,9 +16,9 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "22.11.2"
+const APPLICATION_VERSION string = "22.12.2"
 const APPLICATION_VERSION_MAJOR int = 22
-const APPLICATION_VERSION_MINOR int = 11
+const APPLICATION_VERSION_MINOR int = 12
 const APPLICATION_VERSION_REVISION int = 2
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
@@ -103,10 +103,17 @@ const EMAILREPORTTYPE_SUMMARY EmailReportType = 1
 const EMAIL_DELIVERY_BUILTIN EmailDeliveryType = EMAIL_DELIVERY_MX_DIRECT
 
 // EmailDeliveryType:
-const EMAIL_DELIVERY_MX_DIRECT EmailDeliveryType = "builtin"
+const EMAIL_DELIVERY_DISABLED EmailDeliveryType = "disabled"
 
 // EmailDeliveryType:
-const EMAIL_DELIVERY_NONE EmailDeliveryType = ""
+const EMAIL_DELIVERY_INHERIT EmailDeliveryType = ""
+
+// EmailDeliveryType:
+const EMAIL_DELIVERY_MX_DIRECT EmailDeliveryType = "builtin"
+
+// EmailDeliveryType: changed for clarity
+// Deprecated: This const has been deprecated since Comet version 22.12.1
+const EMAIL_DELIVERY_NONE EmailDeliveryType = EMAIL_DELIVERY_INHERIT
 
 // EmailDeliveryType:
 const EMAIL_DELIVERY_SMTP EmailDeliveryType = "smtp"
@@ -308,7 +315,7 @@ const PSA_TYPE_GENERIC PSAType = 0
 
 // PSAType:
 const PSA_TYPE_GRADIENT PSAType = 1
-const RELEASE_CODENAME string = "Ananke"
+const RELEASE_CODENAME string = "Voyager"
 
 // RemoteServerType:
 const REMOTESERVER_AWS RemoteServerType = "aws"
@@ -803,6 +810,7 @@ type AdminUserPermissions struct {
 	PreventServerShutdown     bool `json:",omitempty"`
 	PreventChangePassword     bool `json:",omitempty"`
 	AllowEditBranding         bool `json:",omitempty"`
+	AllowEditEmailOptions     bool `json:",omitempty"`
 	AllowEditRemoteStorage    bool `json:",omitempty"`
 	AllowEditWebhooks         bool `json:",omitempty"`
 	DenyConstellationRole     bool `json:",omitempty"`
@@ -1138,6 +1146,10 @@ type ContentMeasurementComponent struct {
 	UsedBy []string
 }
 
+type CountJobsResponse struct {
+	Count int64
+}
+
 type CreateGroupPolicyResponse struct {
 	Status     int
 	Message    string
@@ -1337,15 +1349,16 @@ type EDBFileInfo struct {
 }
 
 type EmailOptions struct {
-	Mode                        EmailDeliveryType
 	FromEmail                   string
 	FromName                    string
-	SMTPHost                    string `json:",omitempty"`
-	SMTPPort                    int    `json:",omitempty"`
-	SMTPUsername                string `json:",omitempty"`
-	SMTPPassword                string `json:",omitempty"`
-	SMTPAllowInvalidCertificate bool   `json:",omitempty"`
-	SMTPAllowUnencrypted        bool   `json:",omitempty"`
+	Mode                        EmailDeliveryType
+	EmailReportingOptions       []EmailReportingOption `json:",omitempty"`
+	SMTPHost                    string                 `json:",omitempty"`
+	SMTPPort                    int                    `json:",omitempty"`
+	SMTPUsername                string                 `json:",omitempty"`
+	SMTPPassword                string                 `json:",omitempty"`
+	SMTPAllowInvalidCertificate bool                   `json:",omitempty"`
+	SMTPAllowUnencrypted        bool                   `json:",omitempty"`
 }
 
 type EmailReportConfig struct {
@@ -1362,6 +1375,13 @@ type EmailReportGeneratedPreview struct {
 	EmailSubject       string
 	EmailBodyHTML      string
 	EmailBodyPlaintext string
+}
+
+type EmailReportingOption struct {
+	EmailReportConfig EmailReportConfig
+	LanguageCode      LanguageCode
+	LocalTimezone     string
+	Recipients        []string
 }
 
 type ExternalAuthenticationSource struct {
@@ -1982,25 +2002,25 @@ type SelfBackupTarget struct {
 }
 
 type ServerConfigOptions struct {
-	ExperimentalOptions      []string `json:",omitempty"`
-	WebhookOptions           map[string]WebhookOption
-	PSAConfigs               []PSAConfig
-	License                  LicenseOptions
-	Branding                 BrandingOptions
 	AdminUsers               []AllowedAdminUser
-	Organizations            map[string]Organization
-	ExternalAdminUserSources map[string]ExternalAuthenticationSource
-	ListenAddresses          []HTTPConnectorOptions
-	TrustXForwardedFor       bool
-	IPRateLimit              RatelimitOptions
-	Email                    EmailOptions
 	AuthenticationRole       AuthenticationRoleOptions
-	StorageRole              StorageRoleOptions
-	SoftwareBuildRole        SoftwareBuildRoleOptions
+	Branding                 BrandingOptions
 	ConstellationRole        ConstellationRoleOptions
 	ConstellationRole_Legacy ConstellationRoleOptions `json:"OverseerRole,omitempty"`
+	Email                    EmailOptions
+	ExperimentalOptions      []string `json:",omitempty"`
+	ExternalAdminUserSources map[string]ExternalAuthenticationSource
+	IPRateLimit              RatelimitOptions
+	License                  LicenseOptions
+	ListenAddresses          []HTTPConnectorOptions
+	Organizations            map[string]Organization
+	PSAConfigs               []PSAConfig
 	SelfBackup               SelfBackupOptions
 	SessionSettings          SessionOptions
+	SoftwareBuildRole        SoftwareBuildRoleOptions
+	StorageRole              StorageRoleOptions
+	TrustXForwardedFor       bool
+	WebhookOptions           map[string]WebhookOption
 }
 
 type ServerConfigOptionsBrandingFragment struct {
@@ -2082,6 +2102,7 @@ type SoftwareUpdateNewsResponse struct {
 
 type SourceBasicInfo struct {
 	Description                  string
+	O365AccountCount             int64
 	Size                         int64
 	OverrideDestinationRetention map[string]RetentionPolicy `json:",omitempty"`
 }
@@ -2372,13 +2393,14 @@ type UserProfileConfig struct {
 	// Storage Vaults
 	Destinations map[string]DestinationConfig
 	// Protected Items
-	Sources                       map[string]SourceConfig
-	BackupRules                   map[string]BackupRuleConfig
-	Devices                       map[string]DeviceConfig
-	IsSuspended                   bool
-	AllProtectedItemsQuotaEnabled bool
-	AllProtectedItemsQuotaBytes   int64
-	MaximumDevices                int64
+	Sources                         map[string]SourceConfig
+	BackupRules                     map[string]BackupRuleConfig
+	Devices                         map[string]DeviceConfig
+	IsSuspended                     bool
+	AllProtectedItemsQuotaEnabled   bool
+	AllProtectedItemsQuotaBytes     int64
+	MaximumDevices                  int64
+	QuotaOffice365ProtectedAccounts int64
 	// If the PolicyID field is set to a non-empty string, the Comet Server will enforce the contents
 	// of the Policy field based on the matching server's policy. Otherwise if the PolicyID field is
 	// set to an empty string, the administrator may configure any custom values in the Policy field.
@@ -2441,6 +2463,7 @@ type WasabiVirtualStorageRoleSettings struct {
 type WebAuthnAuthenticatorSelection struct {
 	AuthenticatorAttachment string `json:"authenticatorAttachment,omitempty"`
 	RequireResidentKey      bool   `json:"requireResidentKey,omitempty"`
+	ResidentKey             string `json:"residentKey,omitempty"`
 	UserVerification        string `json:"userVerification,omitempty"`
 }
 
@@ -3655,6 +3678,38 @@ func (this *CometAPIClient) AdminConstellationStatus() (*ConstellationStatusAPIR
 	}
 
 	result := &ConstellationStatusAPIResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminCountJobsForCustomSearch: Count jobs (for custom search)
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// Query: (No description available)
+func (this *CometAPIClient) AdminCountJobsForCustomSearch(Query SearchClause) (*CountJobsResponse, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	b, err = json.Marshal(Query)
+	if err != nil {
+		return nil, err
+	}
+	data["Query"] = []string{string(b)}
+
+	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/count-jobs-for-custom-search", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CountJobsResponse{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err
@@ -5641,6 +5696,55 @@ func (this *CometAPIClient) AdminMetaConstellationConfigSet(ConstellationRoleOpt
 	return result, nil
 }
 
+// AdminMetaEmailOptionsGet: Get the email options
+//
+// You must supply administrator authentication credentials to use this API.
+func (this *CometAPIClient) AdminMetaEmailOptionsGet() (*EmailOptions, error) {
+	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/email-options/get", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &EmailOptions{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminMetaEmailOptionsSet: Set the email options
+//
+// You must supply administrator authentication credentials to use this API.
+//
+// - Params
+// EmailOptions: The replacement email reporting options.
+func (this *CometAPIClient) AdminMetaEmailOptionsSet(EmailOptions EmailOptions) (*CometAPIResponseMessage, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	b, err = json.Marshal(EmailOptions)
+	if err != nil {
+		return nil, err
+	}
+	data["EmailOptions"] = []string{string(b)}
+
+	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/email-options/set", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CometAPIResponseMessage{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // AdminMetaListAvailableLogDays: Get log files
 //
 // You must supply administrator authentication credentials to use this API.
@@ -5912,9 +6016,6 @@ func (this *CometAPIClient) AdminMetaRestartService() (*CometAPIResponseMessage,
 // setup.
 //
 // You must supply administrator authentication credentials to use this API.
-// This API is only available for administrator accounts in the top-level Organization, not in any
-// other Organization.
-// Access to this API may be prevented on a per-administrator basis.
 //
 // - Params
 // EmailOptions: Updated configuration content
@@ -5933,6 +6034,38 @@ func (this *CometAPIClient) AdminMetaSendTestEmail(EmailOptions EmailOptions, Re
 	data["Recipient"] = []string{Recipient}
 
 	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/send-test-email", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CometAPIResponseMessage{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminMetaSendTestReport: Send a test admin email report
+// This allows a user to send a test email report
+//
+// You must supply administrator authentication credentials to use this API.
+//
+// - Params
+// EmailReportingOption: Test email reporting option for sending
+func (this *CometAPIClient) AdminMetaSendTestReport(EmailReportingOption EmailReportingOption) (*CometAPIResponseMessage, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	b, err = json.Marshal(EmailReportingOption)
+	if err != nil {
+		return nil, err
+	}
+	data["EmailReportingOption"] = []string{string(b)}
+
+	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/send-test-report", data)
 	if err != nil {
 		return nil, err
 	}
