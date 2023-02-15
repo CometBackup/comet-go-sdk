@@ -16,10 +16,10 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "22.12.2"
+const APPLICATION_VERSION string = "22.12.8"
 const APPLICATION_VERSION_MAJOR int = 22
 const APPLICATION_VERSION_MINOR int = 12
-const APPLICATION_VERSION_REVISION int = 2
+const APPLICATION_VERSION_REVISION int = 8
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
@@ -94,7 +94,13 @@ const DESTINATION_SFTP_AUTHMODE_PASSWORD SftpAuthMode = 1
 const DESTINATION_SFTP_AUTHMODE_PRIVATEKEY SftpAuthMode = 2
 
 // EmailReportType:
+const EMAILREPORTTYPE_GROUPED_STATUS EmailReportType = 2
+
+// EmailReportType:
 const EMAILREPORTTYPE_IMMEDIATE EmailReportType = 0
+
+// EmailReportType:
+const EMAILREPORTTYPE_RECENT_ACTIVITY EmailReportType = 3
 
 // EmailReportType:
 const EMAILREPORTTYPE_SUMMARY EmailReportType = 1
@@ -654,6 +660,15 @@ const STOREDOBJECTTYPE_UNIXFIFO StoredObjectType = "fifo"
 const STOREDOBJECTTYPE_UNIXSOCKET StoredObjectType = "socket"
 
 // StoredObjectType:
+const STOREDOBJECTTYPE_VHDX_GPT_PARTITION StoredObjectType = "vhdxpartitiongpt"
+
+// StoredObjectType:
+const STOREDOBJECTTYPE_VHDX_MBR_PARTITION StoredObjectType = "vhdxpartitionmbr"
+
+// StoredObjectType:
+const STOREDOBJECTTYPE_VIRTUALIMAGE_DISK StoredObjectType = "virtualimagedisk"
+
+// StoredObjectType:
 const STOREDOBJECTTYPE_VMDK_DIRECTORY StoredObjectType = "vmdkdir"
 
 // StoredObjectType:
@@ -687,7 +702,9 @@ const UPDATESTATUS_UPDATE_CONFIRMED UpdateStatus = 5
 // UpdateStatus: Device reconnected with bad version
 const UPDATESTATUS_UPDATE_FAILED UpdateStatus = 4
 const UnknownDeviceError string = "ERR_UNKNOWN_DEVICE"
+const UnsupportVhdxFileSystem string = "ERR_UNSUPPORT_VHDX_FILE_SYSTEM"
 const UnsupportVmdkFileSystem string = "ERR_UNSUPPORT_VMDK_FILE_SYSTEM"
+const VhdxPartitonReadErrMsg string = "ERR_VHDX_PARTITION"
 
 // WebAuthnDeviceType:
 const WEBAUTHN_DEVICE_TYPE__ANDROID WebAuthnDeviceType = 2
@@ -1364,6 +1381,7 @@ type EmailOptions struct {
 type EmailReportConfig struct {
 	ReportType       EmailReportType
 	SummaryFrequency []ScheduleConfig
+	TimeSpan         TimeSpan `json:",omitempty"`
 	Filter           SearchClause
 }
 
@@ -1583,11 +1601,12 @@ type MacOSCodeSignProperties struct {
 }
 
 type MongoDBConnection struct {
-	Server                  string
-	Port                    int
-	Username                string
-	Password                string
-	AuthenticationDB        string
+	Server           string
+	Port             int
+	Username         string
+	Password         string
+	AuthenticationDB string
+	// Deprecated: This member has been deprecated since Comet version 22.12.3
 	MongoShellPath          string
 	MongodumpPath           string
 	ReadPreference          string
@@ -1716,10 +1735,11 @@ type OrganizationResponse struct {
 }
 
 type PSAConfig struct {
-	URL           string
-	CustomHeaders map[string]string `json:",omitempty"`
-	Type          PSAType
-	PartnerKey    string `json:",omitempty"`
+	AlertsDisabled bool
+	CustomHeaders  map[string]string `json:",omitempty"`
+	PartnerKey     string            `json:",omitempty"`
+	Type           PSAType
+	URL            string
 }
 
 type Partition struct {
@@ -2082,6 +2102,14 @@ type SessionOptions struct {
 	ExpiredInSeconds uint64
 }
 
+type SingleFieldSource struct {
+	FieldName string
+	FieldType string
+	BoolVal   bool
+	IntVal    int64
+	StrVal    string
+}
+
 type SizeMeasurement struct {
 	Size             int64
 	MeasureStarted   int64
@@ -2230,6 +2258,11 @@ type TestResponse struct {
 	Status  int
 	Message string
 	Exists  bool
+}
+
+type TimeSpan struct {
+	FrequencyType uint64
+	Seconds       int64
 }
 
 type TotpRegeneratedResponse struct {
@@ -2397,6 +2430,7 @@ type UserProfileConfig struct {
 	BackupRules                     map[string]BackupRuleConfig
 	Devices                         map[string]DeviceConfig
 	IsSuspended                     bool
+	LastSuspended                   int64 `json:",omitempty"`
 	AllProtectedItemsQuotaEnabled   bool
 	AllProtectedItemsQuotaBytes     int64
 	MaximumDevices                  int64
@@ -2433,6 +2467,7 @@ type VMDKSnapshotViewOptions struct {
 	Enabled       bool
 	PartitionGUID string
 	ListPath      string
+	PartitionName string
 }
 
 type VSSComponent struct {
@@ -3088,8 +3123,8 @@ func (this *CometAPIClient) AdminAddUserFromProfile(TargetUser string, ProfileDa
 //
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
-// This API is only available for administrator accounts in the top-level Organization, not in any
-// other Organization.
+// This API is only available for top-level administrator accounts, not for Tenant administrator
+// accounts.
 //
 // - Params
 // TargetUser: the username of the admin to be deleted
@@ -3117,8 +3152,8 @@ func (this *CometAPIClient) AdminAdminUserDelete(TargetUser string) (*CometAPIRe
 //
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
-// This API is only available for administrator accounts in the top-level Organization, not in any
-// other Organization.
+// This API is only available for top-level administrator accounts, not for Tenant administrator
+// accounts.
 func (this *CometAPIClient) AdminAdminUserList() ([]AllowedAdminUser, error) {
 	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/admin-user/list", nil)
 	if err != nil {
@@ -3138,8 +3173,8 @@ func (this *CometAPIClient) AdminAdminUserList() ([]AllowedAdminUser, error) {
 //
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
-// This API is only available for administrator accounts in the top-level Organization, not in any
-// other Organization.
+// This API is only available for top-level administrator accounts, not for Tenant administrator
+// accounts.
 //
 // - Params
 // TargetUser: the username for this new admin
@@ -3649,8 +3684,8 @@ func (this *CometAPIClient) AdminConstellationNewReport() (*ConstellationCheckRe
 // AdminConstellationPruneNow: Prune unused buckets
 //
 // You must supply administrator authentication credentials to use this API.
-// This API is only available for administrator accounts in the top-level Organization, not in any
-// other Organization.
+// This API is only available for top-level administrator accounts, not for Tenant administrator
+// accounts.
 // This API requires the Constellation Role to be enabled.
 func (this *CometAPIClient) AdminConstellationPruneNow() (*CometAPIResponseMessage, error) {
 	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/constellation/prune-now", nil)
@@ -4034,8 +4069,8 @@ func (this *CometAPIClient) AdminDispatcherEmailPreview(TargetID string, Snapsho
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
-// This API is only available for administrator accounts in the top-level Organization, not in any
-// other Organization.
+// This API is only available for top-level administrator accounts, not for Tenant administrator
+// accounts.
 //
 // - Params
 // OrganizationID: Target organization
@@ -5560,7 +5595,7 @@ func (this *CometAPIClient) AdminMetaBrandingConfigGet() (*ServerConfigOptionsBr
 }
 
 // AdminMetaBrandingConfigSet: Set Branding configuration
-// Note that file resources must be provided using a resource URI I.E
+// Note that file resources must be provided using a resource URI, i.e
 // `"resource://05ba0b90ee66bda433169581188aba8d29faa938f9464cccd651a02fdf2e5b57"`. See
 // AdminMetaResourceNew for the API documentation to create new file resources.
 //
@@ -5699,6 +5734,7 @@ func (this *CometAPIClient) AdminMetaConstellationConfigSet(ConstellationRoleOpt
 // AdminMetaEmailOptionsGet: Get the email options
 //
 // You must supply administrator authentication credentials to use this API.
+// Access to this API may be prevented on a per-administrator basis.
 func (this *CometAPIClient) AdminMetaEmailOptionsGet() (*EmailOptions, error) {
 	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/email-options/get", nil)
 	if err != nil {
@@ -5717,6 +5753,7 @@ func (this *CometAPIClient) AdminMetaEmailOptionsGet() (*EmailOptions, error) {
 // AdminMetaEmailOptionsSet: Set the email options
 //
 // You must supply administrator authentication credentials to use this API.
+// Access to this API may be prevented on a per-administrator basis.
 //
 // - Params
 // EmailOptions: The replacement email reporting options.
@@ -5748,8 +5785,8 @@ func (this *CometAPIClient) AdminMetaEmailOptionsSet(EmailOptions EmailOptions) 
 // AdminMetaListAvailableLogDays: Get log files
 //
 // You must supply administrator authentication credentials to use this API.
-// This API is only available for administrator accounts in the top-level Organization, not in any
-// other Organization.
+// This API is only available for top-level administrator accounts, not for Tenant administrator
+// accounts.
 func (this *CometAPIClient) AdminMetaListAvailableLogDays() ([]LogDay, error) {
 	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/list-available-log-days", nil)
 	if err != nil {
@@ -5841,8 +5878,8 @@ func (this *CometAPIClient) AdminMetaPsaConfigListSyncNow() (*CometAPIResponseMe
 // may even contain mixed line-endings.
 //
 // You must supply administrator authentication credentials to use this API.
-// This API is only available for administrator accounts in the top-level Organization, not in any
-// other Organization.
+// This API is only available for top-level administrator accounts, not for Tenant administrator
+// accounts.
 func (this *CometAPIClient) AdminMetaReadAllLogs() ([]byte, error) {
 	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/read-all-logs", nil)
 	if err != nil {
@@ -5859,8 +5896,8 @@ func (this *CometAPIClient) AdminMetaReadAllLogs() ([]byte, error) {
 // may even contain mixed line-endings.
 //
 // You must supply administrator authentication credentials to use this API.
-// This API is only available for administrator accounts in the top-level Organization, not in any
-// other Organization.
+// This API is only available for top-level administrator accounts, not for Tenant administrator
+// accounts.
 //
 // - Params
 // Log: A log day, selected from the options returned by the Get Log Files API
@@ -5993,8 +6030,8 @@ func (this *CometAPIClient) AdminMetaResourceNew(upload string) (*AdminResourceR
 // 18.9.2 and later, it returns a successful response before shutting down.
 //
 // You must supply administrator authentication credentials to use this API.
-// This API is only available for administrator accounts in the top-level Organization, not in any
-// other Organization.
+// This API is only available for top-level administrator accounts, not for Tenant administrator
+// accounts.
 // Access to this API may be prevented on a per-administrator basis.
 func (this *CometAPIClient) AdminMetaRestartService() (*CometAPIResponseMessage, error) {
 	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/restart-service", nil)
@@ -6016,6 +6053,7 @@ func (this *CometAPIClient) AdminMetaRestartService() (*CometAPIResponseMessage,
 // setup.
 //
 // You must supply administrator authentication credentials to use this API.
+// Access to this API may be prevented on a per-administrator basis.
 //
 // - Params
 // EmailOptions: Updated configuration content
@@ -6051,6 +6089,7 @@ func (this *CometAPIClient) AdminMetaSendTestEmail(EmailOptions EmailOptions, Re
 // This allows a user to send a test email report
 //
 // You must supply administrator authentication credentials to use this API.
+// Access to this API may be prevented on a per-administrator basis.
 //
 // - Params
 // EmailReportingOption: Test email reporting option for sending
@@ -6083,8 +6122,8 @@ func (this *CometAPIClient) AdminMetaSendTestReport(EmailReportingOption EmailRe
 //
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
-// This API is only available for administrator accounts in the top-level Organization, not in any
-// other Organization.
+// This API is only available for top-level administrator accounts, not for Tenant administrator
+// accounts.
 func (this *CometAPIClient) AdminMetaServerConfigGet() (*ServerConfigOptions, error) {
 	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/server-config/get", nil)
 	if err != nil {
@@ -6106,8 +6145,8 @@ func (this *CometAPIClient) AdminMetaServerConfigGet() (*ServerConfigOptions, er
 //
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
-// This API is only available for administrator accounts in the top-level Organization, not in any
-// other Organization.
+// This API is only available for top-level administrator accounts, not for Tenant administrator
+// accounts.
 func (this *CometAPIClient) AdminMetaServerConfigNetworkInterfaces() ([]string, error) {
 	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/server-config/network-interfaces", nil)
 	if err != nil {
@@ -6131,8 +6170,8 @@ func (this *CometAPIClient) AdminMetaServerConfigNetworkInterfaces() ([]string, 
 //
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
-// This API is only available for administrator accounts in the top-level Organization, not in any
-// other Organization.
+// This API is only available for top-level administrator accounts, not for Tenant administrator
+// accounts.
 //
 // - Params
 // Config: Updated configuration content
@@ -6168,8 +6207,8 @@ func (this *CometAPIClient) AdminMetaServerConfigSet(Config ServerConfigOptions)
 // 18.9.2 and later, it returns a successful response before shutting down.
 //
 // You must supply administrator authentication credentials to use this API.
-// This API is only available for administrator accounts in the top-level Organization, not in any
-// other Organization.
+// This API is only available for top-level administrator accounts, not for Tenant administrator
+// accounts.
 // Access to this API may be prevented on a per-administrator basis.
 func (this *CometAPIClient) AdminMetaShutdownService() (*CometAPIResponseMessage, error) {
 	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/shutdown-service", nil)
@@ -6259,6 +6298,7 @@ func (this *CometAPIClient) AdminMetaVersion() (*ServerMetaVersionInfo, error) {
 // AdminMetaWebhookOptionsGet: Get the server webhook configuration
 //
 // You must supply administrator authentication credentials to use this API.
+// Access to this API may be prevented on a per-administrator basis.
 func (this *CometAPIClient) AdminMetaWebhookOptionsGet() (map[string]WebhookOption, error) {
 	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/webhook-options/get", nil)
 	if err != nil {
@@ -6279,6 +6319,7 @@ func (this *CometAPIClient) AdminMetaWebhookOptionsGet() (map[string]WebhookOpti
 // destinations.
 //
 // You must supply administrator authentication credentials to use this API.
+// Access to this API may be prevented on a per-administrator basis.
 //
 // - Params
 // WebhookOptions: The replacement webhook target options.
@@ -6386,8 +6427,8 @@ func (this *CometAPIClient) AdminNewsSubmit(NewsContent string) (*CometAPIRespon
 // However, it always has returned only a CometAPIResponseMessage.
 //
 // You must supply administrator authentication credentials to use this API.
-// This API is only available for administrator accounts in the top-level Organization, not in any
-// other Organization.
+// This API is only available for top-level administrator accounts, not for Tenant administrator
+// accounts.
 //
 // - Params
 // OrganizationID: (Optional) (No description available)
@@ -6426,8 +6467,8 @@ func (this *CometAPIClient) AdminOrganizationDelete(OrganizationID *string, Unin
 // AdminOrganizationExport: Run self-backup for a specific tenant
 //
 // You must supply administrator authentication credentials to use this API.
-// This API is only available for administrator accounts in the top-level Organization, not in any
-// other Organization.
+// This API is only available for top-level administrator accounts, not for Tenant administrator
+// accounts.
 //
 // - Params
 // Options: The export config options
@@ -6459,8 +6500,8 @@ func (this *CometAPIClient) AdminOrganizationExport(Options SelfBackupExportOpti
 // AdminOrganizationList: List Organizations
 //
 // You must supply administrator authentication credentials to use this API.
-// This API is only available for administrator accounts in the top-level Organization, not in any
-// other Organization.
+// This API is only available for top-level administrator accounts, not for Tenant administrator
+// accounts.
 func (this *CometAPIClient) AdminOrganizationList() (map[string]Organization, error) {
 	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/organization/list", nil)
 	if err != nil {
@@ -6481,8 +6522,8 @@ func (this *CometAPIClient) AdminOrganizationList() (map[string]Organization, er
 // Prior to Comet 22.6.0, the 'ID' and 'Organization' fields were not present in the response.
 //
 // You must supply administrator authentication credentials to use this API.
-// This API is only available for administrator accounts in the top-level Organization, not in any
-// other Organization.
+// This API is only available for top-level administrator accounts, not for Tenant administrator
+// accounts.
 //
 // - Params
 // OrganizationID: (Optional) (No description available)
@@ -6754,8 +6795,8 @@ func (this *CometAPIClient) AdminPreviewUserEmailReport(TargetUser string, Email
 // AdminReplicationState: Get Replication status
 //
 // You must supply administrator authentication credentials to use this API.
-// This API is only available for administrator accounts in the top-level Organization, not in any
-// other Organization.
+// This API is only available for top-level administrator accounts, not for Tenant administrator
+// accounts.
 func (this *CometAPIClient) AdminReplicationState() ([]ReplicatorStateAPIResponse, error) {
 	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/replication/state", nil)
 	if err != nil {
@@ -6916,8 +6957,8 @@ func (this *CometAPIClient) AdminRevokeDevice(TargetUser string, TargetDevice st
 // AdminSelfBackupStart: Run self-backup on all targets
 //
 // You must supply administrator authentication credentials to use this API.
-// This API is only available for administrator accounts in the top-level Organization, not in any
-// other Organization.
+// This API is only available for top-level administrator accounts, not for Tenant administrator
+// accounts.
 func (this *CometAPIClient) AdminSelfBackupStart() (*CometAPIResponseMessage, error) {
 	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/self-backup/start", nil)
 	if err != nil {
@@ -7084,8 +7125,8 @@ func (this *CometAPIClient) AdminStorageDeleteBucket(BucketID string) (*CometAPI
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
 // This API requires the Storage Role to be enabled.
-// This API is only available for administrator accounts in the top-level Organization, not in any
-// other Organization.
+// This API is only available for top-level administrator accounts, not for Tenant administrator
+// accounts.
 //
 // - Params
 // BucketID: (Optional) (This parameter is not used)
@@ -7135,8 +7176,8 @@ func (this *CometAPIClient) AdminStorageListBuckets() (BucketPropertyList, error
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
 // This API requires the Storage Role to be enabled.
-// This API is only available for administrator accounts in the top-level Organization, not in any
-// other Organization.
+// This API is only available for top-level administrator accounts, not for Tenant administrator
+// accounts.
 //
 // - Params
 // ExtraData: The destination location settings
@@ -7215,8 +7256,8 @@ func (this *CometAPIClient) AdminStorageRegisterBucket(SetBucketValue *string, S
 // AdminUpdateCampaignStart: Start a new software update campaign
 //
 // You must supply administrator authentication credentials to use this API.
-// This API is only available for administrator accounts in the top-level Organization, not in any
-// other Organization.
+// This API is only available for top-level administrator accounts, not for Tenant administrator
+// accounts.
 // This API requires the Software Build Role to be enabled.
 // This API requires the Auth Role to be enabled.
 //
@@ -7250,8 +7291,8 @@ func (this *CometAPIClient) AdminUpdateCampaignStart(Options UpdateCampaignOptio
 // AdminUpdateCampaignStatus: Get current campaign status
 //
 // You must supply administrator authentication credentials to use this API.
-// This API is only available for administrator accounts in the top-level Organization, not in any
-// other Organization.
+// This API is only available for top-level administrator accounts, not for Tenant administrator
+// accounts.
 // This API requires the Software Build Role to be enabled.
 // This API requires the Auth Role to be enabled.
 func (this *CometAPIClient) AdminUpdateCampaignStatus() (*UpdateCampaignStatus, error) {
@@ -7269,7 +7310,7 @@ func (this *CometAPIClient) AdminUpdateCampaignStatus() (*UpdateCampaignStatus, 
 	return result, nil
 }
 
-// BrandingProps: Retreve basic information about this Comet Server
+// BrandingProps: Retrieve basic information about this Comet Server
 func (this *CometAPIClient) BrandingProps() (*ServerMetaBrandingProperties, error) {
 	body, err := this.Request("application/x-www-form-urlencoded", "GET", "/gen/branding.props", nil)
 	if err != nil {
