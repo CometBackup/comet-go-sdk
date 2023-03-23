@@ -16,10 +16,10 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "22.12.8"
-const APPLICATION_VERSION_MAJOR int = 22
-const APPLICATION_VERSION_MINOR int = 12
-const APPLICATION_VERSION_REVISION int = 8
+const APPLICATION_VERSION string = "23.3.1"
+const APPLICATION_VERSION_MAJOR int = 23
+const APPLICATION_VERSION_MINOR int = 3
+const APPLICATION_VERSION_REVISION int = 1
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
@@ -727,6 +727,23 @@ const WEBAUTHN_DEVICE_TYPE__TPM_WINDOWS WebAuthnDeviceType = 5
 // WebAuthnDeviceType:
 const WEBAUTHN_DEVICE_TYPE__UNKNOWN WebAuthnDeviceType = 0
 
+// WindowsCodesignMethod: When upgrading from a version of Comet Server prior to 22.12.7, this
+// option will be automatically converted to a more specific type..
+// Deprecated: This const has been deprecated since Comet version 22.12.7
+const WINDOWSCODESIGN_METHOD_AUTO WindowsCodesignMethod = 0
+
+// WindowsCodesignMethod:
+const WINDOWSCODESIGN_METHOD_AZUREKEYVAULT WindowsCodesignMethod = 4
+
+// WindowsCodesignMethod:
+const WINDOWSCODESIGN_METHOD_DISABLED WindowsCodesignMethod = 1
+
+// WindowsCodesignMethod:
+const WINDOWSCODESIGN_METHOD_PKCS11HSM WindowsCodesignMethod = 3
+
+// WindowsCodesignMethod:
+const WINDOWSCODESIGN_METHOD_PKCS12FILE WindowsCodesignMethod = 2
+
 //
 // DATA TYPES
 //
@@ -774,6 +791,7 @@ type StreamableEventType int
 type UpdateStatus int
 type WebAuthnAuthenticationExtensions map[string]interface{}
 type WebAuthnDeviceType int
+type WindowsCodesignMethod int
 
 type AddBucketResponseMessage struct {
 	Status       int
@@ -863,9 +881,12 @@ type AllowedAdminUser struct {
 }
 
 type AmazonAWSVirtualStorageRoleSettings struct {
-	MasterBucket string
-	AccessKey    string
-	SecretKey    string
+	MasterBucket   string
+	AccessKey      string
+	SecretKey      string
+	UseObjectLock  bool
+	ObjectLockDays int
+	RemoveDeleted  bool
 }
 
 type AuthenticationRoleOptions struct {
@@ -1017,15 +1038,23 @@ type BrandingOptions struct {
 	PathHeaderImage                     string
 	PathAppIconImage                    string
 	PackageIdentifier                   string
+	WindowsCodeSignMethod               WindowsCodesignMethod
 	WindowsCodeSignPKCS12FilePath       string
 	WindowsCodeSignPKCS12PasswordFormat uint64
 	WindowsCodeSignPKCS12Password       string
 	WindowsCodeSignPKCS11Engine         string
 	WindowsCodeSignPKCS11Module         string
+	// Deprecated: This member has been deprecated since Comet version 22.12.7
 	WindowsCodeSignPKCS11Certfile       string
 	WindowsCodeSignPKCS11KeyID          string
 	WindowsCodeSignPKCS11PasswordFormat uint64
 	WindowsCodeSignPKCS11Password       string
+	WindowsCodeSignAzureVaultName       string
+	WindowsCodeSignAzureCertName        string
+	WindowsCodeSignAzureAppID           string
+	WindowsCodeSignAzureAppSecretFormat uint64
+	WindowsCodeSignAzureAppSecret       string
+	WindowsCodeSignAzureTenantID        string
 	MacOSCodeSign                       MacOSCodeSignProperties
 }
 
@@ -1047,15 +1076,23 @@ type BrandingProperties struct {
 	PathHeaderImage                     string
 	PathAppIconImage                    string
 	PackageIdentifier                   string
+	WindowsCodeSignMethod               WindowsCodesignMethod
 	WindowsCodeSignPKCS12FilePath       string
 	WindowsCodeSignPKCS12PasswordFormat uint64
 	WindowsCodeSignPKCS12Password       string
 	WindowsCodeSignPKCS11Engine         string
 	WindowsCodeSignPKCS11Module         string
+	// Deprecated: This member has been deprecated since Comet version 22.12.7
 	WindowsCodeSignPKCS11Certfile       string
 	WindowsCodeSignPKCS11KeyID          string
 	WindowsCodeSignPKCS11PasswordFormat uint64
 	WindowsCodeSignPKCS11Password       string
+	WindowsCodeSignAzureVaultName       string
+	WindowsCodeSignAzureCertName        string
+	WindowsCodeSignAzureAppID           string
+	WindowsCodeSignAzureAppSecretFormat uint64
+	WindowsCodeSignAzureAppSecret       string
+	WindowsCodeSignAzureTenantID        string
 	MacOSCodeSign                       MacOSCodeSignProperties
 }
 
@@ -1216,6 +1253,8 @@ type DestinationConfig struct {
 	S3Subdir                         string
 	S3CustomRegion                   string
 	S3UsesV2Signing                  bool
+	S3RemoveDeleted                  bool
+	S3ObjectLockDays                 int
 	SFTPServer                       string
 	SFTPUsername                     string
 	SFTPRemotePath                   string
@@ -1270,6 +1309,8 @@ type DestinationLocation struct {
 	S3Subdir                         string
 	S3CustomRegion                   string
 	S3UsesV2Signing                  bool
+	S3RemoveDeleted                  bool
+	S3ObjectLockDays                 int
 	SFTPServer                       string
 	SFTPUsername                     string
 	SFTPRemotePath                   string
@@ -1766,15 +1807,23 @@ type PrivateBrandingProperties struct {
 	PathHeaderImage                     string
 	PathAppIconImage                    string
 	PackageIdentifier                   string
+	WindowsCodeSignMethod               WindowsCodesignMethod
 	WindowsCodeSignPKCS12FilePath       string
 	WindowsCodeSignPKCS12PasswordFormat uint64
 	WindowsCodeSignPKCS12Password       string
 	WindowsCodeSignPKCS11Engine         string
 	WindowsCodeSignPKCS11Module         string
+	// Deprecated: This member has been deprecated since Comet version 22.12.7
 	WindowsCodeSignPKCS11Certfile       string
 	WindowsCodeSignPKCS11KeyID          string
 	WindowsCodeSignPKCS11PasswordFormat uint64
 	WindowsCodeSignPKCS11Password       string
+	WindowsCodeSignAzureVaultName       string
+	WindowsCodeSignAzureCertName        string
+	WindowsCodeSignAzureAppID           string
+	WindowsCodeSignAzureAppSecretFormat uint64
+	WindowsCodeSignAzureAppSecret       string
+	WindowsCodeSignAzureTenantID        string
 	MacOSCodeSign                       MacOSCodeSignProperties
 }
 
@@ -1927,22 +1976,27 @@ type RetentionRange struct {
 }
 
 type S3DestinationLocation struct {
-	S3Server        string
-	S3UsesTLS       bool
-	S3AccessKey     string
-	S3SecretKey     string
-	S3BucketName    string
-	S3Subdir        string
-	S3CustomRegion  string
-	S3UsesV2Signing bool
+	S3Server         string
+	S3UsesTLS        bool
+	S3AccessKey      string
+	S3SecretKey      string
+	S3BucketName     string
+	S3Subdir         string
+	S3CustomRegion   string
+	S3UsesV2Signing  bool
+	S3RemoveDeleted  bool
+	S3ObjectLockDays int
 }
 
 type S3GenericVirtualStorageRole struct {
-	S3Endpoint   string
-	IAMEndpoint  string
-	MasterBucket string
-	AccessKey    string
-	SecretKey    string
+	S3Endpoint     string
+	IAMEndpoint    string
+	MasterBucket   string
+	AccessKey      string
+	SecretKey      string
+	UseObjectLock  bool
+	ObjectLockDays int
+	RemoveDeleted  bool
 }
 
 type SFTPDestinationLocation struct {
@@ -2490,9 +2544,12 @@ type VaultSnapshot struct {
 }
 
 type WasabiVirtualStorageRoleSettings struct {
-	MasterBucket string
-	AccessKey    string
-	SecretKey    string
+	MasterBucket   string
+	AccessKey      string
+	SecretKey      string
+	UseObjectLock  bool
+	ObjectLockDays int
+	RemoveDeleted  bool
 }
 
 type WebAuthnAuthenticatorSelection struct {
@@ -2603,15 +2660,23 @@ type WinSMBAuth struct {
 }
 
 type WindowsCodeSignProperties struct {
+	WindowsCodeSignMethod               WindowsCodesignMethod
 	WindowsCodeSignPKCS12FilePath       string
 	WindowsCodeSignPKCS12PasswordFormat uint64
 	WindowsCodeSignPKCS12Password       string
 	WindowsCodeSignPKCS11Engine         string
 	WindowsCodeSignPKCS11Module         string
+	// Deprecated: This member has been deprecated since Comet version 22.12.7
 	WindowsCodeSignPKCS11Certfile       string
 	WindowsCodeSignPKCS11KeyID          string
 	WindowsCodeSignPKCS11PasswordFormat uint64
 	WindowsCodeSignPKCS11Password       string
+	WindowsCodeSignAzureVaultName       string
+	WindowsCodeSignAzureCertName        string
+	WindowsCodeSignAzureAppID           string
+	WindowsCodeSignAzureAppSecretFormat uint64
+	WindowsCodeSignAzureAppSecret       string
+	WindowsCodeSignAzureTenantID        string
 }
 
 //
@@ -5215,11 +5280,21 @@ func (this *CometAPIClient) AdminGetJobLog(JobID string) ([]byte, error) {
 //
 // - Params
 // JobID: Selected job ID
-func (this *CometAPIClient) AdminGetJobLogEntries(JobID string) ([]JobEntry, error) {
+// MinSeverity: (Optional) Return only job log entries with equal or higher severity
+// MessageContains: (Optional) Return only job log entries that contain exact string
+func (this *CometAPIClient) AdminGetJobLogEntries(JobID string, MinSeverity *string, MessageContains *string) ([]JobEntry, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["JobID"] = []string{JobID}
+
+	if MinSeverity != nil {
+		data["MinSeverity"] = []string{*MinSeverity}
+	}
+
+	if MessageContains != nil {
+		data["MessageContains"] = []string{*MessageContains}
+	}
 
 	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/get-job-log-entries", data)
 	if err != nil {
@@ -8351,11 +8426,21 @@ func (this *CometAPIClient) UserWebGetJobLog(JobID string) ([]byte, error) {
 //
 // - Params
 // JobID: Selected job GUID
-func (this *CometAPIClient) UserWebGetJobLogEntries(JobID string) ([]JobEntry, error) {
+// MinSeverity: (Optional) Return only job log entries with equal or higher severity
+// MessageContains: (Optional) Return only job log entries that contain exact string
+func (this *CometAPIClient) UserWebGetJobLogEntries(JobID string, MinSeverity *string, MessageContains *string) ([]JobEntry, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["JobID"] = []string{JobID}
+
+	if MinSeverity != nil {
+		data["MinSeverity"] = []string{*MinSeverity}
+	}
+
+	if MessageContains != nil {
+		data["MessageContains"] = []string{*MessageContains}
+	}
 
 	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/get-job-log-entries", data)
 	if err != nil {
