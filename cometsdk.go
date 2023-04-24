@@ -16,10 +16,10 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "23.3.1"
+const APPLICATION_VERSION string = "23.3.5"
 const APPLICATION_VERSION_MAJOR int = 23
 const APPLICATION_VERSION_MINOR int = 3
-const APPLICATION_VERSION_REVISION int = 1
+const APPLICATION_VERSION_REVISION int = 5
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
@@ -34,6 +34,10 @@ const BACKUPJOBAUTORETENTION_LESS_OFTEN AutoRetentionLevel = 3
 
 // AutoRetentionLevel: The system will follow the automatic ruleset for a 'High Power' device.
 const BACKUPJOBAUTORETENTION_MORE_OFTEN AutoRetentionLevel = 2
+const BRANDINGSTYLETYPE_AUTO_LEGACY int = 0
+const BRANDINGSTYLETYPE_CUSTOM_LOGO int = 3
+const BRANDINGSTYLETYPE_CUSTOM_TEXT int = 2
+const BRANDINGSTYLETYPE_DEFAULT int = 1
 
 // ClientBrandingBuildMode: Public-Doc: The software client will be custom-built by this Comet
 // Server, allowing custom branding, default server URL, and codesigning.
@@ -1016,9 +1020,11 @@ type BackupRuleEventTriggers struct {
 }
 
 type BrandingOptions struct {
+	BrandingStyleType                   int
 	BrandName                           string
 	LogoImage                           string
 	TopColor                            string
+	AccentColor                         string
 	Favicon                             string
 	HideNewsArea                        bool
 	ProductName                         string
@@ -1526,6 +1532,8 @@ type GroupPolicy struct {
 	OrganizationID    string
 	Policy            UserPolicy
 	DefaultUserPolicy bool
+	CreatedDate       int64
+	ModifiedDate      int64
 }
 
 type HTTPConnectorOptions struct {
@@ -2040,12 +2048,30 @@ type SearchClause struct {
 	ClauseChildren []SearchClause `json:",omitempty"`
 }
 
+type SearchResultFileInfo struct {
+	Path  string `json:"path"`
+	Name  string `json:"name"`
+	Type  string `json:"type"`
+	Mode  string `json:"mode"`
+	Mtime string `json:"mtime"`
+	Atime string `json:"atime"`
+	Ctime string `json:"ctime"`
+	Size  int    `json:"size"`
+}
+
+type SearchSnapshotsResponse struct {
+	Status        int
+	Message       string
+	SnapshotFiles map[string][]SearchResultFileInfo
+}
+
 type SelfBackupExportOptions struct {
 	Location              DestinationLocation
 	EncryptionKey         string
 	EncryptionKeyFormat   uint64
 	Compression           CompressMode
 	ExcludeJobsDB         bool
+	IncludeServerLogs     bool
 	RestrictToSingleOrgID string `json:",omitempty"`
 	Index                 int
 }
@@ -2071,6 +2097,7 @@ type SelfBackupTarget struct {
 	EncryptionKeyFormat   uint64
 	Compression           CompressMode
 	ExcludeJobsDB         bool
+	IncludeServerLogs     bool
 	RestrictToSingleOrgID string `json:",omitempty"`
 	Index                 int
 }
@@ -2111,6 +2138,7 @@ type ServerMetaBrandingProperties struct {
 	HasImage                      bool
 	ImageEtag                     string
 	TopColor                      string
+	AccentColor                   string
 	HideNewsArea                  bool
 	AllowUnauthenticatedDownloads bool
 	AllowAuthenticatedDownloads   bool
@@ -2639,11 +2667,13 @@ type WebAuthnUserEntity struct {
 }
 
 type WebInterfaceBrandingProperties struct {
-	BrandName    string
-	LogoImage    string
-	TopColor     string
-	Favicon      string
-	HideNewsArea bool
+	BrandingStyleType int
+	BrandName         string
+	LogoImage         string
+	TopColor          string
+	AccentColor       string
+	Favicon           string
+	HideNewsArea      bool
 }
 
 type WebhookOption struct {
@@ -5106,6 +5136,51 @@ func (this *CometAPIClient) AdminDispatcherRunRestoreCustom(TargetID string, Sou
 	return result, nil
 }
 
+// AdminDispatcherSearchSnapshots: Search storage vault snapshots
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetID: The live connection GUID
+// DestinationID: The Storage Vault GUID
+// SnapshotIDs: Snapshots to search
+// Filter: The search filter
+func (this *CometAPIClient) AdminDispatcherSearchSnapshots(TargetID string, DestinationID string, SnapshotIDs []string, Filter SearchClause) (*SearchSnapshotsResponse, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	data["TargetID"] = []string{TargetID}
+
+	data["DestinationID"] = []string{DestinationID}
+
+	b, err = json.Marshal(SnapshotIDs)
+	if err != nil {
+		return nil, err
+	}
+	data["SnapshotIDs"] = []string{string(b)}
+
+	b, err = json.Marshal(Filter)
+	if err != nil {
+		return nil, err
+	}
+	data["Filter"] = []string{string(b)}
+
+	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/search-snapshots", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &SearchSnapshotsResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // AdminDispatcherUninstallSoftware: Instruct a live connected device to self-uninstall the software
 //
 // You must supply administrator authentication credentials to use this API.
@@ -6033,6 +6108,38 @@ func (this *CometAPIClient) AdminMetaRemoteStorageVaultSet(RemoteStorageOptions 
 	data["RemoteStorageOptions"] = []string{string(b)}
 
 	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/remote-storage-vault/set", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CometAPIResponseMessage{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminMetaRemoteStorageVaultTest: Test the connection to the storage template
+//
+// You must supply administrator authentication credentials to use this API.
+// Access to this API may be prevented on a per-administrator basis.
+//
+// - Params
+// TemplateOptions: Storage Template Vault Options
+func (this *CometAPIClient) AdminMetaRemoteStorageVaultTest(TemplateOptions RemoteStorageOption) (*CometAPIResponseMessage, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	b, err = json.Marshal(TemplateOptions)
+	if err != nil {
+		return nil, err
+	}
+	data["TemplateOptions"] = []string{string(b)}
+
+	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/remote-storage-vault/test", data)
 	if err != nil {
 		return nil, err
 	}
@@ -8388,6 +8495,52 @@ func (this *CometAPIClient) UserWebDispatcherRunRestoreCustom(TargetID string, S
 	}
 
 	result := &CometAPIResponseMessage{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// UserWebDispatcherSearchSnapshots: Search storage vault snapshots
+//
+// You must supply user authentication credentials to use this API, and the user account must be
+// authorized for web access.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetID: The live connection GUID
+// DestinationID: The Storage Vault GUID
+// SnapshotIDs: Snapshots to search
+// Filter: The search filter
+func (this *CometAPIClient) UserWebDispatcherSearchSnapshots(TargetID string, DestinationID string, SnapshotIDs []string, Filter SearchClause) (*SearchSnapshotsResponse, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	data["TargetID"] = []string{TargetID}
+
+	data["DestinationID"] = []string{DestinationID}
+
+	b, err = json.Marshal(SnapshotIDs)
+	if err != nil {
+		return nil, err
+	}
+	data["SnapshotIDs"] = []string{string(b)}
+
+	b, err = json.Marshal(Filter)
+	if err != nil {
+		return nil, err
+	}
+	data["Filter"] = []string{string(b)}
+
+	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/search-snapshots", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &SearchSnapshotsResponse{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err
