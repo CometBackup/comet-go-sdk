@@ -16,10 +16,10 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "23.3.5"
+const APPLICATION_VERSION string = "23.3.7"
 const APPLICATION_VERSION_MAJOR int = 23
 const APPLICATION_VERSION_MINOR int = 3
-const APPLICATION_VERSION_REVISION int = 5
+const APPLICATION_VERSION_REVISION int = 7
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
@@ -39,39 +39,39 @@ const BRANDINGSTYLETYPE_CUSTOM_LOGO int = 3
 const BRANDINGSTYLETYPE_CUSTOM_TEXT int = 2
 const BRANDINGSTYLETYPE_DEFAULT int = 1
 
-// ClientBrandingBuildMode: Public-Doc: The software client will be custom-built by this Comet
-// Server, allowing custom branding, default server URL, and codesigning.
+// ClientBrandingBuildMode: The software client will be custom-built by this Comet Server, allowing
+// custom branding, default server URL, and codesigning.
 const CLIENTBRANDINGBUILD_CUSTOM ClientBrandingBuildMode = 0
 
-// ClientBrandingBuildMode: Public-Doc: A pre-built software client will be served, with
-// Comet-branding, no server URL, and Comet codesigning.
+// ClientBrandingBuildMode: A pre-built software client will be served, with Comet-branding, no
+// server URL, and Comet codesigning.
 const CLIENTBRANDINGBUILD_PREBUILT ClientBrandingBuildMode = 1
 
-// CompressMode:
+// CompressMode
 const COMPRESS_DEFAULT CompressMode = COMPRESS_LVL_4
 
-// CompressMode:
+// CompressMode
 const COMPRESS_INVALID CompressMode = 0
 
-// CompressMode:
+// CompressMode
 const COMPRESS_LVL_1 CompressMode = 1
 
-// CompressMode:
+// CompressMode
 const COMPRESS_LVL_2 CompressMode = 2
 
-// CompressMode:
+// CompressMode
 const COMPRESS_LVL_3 CompressMode = 3
 
-// CompressMode:
+// CompressMode
 const COMPRESS_LVL_4 CompressMode = 4
 
-// CompressMode:
+// CompressMode
 const COMPRESS_LVL_5 CompressMode = 5
 
-// CompressMode:
+// CompressMode
 const COMPRESS_MAX CompressMode = COMPRESS_LVL_5
 
-// LanguageCode:
+// LanguageCode
 const DEFAULT_LANGUAGE LanguageCode = "en_US"
 const DEFAULT_TIMEZONE string = "UTC"
 const DESTINATIONTYPE_ALL uint64 = 1101
@@ -88,86 +88,125 @@ const DESTINATIONTYPE_STORJ uint64 = 1009
 const DESTINATIONTYPE_SWIFT uint64 = 1007
 const DESTINATIONTYPE___INVALID uint64 = 0
 
-// SftpAuthMode:
+// SftpAuthMode
 const DESTINATION_SFTP_AUTHMODE_NATIVE SftpAuthMode = 0
 
-// SftpAuthMode:
+// SftpAuthMode
 const DESTINATION_SFTP_AUTHMODE_PASSWORD SftpAuthMode = 1
 
-// SftpAuthMode:
+// SftpAuthMode
 const DESTINATION_SFTP_AUTHMODE_PRIVATEKEY SftpAuthMode = 2
 
-// EmailReportType:
+// EmailReportType
 const EMAILREPORTTYPE_GROUPED_STATUS EmailReportType = 2
 
-// EmailReportType:
+// EmailReportType
 const EMAILREPORTTYPE_IMMEDIATE EmailReportType = 0
 
-// EmailReportType:
+// EmailReportType
 const EMAILREPORTTYPE_RECENT_ACTIVITY EmailReportType = 3
 
-// EmailReportType:
+// EmailReportType
 const EMAILREPORTTYPE_SUMMARY EmailReportType = 1
 
-// EmailDeliveryType: Legacy alias
+// EmailDeliveryType: Legacy alias for EMAIL_DELIVERY_MX_DIRECT
 const EMAIL_DELIVERY_BUILTIN EmailDeliveryType = EMAIL_DELIVERY_MX_DIRECT
 
-// EmailDeliveryType:
+// EmailDeliveryType
 const EMAIL_DELIVERY_DISABLED EmailDeliveryType = "disabled"
 
-// EmailDeliveryType:
+// EmailDeliveryType: If this is for the top-level Organization, email is disabled. If this is for
+// an Organization, use the parent's email settings.
 const EMAIL_DELIVERY_INHERIT EmailDeliveryType = ""
 
-// EmailDeliveryType:
+// EmailDeliveryType
 const EMAIL_DELIVERY_MX_DIRECT EmailDeliveryType = "builtin"
 
-// EmailDeliveryType: changed for clarity
+// EmailDeliveryType: Legacy alias for EMAIL_DELIVERY_INHERIT
 // Deprecated: This const has been deprecated since Comet version 22.12.1
 const EMAIL_DELIVERY_NONE EmailDeliveryType = EMAIL_DELIVERY_INHERIT
 
-// EmailDeliveryType:
+// EmailDeliveryType
 const EMAIL_DELIVERY_SMTP EmailDeliveryType = "smtp"
 
-// EmailDeliveryType:
+// EmailDeliveryType
 const EMAIL_DELIVERY_SMTP_SSL EmailDeliveryType = "smtp-ssl"
+
+// The Comet Server is currently searching through email report configuration, to determine when the
+// next email report is due to be sent.
 const EMAIL_WORKER_STATE_CALCULATING int = 2
+
+// The Comet Server is still starting up and has not yet checked whether any email reports are due
+// to be sent.
 const EMAIL_WORKER_STATE_NOT_STARTED int = 0
+
+// The Comet Server is currently sending a scheduled email report.
 const EMAIL_WORKER_STATE_SENDING int = 4
+
+// The Comet Server is still starting up and has not yet checked whether any email reports are due
+// to be sent.
 const EMAIL_WORKER_STATE_STARTED int = 1
+
+// The Comet Server knows when the next scheduled email report is due to be sent, and is waiting
+// until that time.
 const EMAIL_WORKER_STATE_WAITING int = 3
 const ENCRYPTIONMETHOD_UNCONFIGURED uint64 = 0
+
+// Microsoft Exchange Server
 const ENGINE_BUILTIN_EXCHANGEEDB string = "engine1/exchangeedb"
+
+// Files and Folders
 const ENGINE_BUILTIN_FILE string = "engine1/file"
+
+// Microsoft Hyper-V
 const ENGINE_BUILTIN_HYPERV string = "engine1/hyperv"
+
+// MongoDB
 const ENGINE_BUILTIN_MONGODB string = "engine1/mongodb"
+
+// Office 365
 const ENGINE_BUILTIN_MSOFFICE string = "engine1/winmsofficemail"
+
+// Microsoft SQL Server
 const ENGINE_BUILTIN_MSSQL string = "engine1/mssql"
+
+// MySQL
 const ENGINE_BUILTIN_MYSQL string = "engine1/mysql"
+
+// Program Output
 const ENGINE_BUILTIN_STDOUT string = "engine1/stdout"
+
+// Windows Server System State
 const ENGINE_BUILTIN_SYSTEMSTATE string = "engine1/systemstate"
+
+// Application-Aware Writer
 const ENGINE_BUILTIN_VSSWRITER string = "engine1/vsswriter"
+
+// Disk Image
 const ENGINE_BUILTIN_WINDISK string = "engine1/windisk"
+
+// Windows System Backup
 const ENGINE_BUILTIN_WINDOWSSYSTEM string = "engine1/windowssystem"
 
-// FtpsModeType:
+// FtpsModeType
 const FTPS_MODE_EXPLICIT FtpsModeType = 2
 
-// FtpsModeType:
+// FtpsModeType
 const FTPS_MODE_IMPLICIT FtpsModeType = 1
 
-// FtpsModeType:
+// FtpsModeType
 const FTPS_MODE_PLAINTEXT FtpsModeType = 0
 
-// JobClassification:
+// JobClassification
 const JOB_CLASSIFICATION_BACKUP JobClassification = 4001
 
-// JobClassification:
+// JobClassification
 const JOB_CLASSIFICATION_DEEPVERIFY JobClassification = 4010
 
 // JobClassification: A specific snapshot has been deleted via the Restore wizard.
 const JOB_CLASSIFICATION_DELETE_CUSTOM JobClassification = 4005
 
-// JobClassification:
+// JobClassification
 const JOB_CLASSIFICATION_IMPORT JobClassification = 4008
 
 // JobClassification: Repair indexes
@@ -176,7 +215,7 @@ const JOB_CLASSIFICATION_REINDEX JobClassification = 4009
 // JobClassification: Explicitly re-measuring the size of a Vault (right-click > Advanced menu).
 const JOB_CLASSIFICATION_REMEASURE JobClassification = 4006
 
-// JobClassification:
+// JobClassification
 const JOB_CLASSIFICATION_RESTORE JobClassification = 4002
 
 // JobClassification: Automatic or manual retention cleaning pass.
@@ -185,7 +224,7 @@ const JOB_CLASSIFICATION_RETENTION JobClassification = 4003
 // JobClassification: Software uninstall
 const JOB_CLASSIFICATION_UNINSTALL JobClassification = 4011
 
-// JobClassification:
+// JobClassification
 const JOB_CLASSIFICATION_UNKNOWN JobClassification = 4000
 
 // JobClassification: Another process needed exclusive Vault access (e.g. for retention) but the
@@ -195,43 +234,43 @@ const JOB_CLASSIFICATION_UNLOCK JobClassification = 4004
 // JobClassification: Software update
 const JOB_CLASSIFICATION_UPDATE JobClassification = 4007
 
-// JobClassification:
+// JobClassification
 const JOB_CLASSIFICATION__MAX JobClassification = 4999
 
-// JobClassification:
+// JobClassification
 const JOB_CLASSIFICATION__MIN JobClassification = 4000
 
-// JobStatus:
+// JobStatus
 const JOB_STATUS_FAILED_ABANDONED JobStatus = 7007
 
-// JobStatus:
+// JobStatus
 const JOB_STATUS_FAILED_CANCELLED JobStatus = 7005
 
-// JobStatus:
+// JobStatus
 const JOB_STATUS_FAILED_ERROR JobStatus = 7002
 
-// JobStatus:
+// JobStatus
 const JOB_STATUS_FAILED_QUOTA JobStatus = 7003
 
-// JobStatus:
+// JobStatus
 const JOB_STATUS_FAILED_SCHEDULEMISSED JobStatus = 7004
 
-// JobStatus:
+// JobStatus
 const JOB_STATUS_FAILED_SKIPALREADYRUNNING JobStatus = 7006
 
-// JobStatus:
+// JobStatus
 const JOB_STATUS_FAILED_TIMEOUT JobStatus = 7000
 
-// JobStatus:
+// JobStatus
 const JOB_STATUS_FAILED_WARNING JobStatus = 7001
 
-// JobStatus:
+// JobStatus
 const JOB_STATUS_FAILED__MAX JobStatus = 7999
 
-// JobStatus:
+// JobStatus
 const JOB_STATUS_FAILED__MIN JobStatus = 7000
 
-// JobStatus:
+// JobStatus
 const JOB_STATUS_RUNNING_ACTIVE JobStatus = 6001
 
 // JobStatus: Unused
@@ -240,37 +279,37 @@ const JOB_STATUS_RUNNING_INDETERMINATE JobStatus = 6000
 // JobStatus: A backup job that was marked as stopped or abandoned, but has somehow continued to run
 const JOB_STATUS_RUNNING_REVIVED JobStatus = 6002
 
-// JobStatus:
+// JobStatus
 const JOB_STATUS_RUNNING__MAX JobStatus = 6999
 
-// JobStatus:
+// JobStatus
 const JOB_STATUS_RUNNING__MIN JobStatus = 6000
 
-// JobStatus:
+// JobStatus
 const JOB_STATUS_STOP_SUCCESS JobStatus = 5000
 
-// JobStatus:
+// JobStatus
 const JOB_STATUS_STOP_SUCCESS__MAX JobStatus = 5999
 
-// JobStatus:
+// JobStatus
 const JOB_STATUS_STOP_SUCCESS__MIN JobStatus = 5000
 
-// LDAPSecurityMethod:
+// LDAPSecurityMethod
 const LDAPSECURITYMETHOD_LDAPS LDAPSecurityMethod = "ldaps"
 
-// LDAPSecurityMethod:
+// LDAPSecurityMethod
 const LDAPSECURITYMETHOD_PLAIN LDAPSecurityMethod = "plain"
 
-// LDAPSecurityMethod:
+// LDAPSecurityMethod
 const LDAPSECURITYMETHOD_STARTTLS LDAPSecurityMethod = "starttls"
 
-// MacOSCodesignLevel:
+// MacOSCodesignLevel
 const MACOSCODESIGN_LEVEL_SIGN MacOSCodesignLevel = 0
 
-// MacOSCodesignLevel:
+// MacOSCodesignLevel
 const MACOSCODESIGN_LEVEL_SIGN_NOTARISE MacOSCodesignLevel = 1
 
-// MacOSCodesignLevel:
+// MacOSCodesignLevel
 const MACOSCODESIGN_LEVEL_SIGN_NOTARISE_STAPLE MacOSCodesignLevel = 2
 const MIXED_VIRTUAL_ACCOUNT_TYPE_GROUP uint = 2
 const MIXED_VIRTUAL_ACCOUNT_TYPE_SHAREPOINT_ONLY uint = 4
@@ -278,22 +317,22 @@ const MIXED_VIRTUAL_ACCOUNT_TYPE_TEAM_GROUP uint = 3
 const MIXED_VIRTUAL_ACCOUNT_TYPE_USER uint = 1
 const MONGODB_DEFAULT_PORT int = 27017
 
-// MSSQLAuthMode:
+// MSSQLAuthMode
 const MSSQL_AUTH_NATIVE MSSQLAuthMode = "native"
 
-// MSSQLAuthMode:
+// MSSQLAuthMode
 const MSSQL_AUTH_WINDOWS MSSQLAuthMode = "windows"
 
-// MSSQLMethod:
+// MSSQLMethod: On Windows x86_64, use an x86_32 OLEDB driver.
 const MSSQL_METHOD_OLEDB_32 MSSQLMethod = "OLEDB_32"
 
-// MSSQLMethod:
+// MSSQLMethod: On Windows x86_64, use the native x86_64 driver.
 const MSSQL_METHOD_OLEDB_NATIVE MSSQLMethod = "OLEDB_NATIVE"
 
-// MSSQLRestoreOpt:
+// MSSQLRestoreOpt
 const MSSQL_RESTORE_NORECOVERY MSSQLRestoreOpt = "NO_RECOVERY"
 
-// MSSQLRestoreOpt:
+// MSSQLRestoreOpt
 const MSSQL_RESTORE_RECOVERY MSSQLRestoreOpt = "RECOVERY"
 const OFFICE365_REGION_CHINA string = "ChinaCloud"
 const OFFICE365_REGION_GERMANY string = "GermanCloud"
@@ -301,135 +340,140 @@ const OFFICE365_REGION_PUBLIC string = "GlobalPublicCloud"
 const OFFICE365_REGION_US_DOD string = "USGovtGccDoDCloud"
 const OFFICE365_REGION_US_GOVT string = "USGovtGccCloud"
 
-// ExtraFileExclusionOSRestriction:
+// ExtraFileExclusionOSRestriction: Applies to any device
 const OS_ANY ExtraFileExclusionOSRestriction = 0
 
-// ExtraFileExclusionOSRestriction:
+// ExtraFileExclusionOSRestriction: Applies to Linux devices (including Synology DSM), regardless of
+// CPU type
 const OS_ONLY_LINUX ExtraFileExclusionOSRestriction = 5
 
-// ExtraFileExclusionOSRestriction:
+// ExtraFileExclusionOSRestriction: Applies to macOS devices, regardless of CPU type
 const OS_ONLY_MACOS ExtraFileExclusionOSRestriction = 4
 
-// ExtraFileExclusionOSRestriction:
+// ExtraFileExclusionOSRestriction: Applies to all Windows devices, regardless of CPU type
 const OS_ONLY_WINDOWS ExtraFileExclusionOSRestriction = 1
 
-// ExtraFileExclusionOSRestriction:
+// ExtraFileExclusionOSRestriction: Applies to Windows devices with x86_32 CPU
 const OS_ONLY_WINDOWS_X8632 ExtraFileExclusionOSRestriction = 2
 
-// ExtraFileExclusionOSRestriction:
+// ExtraFileExclusionOSRestriction: Applies to Windows devices with x86_64 CPU
 const OS_ONLY_WINDOWS_X8664 ExtraFileExclusionOSRestriction = 3
+
+// When resetting a password with the API, set the PasswordFormat to this value. The Comet Server
+// will re-hash the credential automatically.
 const PASSWORD_FORMAT_PLAINTEXT int = 0
 
-// PSAType:
+// PSAType
 const PSA_TYPE_GENERIC PSAType = 0
 
-// PSAType:
+// PSAType
 const PSA_TYPE_GRADIENT PSAType = 1
 const RELEASE_CODENAME string = "Voyager"
 
-// RemoteServerType:
+// RemoteServerType
 const REMOTESERVER_AWS RemoteServerType = "aws"
 
-// RemoteServerType:
+// RemoteServerType
 const REMOTESERVER_B2 RemoteServerType = "b2"
 
-// RemoteServerType:
+// RemoteServerType
 const REMOTESERVER_COMET RemoteServerType = "comet"
 
-// RemoteServerType:
+// RemoteServerType
 const REMOTESERVER_CUSTOM RemoteServerType = "custom"
 
-// RemoteServerType:
+// RemoteServerType
 const REMOTESERVER_IDRIVEE2 RemoteServerType = "idrivee2"
 
-// RemoteServerType:
+// RemoteServerType
 const REMOTESERVER_LDAP RemoteServerType = "ldap"
 
-// RemoteServerType:
+// RemoteServerType
 const REMOTESERVER_S3_GENERIC RemoteServerType = "s3"
 
-// RemoteServerType:
+// RemoteServerType
 const REMOTESERVER_STORJ RemoteServerType = "storj"
 
-// RemoteServerType:
+// RemoteServerType
 const REMOTESERVER_WASABI RemoteServerType = "wasabi"
 
-// ReplicatorDisplayClass:
+// ReplicatorDisplayClass
 const REPLICATOR_DISPLAYCLASS_STORAGE ReplicatorDisplayClass = 100
 
-// ReplicatorDisplayClass:
+// ReplicatorDisplayClass
 const REPLICATOR_DISPLAYCLASS_USER ReplicatorDisplayClass = 101
 
-// ReplicatorState:
+// ReplicatorState
 const REPLICATOR_STATE_FILE_LIST_SYNC_FINISHED ReplicatorState = 4
 
-// ReplicatorState:
+// ReplicatorState
 const REPLICATOR_STATE_FILE_LIST_SYNC_RUNNING ReplicatorState = 2
 
-// ReplicatorState:
+// ReplicatorState
 const REPLICATOR_STATE_FILE_LIST_WORKER_STARTED ReplicatorState = 1
 
-// ReplicatorState:
+// ReplicatorState
 const REPLICATOR_STATE_NONE ReplicatorState = 0
 
-// ReplicatorState:
+// ReplicatorState
 const REPLICATOR_STATE_WORKERS_STARTED ReplicatorState = 8
 
 // RestoreArchiveFormat: SquashFS container
 const RESTOREARCHIVEFORMAT_SQFS RestoreArchiveFormat = 3
 
-// RestoreArchiveFormat:
+// RestoreArchiveFormat
 const RESTOREARCHIVEFORMAT_TAR RestoreArchiveFormat = 0
 
-// RestoreArchiveFormat:
+// RestoreArchiveFormat
 const RESTOREARCHIVEFORMAT_TARGZ RestoreArchiveFormat = 1
 
-// RestoreArchiveFormat:
+// RestoreArchiveFormat
 const RESTOREARCHIVEFORMAT_TARZSTD RestoreArchiveFormat = 4
 
-// RestoreArchiveFormat:
+// RestoreArchiveFormat
 const RESTOREARCHIVEFORMAT_ZIP RestoreArchiveFormat = 2
 
-// RestoreType:
+// RestoreType
 const RESTORETYPE_FILE RestoreType = 0
 
-// RestoreType:
+// RestoreType
 const RESTORETYPE_FILE_ARCHIVE RestoreType = 5
 
-// RestoreType:
+// RestoreType
 const RESTORETYPE_INVALID RestoreType = -1
 
-// RestoreType:
+// RestoreType
 const RESTORETYPE_MSSQL RestoreType = 11
 
-// RestoreType:
+// RestoreType
 const RESTORETYPE_MYSQL RestoreType = 10
 
-// RestoreType:
+// RestoreType
 const RESTORETYPE_NULL RestoreType = 1
 
-// RestoreType:
+// RestoreType
 const RESTORETYPE_OFFICE365_CLOUD RestoreType = 6
 
-// RestoreType:
+// RestoreType
 const RESTORETYPE_PROCESS_ARCHIVE RestoreType = 3
 
-// RestoreType:
+// RestoreType
 const RESTORETYPE_PROCESS_PERFILE RestoreType = 2
 
-// RestoreType: RESTORETYPE_PROCESS_ARCHIVE
+// RestoreType: Legacy name alias - Prefer to use RESTORETYPE_PROCESS_ARCHIVE since multiple archive
+// file formats are supported within this single RESTORETYPE_
 const RESTORETYPE_PROCESS_TARBALL RestoreType = 3
 
-// RestoreType:
+// RestoreType
 const RESTORETYPE_VMDK_FILE RestoreType = 7
 
-// RestoreType:
+// RestoreType
 const RESTORETYPE_VMDK_FILE_ARCHIVE RestoreType = 9
 
-// RestoreType:
+// RestoreType
 const RESTORETYPE_VMDK_FILE_NULL RestoreType = 8
 
-// RestoreType:
+// RestoreType
 const RESTORETYPE_WINDISK RestoreType = 4
 
 // RetentionMode: Delete everything except for jobs matching the ranges in RetentionPolicy.Ranges.
@@ -467,54 +511,53 @@ const RETENTIONRANGE_MOST_RECENT_X_JOBS RetentionRangeType = 900
 // RetentionRangeType: Uses Timestamp
 const RETENTIONRANGE_NEWER_THAN_X RetentionRangeType = 901
 
-// RetentionRangeType:
+// RetentionRangeType
 const RETENTIONRANGE__HIGHEST RetentionRangeType = 909
 
-// RetentionRangeType:
+// RetentionRangeType
 const RETENTIONRANGE__LOWEST RetentionRangeType = 900
 
-// RetentionRangeType: Removed
+// RetentionRangeType
+// Deprecated: This const has been deprecated since Comet version 17.2.0
 const RETENTIONRANGE__RESERVED904 RetentionRangeType = 904
 
-// seconds past 00:00 local time
+// SecondsPast is the number of seconds past 00:00, in the device's local timezone.
 const SCHEDULE_FREQUENCY_DAILY uint64 = 8011
 const SCHEDULE_FREQUENCY_HIGHEST uint64 = 8015
 
-// seconds past *:00 local time
+// SecondsPast is the number of seconds past *:00, in the device's local timezone.
 const SCHEDULE_FREQUENCY_HOURLY uint64 = 8012
 const SCHEDULE_FREQUENCY_LOWEST uint64 = 8010
 
-// seconds past 00:00 1st, local time
+// SecondsPast is the number of seconds past 00:00 1st, in the device's local timezone.
 const SCHEDULE_FREQUENCY_MONTHLY uint64 = 8014
 
-// epoch time
+// SecondsPast should be a Unix timestamp, in seconds
 const SCHEDULE_FREQUENCY_ONCEONLY uint64 = 8010
 
-// SecondsPast: number of seconds per period. Offset: Shunt seconds after unix epoch
+// SecondsPast is the number of seconds per period. Offset: Shunt seconds after unix epoch
 const SCHEDULE_FREQUENCY_PERIODIC uint64 = 8015
 
-// seconds past 00:00 Sunday, local time
+// SecondsPast is the number of seconds past 00:00 Sunday, in the device's local timezone.
 const SCHEDULE_FREQUENCY_WEEKLY uint64 = 8013
-
-// 2^50 (1 << 50)
 const SCHEDULE_MAXINT int = 1125899906842624
 
 // Maximum random delay (5 hours)
 const SCHEDULE_MAX_RANDOM_DELAY_SECS int = 18000
 
-// SearchClauseType:
+// SearchClauseType
 const SEARCHCLAUSE_AND SearchClauseType = "and"
 
-// SearchClauseType:
+// SearchClauseType
 const SEARCHCLAUSE_NOT_AND SearchClauseType = "not_and"
 
-// SearchClauseType:
+// SearchClauseType
 const SEARCHCLAUSE_NOT_OR SearchClauseType = "not_or"
 
-// SearchClauseType:
+// SearchClauseType
 const SEARCHCLAUSE_OR SearchClauseType = "or"
 
-// SearchClauseType:
+// SearchClauseType
 const SEARCHCLAUSE_RULE SearchClauseType = ""
 const SEARCHOPERATOR_BOOL_IS string = "bool_is"
 const SEARCHOPERATOR_BOOL_NIS string = "bool_nis"
@@ -548,28 +591,28 @@ const SERVICE_MAIL uint = 4
 const SERVICE_ONEDRIVE uint = 16
 const SERVICE_SHAREPOINT uint = 8
 
-// DefaultSettingMode:
+// DefaultSettingMode
 const SETTING_ENFORCED_OFF DefaultSettingMode = 4
 
-// DefaultSettingMode:
+// DefaultSettingMode
 const SETTING_ENFORCED_ON DefaultSettingMode = 3
 
-// DefaultSettingMode:
+// DefaultSettingMode
 const SETTING_OPTIONAL_DEFAULT_OFF DefaultSettingMode = 2
 
-// DefaultSettingMode:
+// DefaultSettingMode
 const SETTING_OPTIONAL_DEFAULT_ON DefaultSettingMode = 1
 
-// DefaultSettingMode:
+// DefaultSettingMode
 const SETTING_SYSTEM_DEFAULT DefaultSettingMode = 0
 
-// Severity:
+// Severity
 const SEVERITY_ERROR Severity = "E"
 
-// Severity:
+// Severity
 const SEVERITY_INFO Severity = "I"
 
-// Severity:
+// Severity
 const SEVERITY_WARNING Severity = "W"
 
 // StreamableEventType: Data is the profile object
@@ -584,151 +627,163 @@ const SEVT_ACCOUNT_UPDATED StreamableEventType = 4102
 // StreamableEventType: Data is the string bucket ref
 const SEVT_BUCKET_NEW StreamableEventType = 4300
 
-// StreamableEventType:
+// StreamableEventType
 const SEVT_JOB_COMPLETED StreamableEventType = 4201
 
-// StreamableEventType:
+// StreamableEventType
 const SEVT_JOB_NEW StreamableEventType = 4200
 
-// StreamableEventType: Event is emitted when the webhook is registered, or when the server starts
-// up. The Data associated is ServerMetaVersionInfo
+// StreamableEventType: This event is emitted when the webhook is registered, or when the server
+// starts up. The Data associated is ServerMetaVersionInfo
 const SEVT_META_HELLO StreamableEventType = 4000
 
-// StreamableEventType:
+// StreamableEventType
 const SEVT__MAX StreamableEventType = 4999
 
-// StreamableEventType:
+// StreamableEventType
 const SEVT__MIN StreamableEventType = 4000
 
-// SSHAuthMode:
+// SSHAuthMode
 const SSHCONNECTION_AUTHMODE_PASSWORD SSHAuthMode = 1
 
-// SSHAuthMode: n.b. change values
+// SSHAuthMode
 const SSHCONNECTION_AUTHMODE_PRIVATEKEY SSHAuthMode = 2
 
-// SSHAuthMode:
+// SSHAuthMode
 const SSHCONNECTION_AUTHMODE__INVALID SSHAuthMode = 0
 
-// StoredObjectType:
+// StoredObjectType
 const STOREDOBJECTTYPE_DIRECTORY StoredObjectType = "dir"
 
-// StoredObjectType: "dir"
+// StoredObjectType
 const STOREDOBJECTTYPE_EMAILFOLDER StoredObjectType = "mailfolder"
 
-// StoredObjectType: "file"
+// StoredObjectType
 const STOREDOBJECTTYPE_EMAILMESSAGE StoredObjectType = "emailmessage"
 
-// StoredObjectType:
+// StoredObjectType
 const STOREDOBJECTTYPE_FILE StoredObjectType = "file"
 
-// StoredObjectType:
+// StoredObjectType
 const STOREDOBJECTTYPE_MSSITE StoredObjectType = "mssite"
 
-// StoredObjectType:
+// StoredObjectType
 const STOREDOBJECTTYPE_MSSITEITEMENTITY StoredObjectType = "mssiteitementity"
 
-// StoredObjectType:
+// StoredObjectType
 const STOREDOBJECTTYPE_MSSITELISTDRIVEENTITY StoredObjectType = "mssitelistdriveentity"
 
-// StoredObjectType:
+// StoredObjectType
 const STOREDOBJECTTYPE_MSSITELISTENTITY StoredObjectType = "mssitelistentity"
 
-// StoredObjectType:
+// StoredObjectType
 const STOREDOBJECTTYPE_MSSITE_TEAM StoredObjectType = "mssiteteam"
 
-// StoredObjectType: "dir"
+// StoredObjectType
 const STOREDOBJECTTYPE_OFFICECALENDAR StoredObjectType = "calendar"
 
-// StoredObjectType: "file"
+// StoredObjectType
 const STOREDOBJECTTYPE_OFFICECALENDAREVENT StoredObjectType = "calendarevent"
 
-// StoredObjectType: "file"
+// StoredObjectType
 const STOREDOBJECTTYPE_OFFICECONTACT StoredObjectType = "contact"
 
-// StoredObjectType: "dir"
+// StoredObjectType
 const STOREDOBJECTTYPE_OFFICECONTACTFOLDER StoredObjectType = "contactfolder"
 
-// StoredObjectType:
+// StoredObjectType
 const STOREDOBJECTTYPE_SYMLINK StoredObjectType = "symlink"
 
-// StoredObjectType:
+// StoredObjectType
 const STOREDOBJECTTYPE_UNIXBLOCKDEVICE StoredObjectType = "dev"
 
-// StoredObjectType:
+// StoredObjectType
 const STOREDOBJECTTYPE_UNIXCHARDEVICE StoredObjectType = "chardev"
 
-// StoredObjectType:
+// StoredObjectType
 const STOREDOBJECTTYPE_UNIXFIFO StoredObjectType = "fifo"
 
-// StoredObjectType:
+// StoredObjectType
 const STOREDOBJECTTYPE_UNIXSOCKET StoredObjectType = "socket"
 
-// StoredObjectType:
+// StoredObjectType
 const STOREDOBJECTTYPE_VHDX_GPT_PARTITION StoredObjectType = "vhdxpartitiongpt"
 
-// StoredObjectType:
+// StoredObjectType
 const STOREDOBJECTTYPE_VHDX_MBR_PARTITION StoredObjectType = "vhdxpartitionmbr"
 
-// StoredObjectType:
+// StoredObjectType
 const STOREDOBJECTTYPE_VIRTUALIMAGE_DISK StoredObjectType = "virtualimagedisk"
 
-// StoredObjectType:
+// StoredObjectType
 const STOREDOBJECTTYPE_VMDK_DIRECTORY StoredObjectType = "vmdkdir"
 
-// StoredObjectType:
+// StoredObjectType
 const STOREDOBJECTTYPE_VMDK_FILE StoredObjectType = "vmdkfile"
 
-// StoredObjectType:
+// StoredObjectType
 const STOREDOBJECTTYPE_VMDK_SYMLINK StoredObjectType = "vmdksymlink"
 
-// StoredObjectType:
+// StoredObjectType
 const STOREDOBJECTTYPE_VMDK_WINEFS StoredObjectType = "vmdkwinefs"
 
-// StoredObjectType:
+// StoredObjectType
 const STOREDOBJECTTYPE_WINEFS StoredObjectType = "winefs"
+
+// If an API response returns in failure, but it includes this value in the
+// CometAPIResponseMessage->Message parameter, it indicates that your supplied authentication was
+// insufficient, and you must supply additional two-factor authentication credentials.
 const TOTPRequiredError string = "ERR_TOTP_REQUIRED"
 
-// UpdateStatus:
+// UpdateStatus: The selected device does not meet the filter criteria from the Bulk Update
+// Campaign's configuration.
 const UPDATESTATUS_INELIGIBLE UpdateStatus = 1
 
-// UpdateStatus:
+// UpdateStatus
 const UPDATESTATUS_NOT_SEEN UpdateStatus = 0
 
-// UpdateStatus:
+// UpdateStatus
 const UPDATESTATUS_PENDING UpdateStatus = 2
 
-// UpdateStatus:
+// UpdateStatus: The device has made a live connection and it meets the filter criteria. A live
+// connection message has been sent asking it to perform the software upgrade.
 const UPDATESTATUS_REQUEST_MADE UpdateStatus = 3
 
-// UpdateStatus:
+// UpdateStatus: The device has successfully updated to the target version.
 const UPDATESTATUS_UPDATE_CONFIRMED UpdateStatus = 5
 
-// UpdateStatus: Device reconnected with bad version
+// UpdateStatus: An update signal was sent to the device, but when it reconnected, it did not
+// advertise the target software version. It's likely that the update failed - please check the
+// device's Update log for more information.
 const UPDATESTATUS_UPDATE_FAILED UpdateStatus = 4
+
+// If an API response returns in failure, but it includes this value in the
+// CometAPIResponseMessage->Message parameter, it indicates that the specified Device ID was invalid
+// or not found.
 const UnknownDeviceError string = "ERR_UNKNOWN_DEVICE"
 const UnsupportVhdxFileSystem string = "ERR_UNSUPPORT_VHDX_FILE_SYSTEM"
 const UnsupportVmdkFileSystem string = "ERR_UNSUPPORT_VMDK_FILE_SYSTEM"
 const VhdxPartitonReadErrMsg string = "ERR_VHDX_PARTITION"
 
-// WebAuthnDeviceType:
+// WebAuthnDeviceType
 const WEBAUTHN_DEVICE_TYPE__ANDROID WebAuthnDeviceType = 2
 
-// WebAuthnDeviceType:
+// WebAuthnDeviceType
 const WEBAUTHN_DEVICE_TYPE__APPLE WebAuthnDeviceType = 3
 
-// WebAuthnDeviceType:
+// WebAuthnDeviceType
 const WEBAUTHN_DEVICE_TYPE__HARDWARE_TOKEN WebAuthnDeviceType = 1
 
-// WebAuthnDeviceType:
+// WebAuthnDeviceType
 const WEBAUTHN_DEVICE_TYPE__TPM_GENERIC WebAuthnDeviceType = 4
 
-// WebAuthnDeviceType:
+// WebAuthnDeviceType
 const WEBAUTHN_DEVICE_TYPE__TPM_LINUX WebAuthnDeviceType = 6
 
-// WebAuthnDeviceType:
+// WebAuthnDeviceType
 const WEBAUTHN_DEVICE_TYPE__TPM_WINDOWS WebAuthnDeviceType = 5
 
-// WebAuthnDeviceType:
+// WebAuthnDeviceType
 const WEBAUTHN_DEVICE_TYPE__UNKNOWN WebAuthnDeviceType = 0
 
 // WindowsCodesignMethod: When upgrading from a version of Comet Server prior to 22.12.7, this
@@ -736,16 +791,17 @@ const WEBAUTHN_DEVICE_TYPE__UNKNOWN WebAuthnDeviceType = 0
 // Deprecated: This const has been deprecated since Comet version 22.12.7
 const WINDOWSCODESIGN_METHOD_AUTO WindowsCodesignMethod = 0
 
-// WindowsCodesignMethod:
+// WindowsCodesignMethod: Use a configured Azure Key Vault for Authenticode codesigning
 const WINDOWSCODESIGN_METHOD_AZUREKEYVAULT WindowsCodesignMethod = 4
 
-// WindowsCodesignMethod:
+// WindowsCodesignMethod: Do not perform Authenticode codesigning
 const WINDOWSCODESIGN_METHOD_DISABLED WindowsCodesignMethod = 1
 
-// WindowsCodesignMethod:
+// WindowsCodesignMethod: Use a configured PKCS#11 hardware security module (HSM) for Authenticode
+// codesigning
 const WINDOWSCODESIGN_METHOD_PKCS11HSM WindowsCodesignMethod = 3
 
-// WindowsCodesignMethod:
+// WindowsCodesignMethod: Use a configured PKCS#12 key file for Authenticode codesigning
 const WINDOWSCODESIGN_METHOD_PKCS12FILE WindowsCodesignMethod = 2
 
 //
@@ -798,6 +854,7 @@ type WebAuthnDeviceType int
 type WindowsCodesignMethod int
 
 type AddBucketResponseMessage struct {
+	// If the operation was successful, the status will be in the 200-299 range.
 	Status       int
 	Message      string
 	NewBucketID  string
@@ -816,6 +873,7 @@ type AdminEmailOptions struct {
 }
 
 type AdminResourceResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
 	Status       int
 	Message      string
 	ResourceHash string
@@ -915,17 +973,23 @@ type AzureDestinationLocation struct {
 	AZBAccountName string
 	AZBAccountKey  string
 	AZBContainer   string
-	AZBRealm       string
-	AZBPrefix      string
+	// The base URL for the Azure Blob Storage service. Leave blank to use the global default URL.
+	AZBRealm  string
+	AZBPrefix string
 }
 
 type B2DestinationLocation struct {
+	// Key ID
 	AccountID string `json:",omitempty"`
-	Key       string `json:",omitempty"`
-	Bucket    string `json:",omitempty"`
-	Prefix    string `json:",omitempty"`
+	// Application Key
+	Key    string `json:",omitempty"`
+	Bucket string `json:",omitempty"`
+	Prefix string `json:",omitempty"`
 	// Deprecated: This member has been deprecated since Comet version 21.9.7
-	MaxConnections   int  `json:",omitempty"`
+	MaxConnections int `json:",omitempty"`
+	// Hide files instead of deleting them. This can be used for ransomware protection if (A) the B2
+	// credentials have the hideFile permission but not the deleteFile permission, and (B) you use the
+	// Backblaze B2 server-side lifecycle policies to clean up old hidden files.
 	HideDeletedFiles bool `json:",omitempty"`
 }
 
@@ -947,75 +1011,112 @@ type B2VirtualStorageRoleSettings struct {
 }
 
 type BackupJobAdvancedOptions struct {
-	SkipAlreadyRunning    bool
-	StopAfter             int64
-	LimitVaultSpeedBps    int64
+	SkipAlreadyRunning bool
+	// If Zero: disabled
+	StopAfter int64
+	// If Zero: disabled
+	LimitVaultSpeedBps int64
+	// Default disabled
 	ReduceDiskConcurrency bool
-	UseOnDiskIndexes      bool
+	// Default disabled
+	UseOnDiskIndexes bool
+	// Default disabled
 	AllowZeroFilesSuccess bool
-	AutoRetentionLevel    AutoRetentionLevel
+	// If Zero: default Automatic (BACKUPJOBAUTORETENTION_AUTOMATIC)
+	AutoRetentionLevel AutoRetentionLevel
 }
 
 type BackupJobDetail struct {
-	GUID                      string
-	Username                  string
-	Classification            JobClassification
-	Status                    JobStatus
-	StartTime                 int64
-	EndTime                   int64
-	SourceGUID                string
-	DestinationGUID           string
-	DeviceID                  string
-	SnapshotID                string `json:",omitempty"`
-	ClientVersion             string
-	TotalDirectories          int64
-	TotalFiles                int64
-	TotalSize                 int64
-	TotalChunks               int64
-	UploadSize                int64
-	DownloadSize              int64
-	TotalVmCount              int64             `json:",omitempty"`
-	TotalMailsCount           int64             `json:",omitempty"`
-	TotalSitesCount           int64             `json:",omitempty"`
-	TotalAccountsCount        int64             `json:",omitempty"`
-	TotalLicensedMailsCount   int64             `json:",omitempty"`
-	TotalUnlicensedMailsCount int64             `json:",omitempty"`
-	CancellationID            string            `json:",omitempty"`
-	Progress                  BackupJobProgress `json:",omitempty"`
-	DestinationSizeStart      SizeMeasurement   `json:",omitempty"`
-	DestinationSizeEnd        SizeMeasurement   `json:",omitempty"`
+	GUID           string
+	Username       string
+	Classification JobClassification
+	Status         JobStatus
+	// Unix timestamp in seconds
+	StartTime int64
+	// Unix timestamp in seconds. Will be zero if the job is still running.
+	EndTime int64
+	// The Protected Item that this job is for
+	SourceGUID string
+	// The Storage Vault that this job is for
+	DestinationGUID  string
+	DeviceID         string
+	SnapshotID       string `json:",omitempty"`
+	ClientVersion    string
+	TotalDirectories int64
+	TotalFiles       int64
+	TotalSize        int64
+	TotalChunks      int64
+	UploadSize       int64
+	DownloadSize     int64
+	// For Hyper-V and VMware backup jobs, the total number of virtual machines.
+	TotalVmCount int64 `json:",omitempty"`
+	// For Office 365 backup jobs, the total number of mailboxes.
+	TotalMailsCount int64 `json:",omitempty"`
+	// For Office 365 backup jobs, the total number of SharePoint sites.
+	TotalSitesCount int64 `json:",omitempty"`
+	// For Office 365 backup jobs, the calculated effective number of protected accounts.
+	TotalAccountsCount int64 `json:",omitempty"`
+	// For Office 365 backup jobs, the number of licensed mailboxes.
+	TotalLicensedMailsCount int64 `json:",omitempty"`
+	// For Office 365 backup jobs, the number of unlicensed mailboxes.
+	TotalUnlicensedMailsCount int64  `json:",omitempty"`
+	CancellationID            string `json:",omitempty"`
+	// If this backup job is still running, additional partial-progress information may be present in
+	// this field.
+	Progress BackupJobProgress `json:",omitempty"`
+	// The size of the Storage Vault, as measured at the start of the job.
+	DestinationSizeStart SizeMeasurement `json:",omitempty"`
+	// The size of the Storage Vault, as measured at the end of the job.
+	DestinationSizeEnd SizeMeasurement `json:",omitempty"`
 }
 
 type BackupJobProgress struct {
-	Counter      int64
-	SentTime     int64
+	Counter  int64
+	SentTime int64
+	// The typo is preserved for backwards-compatibility reasons.
 	RecievedTime int64
 	BytesDone    int64
 	ItemsDone    int64
 }
 
+// A backup rule connects one source Protected Item and one destination Storage Vault, with multiple
+// time schedules or event triggers
 type BackupRuleConfig struct {
-	Description           string
-	CreateTime            int64
-	ModifyTime            int64
-	PreExec               []string
-	ThawExec              []string
-	PostExec              []string
-	Source                string
-	Destination           string
-	SkipAlreadyRunning    bool
-	StopAfter             int64
-	LimitVaultSpeedBps    int64
+	Description string
+	// Unix timestamp in seconds
+	CreateTime int64
+	// Unix timestamp in seconds. The caller is responsible for updating this themselves.
+	ModifyTime int64
+	// Custom commands to run before the job
+	PreExec []string
+	// Custom commands to run after taking a disk snapshot
+	ThawExec []string
+	// Custom commands to run after the job
+	PostExec           []string
+	Source             string
+	Destination        string
+	SkipAlreadyRunning bool
+	// If Zero: disabled
+	StopAfter int64
+	// If Zero: disabled
+	LimitVaultSpeedBps int64
+	// Default disabled
 	ReduceDiskConcurrency bool
-	UseOnDiskIndexes      bool
+	// Default disabled
+	UseOnDiskIndexes bool
+	// Default disabled
 	AllowZeroFilesSuccess bool
-	AutoRetentionLevel    AutoRetentionLevel
-	Schedules             []ScheduleConfig
-	EventTriggers         BackupRuleEventTriggers
+	// If Zero: default Automatic (BACKUPJOBAUTORETENTION_AUTOMATIC)
+	AutoRetentionLevel AutoRetentionLevel
+	Schedules          []ScheduleConfig
+	EventTriggers      BackupRuleEventTriggers
 }
 
 type BackupRuleEventTriggers struct {
-	OnPCBoot                bool `json:",omitempty"`
+	// The "When PC Starts" option
+	OnPCBoot bool `json:",omitempty"`
+	// The "If the last job was Missed" option. In Comet 23.12.3 and later, this condition is evaluated
+	// when the PC starts and/or when the live connection is resumed.
 	OnPCBootIfLastJobMissed bool `json:",omitempty"`
 }
 
@@ -1103,42 +1204,49 @@ type BrandingProperties struct {
 }
 
 type BrowseDiskDrivesResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
 	Status  int
 	Message string
 	Disks   []DiskDrive
 }
 
 type BrowseEDBResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
 	Status    int
 	Message   string
 	Databases []EDBFileInfo
 }
 
 type BrowseHVResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
 	Status          int
 	Message         string
 	VirtualMachines []HyperVMachineInfo
 }
 
 type BrowseOffice365ListVirtualAccountsResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
 	Status  int
 	Message string
 	Objects []Office365MixedVirtualAccount
 }
 
 type BrowseOffice365ObjectsResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
 	Status  int
 	Message string
 	Objects []Office365ObjectInfo
 }
 
 type BrowseSQLServerResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
 	Status  int
 	Message string
 	Objects map[string]string
 }
 
 type BrowseVSSResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
 	Status     int
 	Message    string
 	VSSWriters map[string]VSSWriterInfo
@@ -1153,12 +1261,15 @@ type BucketProperties struct {
 }
 
 type BucketUsageInfo struct {
-	AccessKey       string
+	AccessKey string
+	// The servers where this bucket was found. The 0-based indexes here correspond to the entries
+	// inside ConstellationRoleOptions->Servers.
 	ExistsOnServers []int
 	InUseBy         []UserOnServer
 }
 
 type CometAPIResponseMessage struct {
+	// If the operation was successful, the status will be in the 200-299 range.
 	Status  int
 	Message string
 }
@@ -1191,8 +1302,9 @@ type ConstellationStats struct {
 type ConstellationStatusAPIResponse struct {
 	DeletionEnabled bool
 	Targets         []string
-	TargetNames     []string `json:",omitempty"`
-	Stats           ConstellationStats
+	// This field is available in Comet 18.6.2 and later.
+	TargetNames []string `json:",omitempty"`
+	Stats       ConstellationStats
 }
 
 type ContentMeasurement struct {
@@ -1211,6 +1323,7 @@ type CountJobsResponse struct {
 }
 
 type CreateGroupPolicyResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
 	Status     int
 	Message    string
 	PolicyHash string
@@ -1241,29 +1354,34 @@ type DefaultSourceWithOSRestriction struct {
 }
 
 type DestinationConfig struct {
-	Description                      string
-	CreateTime                       int64
-	ModifyTime                       int64
-	PreExec                          []string
-	ThawExec                         []string
-	PostExec                         []string
-	DestinationType                  uint64
-	CometServer                      string
-	CometBucket                      string
-	CometBucketKey                   string
-	S3Server                         string
-	S3UsesTLS                        bool
-	S3AccessKey                      string
-	S3SecretKey                      string
-	S3BucketName                     string
-	S3Subdir                         string
-	S3CustomRegion                   string
-	S3UsesV2Signing                  bool
-	S3RemoveDeleted                  bool
-	S3ObjectLockDays                 int
-	SFTPServer                       string
-	SFTPUsername                     string
-	SFTPRemotePath                   string
+	Description string
+	CreateTime  int64
+	ModifyTime  int64
+	// Custom commands to run before the job
+	PreExec []string
+	// Custom commands to run after taking a disk snapshot
+	ThawExec []string
+	// Custom commands to run after the job
+	PostExec        []string
+	DestinationType uint64
+	CometServer     string
+	CometBucket     string
+	CometBucketKey  string
+	S3Server        string
+	S3UsesTLS       bool
+	S3AccessKey     string
+	S3SecretKey     string
+	S3BucketName    string
+	S3Subdir        string
+	S3CustomRegion  string
+	// If true, use legacy v2 signing. If false (default), use modern v4 signing
+	S3UsesV2Signing  bool
+	S3RemoveDeleted  bool
+	S3ObjectLockDays int
+	SFTPServer       string
+	SFTPUsername     string
+	SFTPRemotePath   string
+	// One of the DESTINATION_SFTP_AUTHMODE_ constants
 	SFTPAuthMode                     SftpAuthMode
 	SFTPPassword                     string
 	SFTPPrivateKey                   string
@@ -1274,52 +1392,62 @@ type DestinationConfig struct {
 	FTPPassword                      string
 	FTPBaseUseHomeDirectory          bool
 	FTPCustomBaseDirectory           string
-	FTPSMode                         FtpsModeType
-	FTPPort                          int
-	FTPMaxConnections                int
-	FTPAcceptInvalidSSL              bool
-	AZBAccountName                   string
-	AZBAccountKey                    string
-	AZBContainer                     string
-	AZBRealm                         string
-	AZBPrefix                        string
-	LocalcopyPath                    string
-	LocalcopyWinSMBUsername          string
-	LocalcopyWinSMBPassword          string
-	LocalcopyWinSMBPasswordFormat    uint64
-	Swift                            SwiftDestinationLocation
-	B2                               B2DestinationLocation
-	Storj                            StorjDestinationLocation
-	SpanTargets                      []DestinationLocation
-	SpanUseStaticSlots               bool
-	EncryptionKeyEncryptionMethod    uint64
-	EncryptedEncryptionKey           string
-	RepoInitTimestamp                int64
-	StorageLimitEnabled              bool
-	StorageLimitBytes                int64
-	Statistics                       DestinationStatistics `json:",omitempty"`
-	DefaultRetention                 RetentionPolicy
-	RebrandStorage                   bool
+	// One of the FTPS_MODE_ constants.
+	FTPSMode            FtpsModeType
+	FTPPort             int
+	FTPMaxConnections   int
+	FTPAcceptInvalidSSL bool
+	AZBAccountName      string
+	AZBAccountKey       string
+	AZBContainer        string
+	// The base URL for the Azure Blob Storage service. Leave blank to use the global default URL.
+	AZBRealm                      string
+	AZBPrefix                     string
+	LocalcopyPath                 string
+	LocalcopyWinSMBUsername       string
+	LocalcopyWinSMBPassword       string
+	LocalcopyWinSMBPasswordFormat uint64
+	Swift                         SwiftDestinationLocation
+	B2                            B2DestinationLocation
+	Storj                         StorjDestinationLocation
+	SpanTargets                   []DestinationLocation
+	SpanUseStaticSlots            bool
+	// One of the ENCRYPTIONMETHOD_ constants
+	EncryptionKeyEncryptionMethod uint64
+	EncryptedEncryptionKey        string
+	// Unix timestamp in seconds. If zero, the Storage Vault has not yet been initialized for the first
+	// time.
+	RepoInitTimestamp int64
+	// Storage Vault quota
+	StorageLimitEnabled bool
+	// Storage Vault quota
+	StorageLimitBytes int64
+	Statistics        DestinationStatistics `json:",omitempty"`
+	DefaultRetention  RetentionPolicy
+	// The "Prevent users from viewing the actual storage type" option
+	RebrandStorage bool
 }
 
 type DestinationLocation struct {
-	DestinationType                  uint64
-	CometServer                      string
-	CometBucket                      string
-	CometBucketKey                   string
-	S3Server                         string
-	S3UsesTLS                        bool
-	S3AccessKey                      string
-	S3SecretKey                      string
-	S3BucketName                     string
-	S3Subdir                         string
-	S3CustomRegion                   string
-	S3UsesV2Signing                  bool
-	S3RemoveDeleted                  bool
-	S3ObjectLockDays                 int
-	SFTPServer                       string
-	SFTPUsername                     string
-	SFTPRemotePath                   string
+	DestinationType uint64
+	CometServer     string
+	CometBucket     string
+	CometBucketKey  string
+	S3Server        string
+	S3UsesTLS       bool
+	S3AccessKey     string
+	S3SecretKey     string
+	S3BucketName    string
+	S3Subdir        string
+	S3CustomRegion  string
+	// If true, use legacy v2 signing. If false (default), use modern v4 signing
+	S3UsesV2Signing  bool
+	S3RemoveDeleted  bool
+	S3ObjectLockDays int
+	SFTPServer       string
+	SFTPUsername     string
+	SFTPRemotePath   string
+	// One of the DESTINATION_SFTP_AUTHMODE_ constants
 	SFTPAuthMode                     SftpAuthMode
 	SFTPPassword                     string
 	SFTPPrivateKey                   string
@@ -1330,24 +1458,26 @@ type DestinationLocation struct {
 	FTPPassword                      string
 	FTPBaseUseHomeDirectory          bool
 	FTPCustomBaseDirectory           string
-	FTPSMode                         FtpsModeType
-	FTPPort                          int
-	FTPMaxConnections                int
-	FTPAcceptInvalidSSL              bool
-	AZBAccountName                   string
-	AZBAccountKey                    string
-	AZBContainer                     string
-	AZBRealm                         string
-	AZBPrefix                        string
-	LocalcopyPath                    string
-	LocalcopyWinSMBUsername          string
-	LocalcopyWinSMBPassword          string
-	LocalcopyWinSMBPasswordFormat    uint64
-	Swift                            SwiftDestinationLocation
-	B2                               B2DestinationLocation
-	Storj                            StorjDestinationLocation
-	SpanTargets                      []DestinationLocation
-	SpanUseStaticSlots               bool
+	// One of the FTPS_MODE_ constants.
+	FTPSMode            FtpsModeType
+	FTPPort             int
+	FTPMaxConnections   int
+	FTPAcceptInvalidSSL bool
+	AZBAccountName      string
+	AZBAccountKey       string
+	AZBContainer        string
+	// The base URL for the Azure Blob Storage service. Leave blank to use the global default URL.
+	AZBRealm                      string
+	AZBPrefix                     string
+	LocalcopyPath                 string
+	LocalcopyWinSMBUsername       string
+	LocalcopyWinSMBPassword       string
+	LocalcopyWinSMBPasswordFormat uint64
+	Swift                         SwiftDestinationLocation
+	B2                            B2DestinationLocation
+	Storj                         StorjDestinationLocation
+	SpanTargets                   []DestinationLocation
+	SpanUseStaticSlots            bool
 }
 
 type DestinationStatistics struct {
@@ -1360,10 +1490,14 @@ type DestinationStatistics struct {
 
 type DeviceConfig struct {
 	FriendlyName     string
-	RegistrationTime int64                      `json:",omitempty"`
-	PlatformVersion  OSInfo                     `json:",omitempty"`
-	Sources          map[string]SourceBasicInfo `json:",omitempty"`
-	DeviceTimezone   string                     `json:",omitempty"`
+	RegistrationTime int64 `json:",omitempty"`
+	// The operating system that the device uses.
+	PlatformVersion OSInfo `json:",omitempty"`
+	// Minimal information about the device's private Protected Items, so that other devices can safely
+	// run retention passes on a shared Storage Vault.
+	Sources map[string]SourceBasicInfo `json:",omitempty"`
+	// The device's reported timezone in IANA format.
+	DeviceTimezone string `json:",omitempty"`
 }
 
 type DiskDrive struct {
@@ -1382,24 +1516,28 @@ type DiskDrive struct {
 }
 
 type DispatcherAdminSourcesResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
 	Status        int
 	Message       string
 	ImportSources map[string]string
 }
 
 type DispatcherStoredObjectsResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
 	Status        int
 	Message       string
 	StoredObjects []StoredObject
 }
 
 type DispatcherVaultSnapshotsResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
 	Status    int
 	Message   string
 	Snapshots []VaultSnapshot
 }
 
 type DispatcherWindiskSnapshotResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
 	Status          int
 	Message         string
 	WindiskSnapshot []DiskDrive
@@ -1413,8 +1551,9 @@ type EDBFileInfo struct {
 }
 
 type EmailOptions struct {
-	FromEmail                   string
-	FromName                    string
+	FromEmail string
+	FromName  string
+	// One of the EMAIL_DELIVERY_ constants
 	Mode                        EmailDeliveryType
 	EmailReportingOptions       []EmailReportingOption `json:",omitempty"`
 	SMTPHost                    string                 `json:",omitempty"`
@@ -1426,13 +1565,17 @@ type EmailOptions struct {
 }
 
 type EmailReportConfig struct {
-	ReportType       EmailReportType
+	// One of the EMAILREPORTTYPE_ constants
+	ReportType EmailReportType
+	// Used as a list of scheduled times to send
 	SummaryFrequency []ScheduleConfig
-	TimeSpan         TimeSpan `json:",omitempty"`
-	Filter           SearchClause
+	// Used to the determine the time bounds of a report
+	TimeSpan TimeSpan `json:",omitempty"`
+	Filter   SearchClause
 }
 
 type EmailReportGeneratedPreview struct {
+	// If the operation was successful, the status will be in the 200-299 range.
 	Status             int
 	Message            string
 	From               string
@@ -1486,8 +1629,12 @@ type ExternalLDAPAuthenticationSourceSettings struct {
 }
 
 type ExtraFileExclusion struct {
-	Exclude    string
-	Regex      bool
+	// The glob or regular expression to exclude from backup jobs
+	Exclude string
+	// Choose whether the 'Exclude' parameter will be treated as a regular expression (true) or a glob
+	// (false)
+	Regex bool
+	// Either OS_ANY or one of the OS_ONLY constants
 	RestrictOS ExtraFileExclusionOSRestriction
 }
 
@@ -1497,13 +1644,15 @@ type FTPDestinationLocation struct {
 	FTPPassword             string
 	FTPBaseUseHomeDirectory bool
 	FTPCustomBaseDirectory  string
-	FTPSMode                FtpsModeType
-	FTPPort                 int
-	FTPMaxConnections       int
-	FTPAcceptInvalidSSL     bool
+	// One of the FTPS_MODE_ constants.
+	FTPSMode            FtpsModeType
+	FTPPort             int
+	FTPMaxConnections   int
+	FTPAcceptInvalidSSL bool
 }
 
 type GetGroupPolicyResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
 	Status     int
 	Message    string
 	Policy     GroupPolicy
@@ -1511,13 +1660,18 @@ type GetGroupPolicyResponse struct {
 }
 
 type GetProfileAndHashResponseMessage struct {
-	Status      int
-	Message     string
+	// If the operation was successful, the status will be in the 200-299 range.
+	Status  int
+	Message string
+	// A hash identifier for the current state of the user's profile. If you supply this in the
+	// AdminSetUserProfileHash API, the server can safely reject your change if another change has
+	// happened concurrently. This allows you to retry the request.
 	ProfileHash string
 	Profile     UserProfileConfig
 }
 
 type GetProfileHashResponseMessage struct {
+	// If the operation was successful, the status will be in the 200-299 range.
 	Status      int
 	Message     string
 	ProfileHash string
@@ -1528,12 +1682,16 @@ type GlobalOverrideOptions struct {
 }
 
 type GroupPolicy struct {
-	Description       string
-	OrganizationID    string
-	Policy            UserPolicy
+	Description    string
+	OrganizationID string
+	Policy         UserPolicy
+	// DefaultUserPolicy marks that this UserPolicy should be applied to all new users. The Comet
+	// Server will ensure that only one policy can be set as default.
 	DefaultUserPolicy bool
-	CreatedDate       int64
-	ModifiedDate      int64
+	// Unix timestamp in seconds. May be zero for Policies created prior to Comet 23.3.3.
+	CreatedDate int64
+	// Unix timestamp in seconds. May be zero for Policies created prior to Comet 23.3.3.
+	ModifiedDate int64
 }
 
 type HTTPConnectorOptions struct {
@@ -1573,6 +1731,7 @@ type InstallToken struct {
 }
 
 type InstallTokenResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
 	Status       int
 	Message      string
 	InstallToken InstallToken
@@ -1580,7 +1739,9 @@ type InstallTokenResponse struct {
 
 // JobEntry is a single entry within a job report.
 type JobEntry struct {
-	Time     int64
+	// Unix timestamp in seconds
+	Time int64
+	// One of the SEVERITY_ constants.
 	Severity Severity
 	Message  string
 }
@@ -1591,15 +1752,26 @@ type LicenseOptions struct {
 }
 
 type LiveUserConnection struct {
-	Username                string
-	DeviceID                string
-	ReportedVersion         string
-	ReportedPlatform        string
+	Username string
+	DeviceID string
+	// The Comet Backup software version that this live-connected device reports that it is running. It
+	// takes the format "MAJOR.MINOR.PATCH", such as "23.2.0". See the APPLICATION_VERSION constant for
+	// more information.
+	ReportedVersion string
+	// The operating system of the device. It is one of the PLATFORM_ constants; then a forwardslash
+	// (/); then the device's GOARCH.
+	ReportedPlatform string
+	// The operating system of the device, in extended detail.
 	ReportedPlatformVersion OSInfo `json:",omitempty"`
-	DeviceTimeZone          string `json:",omitempty"`
-	IPAddress               string `json:",omitempty"`
-	ConnectionTime          int64
-	AllowsFilenames         bool
+	// The reported timezone of the device, in IANA format.
+	DeviceTimeZone string `json:",omitempty"`
+	// The live-connected device's remote IP address, as seen from the Comet Server.
+	IPAddress string `json:",omitempty"`
+	// Unix timestamp, in seconds.
+	ConnectionTime int64
+	// The current state of the "Allow administrator to view my files" client-side option. If this
+	// option is refused, some live-connected actions will be refused by the device.
+	AllowsFilenames bool
 }
 
 type LocalDestinationLocation struct {
@@ -1655,6 +1827,8 @@ type MongoDBConnection struct {
 	Username         string
 	Password         string
 	AuthenticationDB string
+	// Prior to Comet 22.12.3, must be a filesystem path to `mongo` (n.b. not `mongosh`). In Comet >=
+	// 22.12.3, not used.
 	// Deprecated: This member has been deprecated since Comet version 22.12.3
 	MongoShellPath          string
 	MongodumpPath           string
@@ -1751,9 +1925,10 @@ type Office365MixedVirtualAccount struct {
 }
 
 type Office365ObjectInfo struct {
-	GUID    string
-	Name    string
-	Type    string
+	GUID string
+	Name string
+	Type string
+	// May be an email address or a SharePoint site URL
 	Value   string
 	Members []string
 }
@@ -1941,56 +2116,78 @@ type ReplicatorStateAPIResponse struct {
 }
 
 type RequestStorageVaultResponseMessage struct {
+	// If the operation was successful, the status will be in the 200-299 range.
 	Status        int
 	Message       string
 	DestinationID string
 }
 
 type RestoreJobAdvancedOptions struct {
-	Type                   RestoreType
+	Type RestoreType
+	// For RESTORETYPE_FILE
 	OverwriteExistingFiles bool
-	OverwriteIfNewer       bool
+	// For RESTORETYPE_FILE. If set, OverwriteExistingFiles must be true
+	OverwriteIfNewer bool
+	// For RESTORETYPE_FILE. If set, DestPath must be blank
 	DestIsOriginalLocation bool
-	DestPath               string
-	ExactDestPaths         []string
-	ArchiveFormat          RestoreArchiveFormat
-	Office365Credential    RestoreOffice365Credential `json:",omitempty"`
-	Username               string
-	Password               string
-	Host                   string
-	Port                   string
-	UseSsl                 bool
-	SslAllowInvalid        bool
-	SslCaFile              string
-	SslCrtFile             string
-	SslKeyFile             string
-	MsSqlConnection        MSSQLLoginArgs `json:",omitempty"`
+	// For RESTORETYPE_FILE or RESTORETYPE_PROCESS_xxx
+	DestPath string
+	// For RESTORETYPE_WINDISK only. Must have one entry for each selected restore path
+	ExactDestPaths []string
+	// For RESTORETYPE_FILE_ARCHIVE or RESTORETYPE_PROCESS_ARCHIVE. Default 0 is *.tar, for backward
+	// compatibility
+	ArchiveFormat RestoreArchiveFormat
+	// For RESTORETYPE_OFFICE365_CLOUD.
+	Office365Credential RestoreOffice365Credential `json:",omitempty"`
+	// For RESTORETYPE_MYSQL
+	Username string
+	// For RESTORETYPE_MYSQL
+	Password string
+	// For RESTORETYPE_MYSQL
+	Host string
+	// For RESTORETYPE_MYSQL
+	Port string
+	// For RESTORETYPE_MYSQL
+	UseSsl bool
+	// For RESTORETYPE_MYSQL i.e.: Self signed certs
+	SslAllowInvalid bool
+	// For RESTORETYPE_MYSQL
+	SslCaFile string
+	// For RESTORETYPE_MYSQL
+	SslCrtFile string
+	// For RESTORETYPE_MYSQL
+	SslKeyFile string
+	// For RESTORETYPE_MSSQL.
+	MsSqlConnection MSSQLLoginArgs `json:",omitempty"`
 }
 
 type RetentionPolicy struct {
+	// One of the RETENTIONMODE_ constants
 	Mode   RetentionMode
 	Ranges []RetentionRange
 }
 
 type RetentionRange struct {
-	Type        RetentionRangeType
-	Timestamp   int64
-	Jobs        int64
-	Days        int64
-	Weeks       int64
-	Months      int64
+	Type      RetentionRangeType
+	Timestamp int64
+	Jobs      int64
+	Days      int64
+	Weeks     int64
+	Months    int64
+	// 0: Sunday, 6: Saturday
 	WeekOffset  int64
 	MonthOffset int64
 }
 
 type S3DestinationLocation struct {
-	S3Server         string
-	S3UsesTLS        bool
-	S3AccessKey      string
-	S3SecretKey      string
-	S3BucketName     string
-	S3Subdir         string
-	S3CustomRegion   string
+	S3Server       string
+	S3UsesTLS      bool
+	S3AccessKey    string
+	S3SecretKey    string
+	S3BucketName   string
+	S3Subdir       string
+	S3CustomRegion string
+	// If true, use legacy v2 signing. If false (default), use modern v4 signing
 	S3UsesV2Signing  bool
 	S3RemoveDeleted  bool
 	S3ObjectLockDays int
@@ -2008,9 +2205,10 @@ type S3GenericVirtualStorageRole struct {
 }
 
 type SFTPDestinationLocation struct {
-	SFTPServer                       string
-	SFTPUsername                     string
-	SFTPRemotePath                   string
+	SFTPServer     string
+	SFTPUsername   string
+	SFTPRemotePath string
+	// One of the DESTINATION_SFTP_AUTHMODE_ constants
 	SFTPAuthMode                     SftpAuthMode
 	SFTPPassword                     string
 	SFTPPrivateKey                   string
@@ -2019,8 +2217,9 @@ type SFTPDestinationLocation struct {
 }
 
 type SSHConnection struct {
-	SSHServer                       string
-	SSHUsername                     string
+	SSHServer   string
+	SSHUsername string
+	// One of the SSHCONNECTION_AUTHMODE_ constants
 	SSHAuthMode                     SSHAuthMode
 	SSHPassword                     string
 	SSHPrivateKey                   string
@@ -2060,6 +2259,7 @@ type SearchResultFileInfo struct {
 }
 
 type SearchSnapshotsResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
 	Status        int
 	Message       string
 	SnapshotFiles map[string][]SearchResultFileInfo
@@ -2103,10 +2303,15 @@ type SelfBackupTarget struct {
 }
 
 type ServerConfigOptions struct {
-	AdminUsers               []AllowedAdminUser
-	AuthenticationRole       AuthenticationRoleOptions
-	Branding                 BrandingOptions
-	ConstellationRole        ConstellationRoleOptions
+	AdminUsers         []AllowedAdminUser
+	AuthenticationRole AuthenticationRoleOptions
+	Branding           BrandingOptions
+	ConstellationRole  ConstellationRoleOptions
+	// This field is defined for compatibility with 17.x.x versions of Comet Server. Do not rely on
+	// this field. In Comet 23.2.x, if this field is defined, it is imported into the replacement
+	// 'ConstellationRole' field under the assumption that you are upgrading this Comet Server from a
+	// 17.x.x version. In Comet 23.3.x and later, this field is ignored and will not be respected
+	// during the import process.
 	ConstellationRole_Legacy ConstellationRoleOptions `json:"OverseerRole,omitempty"`
 	Email                    EmailOptions
 	ExperimentalOptions      []string `json:",omitempty"`
@@ -2133,9 +2338,13 @@ type ServerConfigOptionsSoftwareBuildRoleFragment struct {
 }
 
 type ServerMetaBrandingProperties struct {
-	BrandName                     string
-	ProductName                   string
-	HasImage                      bool
+	BrandName   string
+	ProductName string
+	// If true, this Comet Server has an image configured for its main logo. You can access it from the
+	// /gen/logo.img endpoint. If false, this Comet Server has text configured for its main logo.
+	HasImage bool
+	// A value that will change if the branding image (/gen/logo.img) changes. You can use this as a
+	// cache key.
 	ImageEtag                     string
 	TopColor                      string
 	AccentColor                   string
@@ -2147,17 +2356,25 @@ type ServerMetaBrandingProperties struct {
 }
 
 type ServerMetaVersionInfo struct {
-	Version                                        string
-	VersionCodename                                string
-	StorageRole                                    bool
-	AuthenticationRole                             bool
-	SoftwareBuildRole                              bool
-	ConstellationRole_Legacy                       bool `json:"OverseerRole"`
-	ConstellationRole                              bool
-	ExperimentalOptions                            []string `json:",omitempty"`
-	ServerStartTime                                int64
-	ServerStartHash                                string
-	CurrentTime                                    int64
+	Version            string
+	VersionCodename    string
+	StorageRole        bool
+	AuthenticationRole bool
+	SoftwareBuildRole  bool
+	// Deprecated: This member has been deprecated since Comet version 18.2.0 "Overseer Role" was the old name for the Constellation Role. This field is a duplicate of ConstellationRole for backward compatibility with earlier API consumers.
+	ConstellationRole_Legacy bool `json:"OverseerRole"`
+	ConstellationRole        bool
+	ExperimentalOptions      []string `json:",omitempty"`
+	// Unix timestamp, in seconds.
+	ServerStartTime int64
+	// A GUID that was randomly generated when this Comet Server started up. You can check this value
+	// to see if the Comet Server has restarted.
+	ServerStartHash string
+	// The current time on the Comet Server host machine. Unix timestamp, in seconds. You can check
+	// this value to see if clock drift is occuring.
+	CurrentTime int64
+	// A hash derived from the Comet Server's serial number. You can check this value to see if two
+	// Comet Server endpoints point to an identical server.
 	ServerLicenseHash                              string
 	ServerLicenseFeaturesAll                       bool
 	ServerLicenseFeatureSet                        uint32
@@ -2174,6 +2391,7 @@ type ServerMetaVersionInfo struct {
 }
 
 type SessionKeyRegeneratedResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
 	Status      int
 	Message     string
 	SessionKey  string
@@ -2218,15 +2436,66 @@ type SourceBasicInfo struct {
 }
 
 type SourceConfig struct {
-	Engine                       string
-	Description                  string
-	OwnerDevice                  string
-	CreateTime                   int64
-	ModifyTime                   int64
-	PreExec                      []string
-	ThawExec                     []string
-	PostExec                     []string
-	EngineProps                  map[string]string
+	// One of the ENGINE_BUILTIN_ constants
+	Engine      string
+	Description string
+	OwnerDevice string
+	CreateTime  int64
+	ModifyTime  int64
+	// Custom commands to run before the job
+	PreExec []string
+	// Custom commands to run after taking a disk snapshot
+	ThawExec []string
+	// Custom commands to run after the job
+	PostExec []string
+	// Configuration for the selected Protected Item type. Each "Engine" supports
+	// different configuration options for the EngineProps values.
+	//
+	// For engine1/file, Comet understands the following EngineProp keys:
+	//
+	// - Any key starting with INCLUDE: A path that is included
+	// - Any key starting with EXCLUDE: An exclusion (glob format)
+	// - Any key starting with REXCLUDE: An exclusion (regular expression format)
+	// - Any key starting with PINCLUDE: A JSON string {"TopDirectory": "", "Value": ""}. TopDirectory
+	// is the path where starts to match the value; Value is an inclusion (glob format)
+	// - Any key starting with RINCLUDE: A JSON string {"TopDirectory": "", "Value": ""}. TopDirectory
+	// is the path where starts to match the value; Value is an inclusion (regular expression format)
+	// - Any key starting with SMBAUTH: A set of Windows network share credentials in WinSMBAuth JSON
+	// format
+	// - USE_WIN_VSS: If present, the 'Take filesystem snapshot' checkbox is checked
+	// - CONFIRM_EFS: If present, the 'Dismiss EFS warning' checkbox is checked
+	// - RESCAN_UNCHANGED: If present, the 'Rescan unchanged files' checkbox is checked
+	//
+	// For engine1/mssql, Comet understands the following EngineProp keys:
+	//
+	// - ALL_DATABASES: If present, include all databases with specified exclusions. If not present,
+	// only back up the specified inclusions
+	// - Any key starting with DATABASE- : A database that is included. Only valid if ALL_DATABASES is
+	// not present.
+	// - Any key starting with EXCEPT-DATABASE- : A database that is excluded. Only valid if
+	// ALL_DATABASES is present.
+	// - INSTANCE: The Microsoft SQL Server instance name
+	// - USERNAME: The username to connect to Microsoft SQL Server
+	// - PASSWORD: The password to connect to Microsoft SQL Server
+	// - AUTHMODE: Either "windows" or "native" (corresponding to the declared MSSQL_AUTH_WINDOWS and
+	// MSSQL_AUTH_NATIVE constant values). If not present, use native authentication if the USERNAME
+	// and/or PASSWORD fields are filled in, use windows authentication if they are blank
+	// - METHOD: Either "OLEDB_NATIVE" or "OLEDB_32" (corresponding to the declared
+	// MSSQL_METHOD_OLEDB_NATIVE and MSSQL_METHOD_OLEDB_32 constant values). If not present, defaults
+	// to Native
+	// - DIFFBASE: If present, take a "Full (base image)" backup job. Otherwise, take a "Full (copy
+	// only)" backup job.
+	// - DIFFERENTIAL: If present, take a "Differential increment" backup job. Otherwise, take a "Full
+	// (copy only)" backup job.
+	// - LOGTRUNC: If present, take a "Log (truncating)" backup job. Otherwise, take a "Full (copy
+	// only)" backup job.
+	// - LOGNOTRUNC: If present, take a "Log (no truncation)" backup job. Otherwise, take a "Full (copy
+	// only)" backup job.
+	//
+	EngineProps map[string]string
+	// By default, backup jobs from this Protected Item will be subject
+	// to the overall retention policy for the Storage Vault. You can override the policy
+	// for specific Storage Vaults by putting their destination ID as a key here.
 	OverrideDestinationRetention map[string]RetentionPolicy `json:",omitempty"`
 	Statistics                   SourceStatistics           `json:",omitempty"`
 }
@@ -2321,15 +2590,22 @@ type StreamableEvent struct {
 }
 
 type SwiftDestinationLocation struct {
-	Username               string `json:",omitempty"`
-	APIKey                 string `json:",omitempty"`
-	Region                 string `json:",omitempty"`
-	AuthURL                string `json:",omitempty"`
-	Domain                 string `json:",omitempty"`
-	Tenant                 string `json:",omitempty"`
-	TenantDomain           string `json:",omitempty"`
-	TenantID               string `json:",omitempty"`
-	TrustID                string `json:",omitempty"`
+	// Username or UserID or Application Credential name or Application Credential ID, or blank for
+	// token authentication
+	Username string `json:",omitempty"`
+	// User Password, or Application Credential Key, or token if the Username field is blank
+	APIKey string `json:",omitempty"`
+	Region string `json:",omitempty"`
+	// Mandatory
+	AuthURL string `json:",omitempty"`
+	Domain  string `json:",omitempty"`
+	// Tenant name (v2) or Project name (v3)
+	Tenant string `json:",omitempty"`
+	// Project domain name (v3)
+	TenantDomain string `json:",omitempty"`
+	TenantID     string `json:",omitempty"`
+	TrustID      string `json:",omitempty"`
+	// Deprecated: This member has been deprecated since Comet version 17.8.0
 	AuthToken              string `json:",omitempty"`
 	Prefix                 string `json:",omitempty"`
 	Container              string `json:",omitempty"`
@@ -2337,17 +2613,21 @@ type SwiftDestinationLocation struct {
 }
 
 type TestResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
 	Status  int
 	Message string
 	Exists  bool
 }
 
 type TimeSpan struct {
+	// SCHEDULE_FREQUENCY_<TYPE>
 	FrequencyType uint64
-	Seconds       int64
+	// Used for Periodic and Once Only
+	Seconds int64
 }
 
 type TotpRegeneratedResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
 	Status      int
 	Message     string
 	Image       string
@@ -2370,6 +2650,7 @@ type U2FRegisteredKey struct {
 
 // Deprecated: This struct has been deprecated since Comet version 21.12.0
 type U2FRegistrationChallengeResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
 	Status           int
 	Message          string
 	ChallengeID      string
@@ -2394,8 +2675,12 @@ type U2FSignResponse struct {
 	ClientData  string
 }
 
+// UninstallConfig allows configuring whether the target device will be uninstalled or not.
 type UninstallConfig struct {
-	UninstallFlag    bool
+	// If this option is true, the target device will receive a message asking it to uninstall the
+	// Comet Backup app.
+	UninstallFlag bool
+	// This controls the "Remove all user settings from this device" option.
 	RemoveConfigFile bool
 }
 
@@ -2412,9 +2697,13 @@ type UpdateCampaignOptions struct {
 	UpgradeOlder        bool
 	ReinstallCurrentVer bool
 	DowngradeNewer      bool
+	// Choose whether this bulk upgrade campaign is allowed to interrupt a running backup job.
 	ForceUpgradeRunning bool
-	ApplyDeviceFilter   bool
-	DeviceFilter        SearchClause
+	// If true, then the UserFilter will be used to restrict which accounts and devices will be
+	// eligible for the software update. If false, all users and devices will be eligible for the
+	// software update.
+	ApplyDeviceFilter bool
+	DeviceFilter      SearchClause
 }
 
 type UpdateCampaignProperties struct {
@@ -2422,11 +2711,15 @@ type UpdateCampaignProperties struct {
 	UpgradeOlder        bool
 	ReinstallCurrentVer bool
 	DowngradeNewer      bool
+	// Choose whether this bulk upgrade campaign is allowed to interrupt a running backup job.
 	ForceUpgradeRunning bool
-	ApplyDeviceFilter   bool
-	DeviceFilter        SearchClause
-	StartTime           int64
-	TargetVersion       string
+	// If true, then the UserFilter will be used to restrict which accounts and devices will be
+	// eligible for the software update. If false, all users and devices will be eligible for the
+	// software update.
+	ApplyDeviceFilter bool
+	DeviceFilter      SearchClause
+	StartTime         int64
+	TargetVersion     string
 }
 
 type UpdateCampaignStatus struct {
@@ -2434,12 +2727,16 @@ type UpdateCampaignStatus struct {
 	UpgradeOlder        bool
 	ReinstallCurrentVer bool
 	DowngradeNewer      bool
+	// Choose whether this bulk upgrade campaign is allowed to interrupt a running backup job.
 	ForceUpgradeRunning bool
-	ApplyDeviceFilter   bool
-	DeviceFilter        SearchClause
-	StartTime           int64
-	TargetVersion       string
-	Devices             []UpdateCampaignStatusDeviceEntry
+	// If true, then the UserFilter will be used to restrict which accounts and devices will be
+	// eligible for the software update. If false, all users and devices will be eligible for the
+	// software update.
+	ApplyDeviceFilter bool
+	DeviceFilter      SearchClause
+	StartTime         int64
+	TargetVersion     string
+	Devices           []UpdateCampaignStatusDeviceEntry
 }
 
 type UpdateCampaignStatusDeviceEntry struct {
@@ -2453,6 +2750,8 @@ type UserCustomEmailSettings struct {
 }
 
 type UserOnServer struct {
+	// The server where this user was found. The 0-based indexes here correspond to the entries inside
+	// ConstellationRoleOptions->Servers.
 	ServerID int
 	Username string
 }
@@ -2496,45 +2795,81 @@ type UserPolicy struct {
 
 // This is the main data structure for a user's profile.
 type UserProfileConfig struct {
-	Username      string
-	AccountName   string
+	// The name for this account. It uniquely identifies this UserProfileConfig across the entire Comet
+	// Server. It cannot be changed directly.
+	Username string
+	// A longer descriptive name for this account. It is not necessarily unique to the Comet Server.
+	// The end-user might be able to change it inside the Comet Backup desktop app.
+	AccountName string
+	// Timezone in IANA format. Individual devices may declare a more specific timezone in the Devices
+	// field.
 	LocalTimezone string
-	LanguageCode  string
+	// One of the supported languages, such as en_US (DEFAULT_LANGUAGE).
+	LanguageCode string
 	// Tenant
-	OrganizationID        string `json:",omitempty"`
-	Emails                []string
+	OrganizationID string `json:",omitempty"`
+	// A list of email addresses to send reports to.
+	Emails []string
+	// By default, all the email addresses in the Emails field will receieve the policy-default or
+	// server-wide-default style of email report. Add an override for a specific email address in here
+	// to allow customizing the email report that will be received.
 	OverrideEmailSettings map[string]UserCustomEmailSettings
-	SendEmailReports      bool
+	// This option can be used to control whether any email reports are sent.
+	SendEmailReports bool
 	// Storage Vaults
 	Destinations map[string]DestinationConfig
 	// Protected Items
-	Sources                         map[string]SourceConfig
-	BackupRules                     map[string]BackupRuleConfig
-	Devices                         map[string]DeviceConfig
-	IsSuspended                     bool
-	LastSuspended                   int64 `json:",omitempty"`
-	AllProtectedItemsQuotaEnabled   bool
-	AllProtectedItemsQuotaBytes     int64
-	MaximumDevices                  int64
+	Sources map[string]SourceConfig
+	// Schedules
+	BackupRules map[string]BackupRuleConfig
+	// Devices
+	// To revoke a device, use the AdminRevokeDevice API instead of accessing these fields directly.
+	// This API can also remove associated Protected Items, uninstall the remote device, and disconnect
+	// its live connection.
+	Devices     map[string]DeviceConfig
+	IsSuspended bool
+	// Unix timestamp in seconds. Zero if the device is not suspended.
+	LastSuspended int64 `json:",omitempty"`
+	// A limit on the total Size of all Protected Items in this account. The number of bytes should be
+	// configured in AllProtectedItemsQuotaBytes.
+	AllProtectedItemsQuotaEnabled bool
+	// A limit on the total Size of all Protected Items in this account. It is enforced if
+	// AllProtectedItemsQuotaEnabled is true.
+	AllProtectedItemsQuotaBytes int64
+	// A limit on the total number of devices registered in this account. Set to zero to allow
+	// unlimited devices.
+	MaximumDevices int64
+	// A limit on the total number of Office 365 Protected Accounts across all Office 365 Protected
+	// Items in this account. Set to zero to allow unlimited Office 365 Protected Accounts.
 	QuotaOffice365ProtectedAccounts int64
 	// If the PolicyID field is set to a non-empty string, the Comet Server will enforce the contents
 	// of the Policy field based on the matching server's policy. Otherwise if the PolicyID field is
 	// set to an empty string, the administrator may configure any custom values in the Policy field.
 	PolicyID string
-	Policy   UserPolicy
+	// The Policy field contains a read-only copy of the effective Policy that is applied to this user
+	// account.
+	Policy UserPolicy
 	// To change the user's password, use the AdminResetUserPassword API instead of accessing these
 	// fields directly. Otherwise, other encrypted fields in the user profile may become corrupted.
-	PasswordFormat            int
-	PasswordHash              string
+	PasswordFormat int
+	PasswordHash   string
+	// If this field is empty, the "Allow administrator to reset my password" feature is turned off. If
+	// this field is filled, it contains a cryptographic root of trust that can decrypt and re-encrypt
+	// other secrets in this profile.
 	PasswordRecovery          string `json:",omitempty"`
 	AllowPasswordLogin        bool
 	AllowPasswordAndTOTPLogin bool
 	TOTPKeyEncryptionFormat   int
 	TOTPKey                   string
-	RequirePasswordChange     bool
-	CreateTime                int64
-	CreationGUID              string
-	ServerConfig              UserServerConfig `json:",omitempty"`
+	// This field is available in Comet 20.3.4 and later.
+	RequirePasswordChange bool
+	// Unix timestamp in seconds
+	CreateTime int64
+	// A random GUID that is allocated when the user profile is created for the first time. You can use
+	// this to help disambiguate users with the same username across multiple Comet Servers.
+	CreationGUID string
+	// Additional server-wide settings that are enforced for this user profile
+	ServerConfig UserServerConfig `json:",omitempty"`
 }
 
 type UserProfileFragment struct {
@@ -2546,8 +2881,12 @@ type UserServerConfig struct {
 }
 
 type VMDKSnapshotViewOptions struct {
-	Enabled       bool
+	// Request a list of stored objects in vmdk file. It should be always true for restoring single
+	// files from vmdk file
+	Enabled bool
+	// The vmdk filename inside subdirectory of disk image, should be end with .vmdk
 	PartitionGUID string
+	// Browse objects' paths inside vmdk file
 	ListPath      string
 	PartitionName string
 }
@@ -2637,6 +2976,7 @@ type WebAuthnPublicKeyCredentialRequestOptions struct {
 }
 
 type WebAuthnRegistrationChallengeResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
 	Status                    int
 	Message                   string
 	ChallengeID               string
@@ -2683,9 +3023,15 @@ type WebhookOption struct {
 }
 
 type WinSMBAuth struct {
-	SharePath      string
-	Username       string
-	Password       string
+	// The UNC path for the Windows network share (SMB).
+	SharePath string
+	// The username to log in to the Windows network share (SMB).
+	Username string
+	// The password might be hashed. To set this in cleartext, set PasswordFormat to 0
+	// (PASSWORD_FORMAT_PLAINTEXT).
+	Password string
+	// The hash algorithm that is used for the Password field. It is one of the PASSWORD_FORMAT_
+	// constants.
 	PasswordFormat uint64
 }
 
