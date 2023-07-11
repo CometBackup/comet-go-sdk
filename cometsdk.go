@@ -16,10 +16,10 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "23.5.0"
+const APPLICATION_VERSION string = "23.6.5"
 const APPLICATION_VERSION_MAJOR int = 23
-const APPLICATION_VERSION_MINOR int = 5
-const APPLICATION_VERSION_REVISION int = 0
+const APPLICATION_VERSION_MINOR int = 6
+const APPLICATION_VERSION_REVISION int = 5
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
@@ -408,7 +408,7 @@ const PSA_TYPE_GENERIC PSAType = 0
 
 // PSAType
 const PSA_TYPE_GRADIENT PSAType = 1
-const RELEASE_CODENAME string = "Thebe"
+const RELEASE_CODENAME string = "Voyager"
 
 // RemoteServerType
 const REMOTESERVER_AWS RemoteServerType = "aws"
@@ -590,7 +590,7 @@ const SCHEDULE_MAXINT int = 1125899906842624
 // Maximum random delay (5 hours)
 const SCHEDULE_MAX_RANDOM_DELAY_SECS int = 18000
 
-// SearchClauseType
+// SearchClauseType: All of the ClauseChildren must match
 const SEARCHCLAUSE_AND SearchClauseType = "and"
 
 // SearchClauseType
@@ -599,36 +599,88 @@ const SEARCHCLAUSE_NOT_AND SearchClauseType = "not_and"
 // SearchClauseType
 const SEARCHCLAUSE_NOT_OR SearchClauseType = "not_or"
 
-// SearchClauseType
+// SearchClauseType: At least one of the ClauseChildren must match
 const SEARCHCLAUSE_OR SearchClauseType = "or"
 
-// SearchClauseType
+// SearchClauseType: The search clause is an explicit rule
 const SEARCHCLAUSE_RULE SearchClauseType = ""
+
+// Boolean field matches value
 const SEARCHOPERATOR_BOOL_IS string = "bool_is"
+
+// Boolean field does not match value
 const SEARCHOPERATOR_BOOL_NIS string = "bool_nis"
+
+// Integer field is equal to value
 const SEARCHOPERATOR_INT_EQ string = "int_eq"
+
+// Integer field is greater than value
 const SEARCHOPERATOR_INT_GT string = "int_gt"
+
+// Integer field is greater than or equal to value
 const SEARCHOPERATOR_INT_GTE string = "int_gte"
+
+// Integer field is less than value
 const SEARCHOPERATOR_INT_LT string = "int_lt"
+
+// Integer field is less than or equal to value
 const SEARCHOPERATOR_INT_LTE string = "int_lte"
+
+// Integer field is not equal to value
 const SEARCHOPERATOR_INT_NEQ string = "int_neq"
+
+// String contains anywhere (case sensitive)
 const SEARCHOPERATOR_STRING_CONTAINS string = "str_contains"
+
+// String contains anywhere (case sensitive)
 const SEARCHOPERATOR_STRING_CONTAINS_CI string = "str_contains_ci"
+
+// String ends with suffix (case sensitive)
 const SEARCHOPERATOR_STRING_ENDSWITH string = "str_endswith"
+
+// String ends with suffix (case sensitive)
 const SEARCHOPERATOR_STRING_ENDSWITH_CI string = "str_endswith_ci"
+
+// String equals (case sensitive)
 const SEARCHOPERATOR_STRING_EQ string = "str_eq"
+
+// String equals (case insensitive)
 const SEARCHOPERATOR_STRING_EQ_CI string = "str_eq_ci"
+
+// String does not contain anywhere (case sensitive)
 const SEARCHOPERATOR_STRING_NCONTAINS string = "str_ncontains"
+
+// String does not contain anywhere (case sensitive)
 const SEARCHOPERATOR_STRING_NCONTAINS_CI string = "str_ncontains_ci"
+
+// String does not end with suffix (case sensitive)
 const SEARCHOPERATOR_STRING_NENDSWITH string = "str_nendswith"
+
+// String does not end with suffix (case sensitive)
 const SEARCHOPERATOR_STRING_NENDSWITH_CI string = "str_nendswith_ci"
+
+// String does not equal (case sensitive)
 const SEARCHOPERATOR_STRING_NEQ string = "str_neq"
+
+// String does not equal (case insensitive)
 const SEARCHOPERATOR_STRING_NEQ_CI string = "str_neq_ci"
+
+// String does not match provided regular expression (using Go regex syntax)
 const SEARCHOPERATOR_STRING_NREGEXMATCH string = "str_nregexmatch"
+
+// String does not start with prefix (case sensitive)
 const SEARCHOPERATOR_STRING_NSTARTSWITH string = "str_nstartswith"
+
+// String does not start with (case sensitive)
 const SEARCHOPERATOR_STRING_NSTARTSWITH_CI string = "str_nstartswith_ci"
+
+// String matches provided regular expression (using Go regex syntax)
 const SEARCHOPERATOR_STRING_REGEXMATCH string = "str_regexmatch"
+
+// String starts with prefix (case sensitive)
 const SEARCHOPERATOR_STRING_STARTSWITH string = "str_startswith"
+
+// String starts with prefix (case sensitive)
 const SEARCHOPERATOR_STRING_STARTSWITH_CI string = "str_startswith_ci"
 
 // 0000 0001. If this value is present in the bitset, then the Calendar service is selected for
@@ -1030,7 +1082,8 @@ type AddBucketResponseMessage struct {
 type AdminAccountPropertiesResponse struct {
 	OrganizationID string
 	Permissions    AdminUserPermissions
-	Security       AdminSecurityOptions
+	// This field is available in Comet 18.9.9 and later.
+	Security AdminSecurityOptions
 }
 
 type AdminEmailOptions struct {
@@ -1046,6 +1099,7 @@ type AdminResourceResponse struct {
 }
 
 type AdminSecurityOptions struct {
+	// One of the PASSWORD_FORMAT_ constants
 	PasswordFormat            int
 	Password                  string
 	AllowPasswordLogin        bool
@@ -1054,17 +1108,22 @@ type AdminSecurityOptions struct {
 	AllowPasswordAndU2FLogin      bool
 	AllowPasswordAndWebAuthnLogin bool
 	// Deprecated: This member has been deprecated since Comet version 21.12.0
-	U2FRegistrations        []AdminU2FRegistration      `json:",omitempty"`
-	WebAuthnRegistrations   []AdminWebAuthnRegistration `json:",omitempty"`
-	TOTPKeyEncryptionFormat int                         `json:",omitempty"`
-	TOTPKey                 string                      `json:",omitempty"`
-	IPWhitelist             string                      `json:",omitempty"`
+	U2FRegistrations      []AdminU2FRegistration      `json:",omitempty"`
+	WebAuthnRegistrations []AdminWebAuthnRegistration `json:",omitempty"`
+	// One of the ENCRYPTIONMETHOD_ constants
+	TOTPKeyEncryptionFormat int    `json:",omitempty"`
+	TOTPKey                 string `json:",omitempty"`
+	// A regular expression in Go regex syntax, for which IP addresses are allowed to authenticate as
+	// this admin account
+	IPWhitelist string `json:",omitempty"`
 }
 
 // Deprecated: This struct has been deprecated since Comet version 21.12.0
 type AdminU2FRegistration struct {
-	Description  string
+	Description string
+	// Unix timestamp, in seconds.
 	RegisterTime int64
+	// When this field is expressed as a Go AdminU2FRegistration struct, this field may contain binary data. When this field is expressed as JSON, the field must be expressed as base64. The encoding/json marshaller will automatically perform base64 conversion as necessary.
 	Registration []byte
 }
 
@@ -1077,35 +1136,55 @@ type AdminUserPermissions struct {
 	AllowEditRemoteStorage    bool `json:",omitempty"`
 	AllowEditWebhooks         bool `json:",omitempty"`
 	DenyConstellationRole     bool `json:",omitempty"`
+	// This field is available in Comet 23.6.0 and later.
+	DenyViewServerHistory bool `json:",omitempty"`
+	// This field is available in Comet 23.6.0 and later.
+	DenyViewServerInfo bool `json:",omitempty"`
+	// This field is available in Comet 23.6.0 and later.
+	PreventRequestStorageVault bool `json:",omitempty"`
+	// This field is available in Comet 23.6.0 and later.
+	PreventAddCustomStorageVault bool `json:",omitempty"`
+	// This field is available in Comet 23.6.0 and later.
+	HideCloudStorageBranding bool `json:",omitempty"`
+	// This field is available in Comet 23.6.0 and later.
+	ShouldRestrictProviderList bool `json:",omitempty"`
+	// This field is available in Comet 23.6.0 and later.
+	AllowedProvidersWhenRestricted []uint64 `json:",omitempty"`
 }
 
 type AdminWebAuthnRegistration struct {
-	Description  string
+	Description string
+	// Unix timestamp, in seconds.
 	RegisterTime int64
 	Type         WebAuthnDeviceType
-	IsLegacyU2F  bool               `json:",omitempty"`
-	ID           []byte             `json:",omitempty"`
-	Credential   WebAuthnCredential `json:",omitempty"`
+	IsLegacyU2F  bool `json:",omitempty"`
+	// When this field is expressed as a Go AdminWebAuthnRegistration struct, this field may contain binary data. When this field is expressed as JSON, the field must be expressed as base64. The encoding/json marshaller will automatically perform base64 conversion as necessary.
+	ID         []byte             `json:",omitempty"`
+	Credential WebAuthnCredential `json:",omitempty"`
 }
 
 type AllowedAdminUser struct {
 	Username                     string
 	OrganizationID               string
 	ExternalAuthenticationSource string `json:",omitempty"`
-	PasswordFormat               int
-	Password                     string
-	AllowPasswordLogin           bool
-	AllowPasswordAndTOTPLogin    bool
+	// One of the PASSWORD_FORMAT_ constants
+	PasswordFormat            int
+	Password                  string
+	AllowPasswordLogin        bool
+	AllowPasswordAndTOTPLogin bool
 	// Deprecated: This member has been deprecated since Comet version 21.12.0
 	AllowPasswordAndU2FLogin      bool
 	AllowPasswordAndWebAuthnLogin bool
 	// Deprecated: This member has been deprecated since Comet version 21.12.0
-	U2FRegistrations        []AdminU2FRegistration      `json:",omitempty"`
-	WebAuthnRegistrations   []AdminWebAuthnRegistration `json:",omitempty"`
-	TOTPKeyEncryptionFormat int                         `json:",omitempty"`
-	TOTPKey                 string                      `json:",omitempty"`
-	IPWhitelist             string                      `json:",omitempty"`
-	Permissions             AdminUserPermissions
+	U2FRegistrations      []AdminU2FRegistration      `json:",omitempty"`
+	WebAuthnRegistrations []AdminWebAuthnRegistration `json:",omitempty"`
+	// One of the ENCRYPTIONMETHOD_ constants
+	TOTPKeyEncryptionFormat int    `json:",omitempty"`
+	TOTPKey                 string `json:",omitempty"`
+	// A regular expression in Go regex syntax, for which IP addresses are allowed to authenticate as
+	// this admin account
+	IPWhitelist string `json:",omitempty"`
+	Permissions AdminUserPermissions
 }
 
 type AmazonAWSVirtualStorageRoleSettings struct {
@@ -1118,9 +1197,11 @@ type AmazonAWSVirtualStorageRoleSettings struct {
 }
 
 type AuthenticationRoleOptions struct {
-	RoleEnabled                bool
+	RoleEnabled bool
+	// One of the INTEGRITYCHECK_ constants
 	DatabaseCheckLevel         int
 	GenerateMissedBackupEvents bool
+	// Unix timestamp in seconds, before which no Missed jobs are created
 	NoMissedBackupEventsBefore int64
 	GenerateScheduledEmails    bool
 	PruneLogsAfterDays         int
@@ -1304,44 +1385,49 @@ type BackupRuleEventTriggers struct {
 type BrandingOptions struct {
 	// One of the BRANDINGSTYLETYPE_ constants
 	// This field is available in Comet 23.3.3 and later.
-	BrandingStyleType                   int
-	BrandName                           string
-	LogoImage                           string
-	TopColor                            string
-	AccentColor                         string
-	Favicon                             string
-	HideNewsArea                        bool
-	ProductName                         string
-	CompanyName                         string
-	HelpURL                             string
-	HelpIsPopup                         bool
-	DefaultLoginServerURL               string
-	TileBackgroundColor                 string
-	AccountRegisterURL                  string
-	HideBackgroundLogo                  bool
-	BuildMode                           ClientBrandingBuildMode
-	PathIcoFile                         string
-	PathIcnsFile                        string
-	PathMenuBarIcnsFile                 string
-	PathEulaRtf                         string
-	PathTilePng                         string
-	PathHeaderImage                     string
-	PathAppIconImage                    string
-	PackageIdentifier                   string
-	WindowsCodeSignMethod               WindowsCodesignMethod
-	WindowsCodeSignPKCS12FilePath       string
+	BrandingStyleType     int
+	BrandName             string
+	LogoImage             string
+	TopColor              string
+	AccentColor           string
+	Favicon               string
+	HideNewsArea          bool
+	ProductName           string
+	CompanyName           string
+	HelpURL               string
+	HelpIsPopup           bool
+	DefaultLoginServerURL string
+	TileBackgroundColor   string
+	AccountRegisterURL    string
+	HideBackgroundLogo    bool
+	// One of the CLIENTBRANDINGBUILD_ constants
+	BuildMode           ClientBrandingBuildMode
+	PathIcoFile         string
+	PathIcnsFile        string
+	PathMenuBarIcnsFile string
+	PathEulaRtf         string
+	PathTilePng         string
+	PathHeaderImage     string
+	PathAppIconImage    string
+	PackageIdentifier   string
+	// One of the WINDOWSCODESIGN_METHOD_ constants
+	WindowsCodeSignMethod         WindowsCodesignMethod
+	WindowsCodeSignPKCS12FilePath string
+	// One of the ENCRYPTIONMETHOD_ constants
 	WindowsCodeSignPKCS12PasswordFormat uint64
 	WindowsCodeSignPKCS12Password       string
 	WindowsCodeSignPKCS11Engine         string
 	WindowsCodeSignPKCS11Module         string
 	// Deprecated: This member has been deprecated since Comet version 22.12.7
-	WindowsCodeSignPKCS11Certfile       string
-	WindowsCodeSignPKCS11KeyID          string
+	WindowsCodeSignPKCS11Certfile string
+	WindowsCodeSignPKCS11KeyID    string
+	// One of the ENCRYPTIONMETHOD_ constants
 	WindowsCodeSignPKCS11PasswordFormat uint64
 	WindowsCodeSignPKCS11Password       string
 	WindowsCodeSignAzureVaultName       string
 	WindowsCodeSignAzureCertName        string
 	WindowsCodeSignAzureAppID           string
+	// One of the ENCRYPTIONMETHOD_ constants
 	WindowsCodeSignAzureAppSecretFormat uint64
 	WindowsCodeSignAzureAppSecret       string
 	WindowsCodeSignAzureTenantID        string
@@ -1349,37 +1435,42 @@ type BrandingOptions struct {
 }
 
 type BrandingProperties struct {
-	ProductName                         string
-	CompanyName                         string
-	HelpURL                             string
-	HelpIsPopup                         bool
-	DefaultLoginServerURL               string
-	TileBackgroundColor                 string
-	AccountRegisterURL                  string
-	HideBackgroundLogo                  bool
-	BuildMode                           ClientBrandingBuildMode
-	PathIcoFile                         string
-	PathIcnsFile                        string
-	PathMenuBarIcnsFile                 string
-	PathEulaRtf                         string
-	PathTilePng                         string
-	PathHeaderImage                     string
-	PathAppIconImage                    string
-	PackageIdentifier                   string
-	WindowsCodeSignMethod               WindowsCodesignMethod
-	WindowsCodeSignPKCS12FilePath       string
+	ProductName           string
+	CompanyName           string
+	HelpURL               string
+	HelpIsPopup           bool
+	DefaultLoginServerURL string
+	TileBackgroundColor   string
+	AccountRegisterURL    string
+	HideBackgroundLogo    bool
+	// One of the CLIENTBRANDINGBUILD_ constants
+	BuildMode           ClientBrandingBuildMode
+	PathIcoFile         string
+	PathIcnsFile        string
+	PathMenuBarIcnsFile string
+	PathEulaRtf         string
+	PathTilePng         string
+	PathHeaderImage     string
+	PathAppIconImage    string
+	PackageIdentifier   string
+	// One of the WINDOWSCODESIGN_METHOD_ constants
+	WindowsCodeSignMethod         WindowsCodesignMethod
+	WindowsCodeSignPKCS12FilePath string
+	// One of the ENCRYPTIONMETHOD_ constants
 	WindowsCodeSignPKCS12PasswordFormat uint64
 	WindowsCodeSignPKCS12Password       string
 	WindowsCodeSignPKCS11Engine         string
 	WindowsCodeSignPKCS11Module         string
 	// Deprecated: This member has been deprecated since Comet version 22.12.7
-	WindowsCodeSignPKCS11Certfile       string
-	WindowsCodeSignPKCS11KeyID          string
+	WindowsCodeSignPKCS11Certfile string
+	WindowsCodeSignPKCS11KeyID    string
+	// One of the ENCRYPTIONMETHOD_ constants
 	WindowsCodeSignPKCS11PasswordFormat uint64
 	WindowsCodeSignPKCS11Password       string
 	WindowsCodeSignAzureVaultName       string
 	WindowsCodeSignAzureCertName        string
 	WindowsCodeSignAzureAppID           string
+	// One of the ENCRYPTIONMETHOD_ constants
 	WindowsCodeSignAzureAppSecretFormat uint64
 	WindowsCodeSignAzureAppSecret       string
 	WindowsCodeSignAzureTenantID        string
@@ -1436,8 +1527,10 @@ type BrowseVSSResponse struct {
 }
 
 type BucketProperties struct {
-	OrganizationID     string
-	CreateTime         int64
+	OrganizationID string
+	// Unix timestamp, in seconds.
+	CreateTime int64
+	// One of the PASSWORD_FORMAT_ constants
 	ReadWriteKeyFormat int
 	ReadWriteKey       string
 	Size               SizeMeasurement
@@ -1479,8 +1572,13 @@ type ConstellationRoleOptions struct {
 }
 
 type ConstellationStats struct {
-	LastCheckStart        int64
-	TotalChecksStarted    int64
+	// Unix timestamp, in seconds.
+	LastCheckStart int64
+	// The total number of Constellation bucket report scans that have been performed since this Comet
+	// Server was last restarted
+	TotalChecksStarted int64
+	// The total number of buckets that Constellation has successfully deleted since this Comet Server
+	// was last restarted
 	TotalBucketsDeleted   int64
 	ChecksCurrentlyActive int64
 }
@@ -1771,6 +1869,8 @@ type DeviceConfig struct {
 	Sources map[string]SourceBasicInfo `json:",omitempty"`
 	// The device's reported timezone in IANA format.
 	DeviceTimezone string `json:",omitempty"`
+	// This field is available in Comet 23.6.0 and later.
+	ClientVersion string `json:",omitempty"`
 }
 
 type DiskDrive struct {
@@ -1860,9 +1960,11 @@ type EmailReportGeneratedPreview struct {
 
 type EmailReportingOption struct {
 	EmailReportConfig EmailReportConfig
-	LanguageCode      LanguageCode
-	LocalTimezone     string
-	Recipients        []string
+	// A supported language code (e.g. "en_US" or the DEFAULT_LANGUAGE constant)
+	LanguageCode LanguageCode
+	// The timezone in IANA format (e.g. "Pacific/Auckland" or the DEFAULT_TIMEZONE constant)
+	LocalTimezone string
+	Recipients    []string
 }
 
 type ExternalAuthenticationSource struct {
@@ -1883,15 +1985,17 @@ type ExternalAuthenticationSource struct {
 }
 
 type ExternalLDAPAuthenticationSourceServer struct {
-	Hostname         string
-	Port             int
+	Hostname string
+	Port     int
+	// One of the LDAPSECURITYMETHOD_ constants (e.g. "plain" / "ldaps" / "starttls")
 	SecurityMethod   LDAPSecurityMethod
 	AcceptInvalidSSL bool
 }
 
 type ExternalLDAPAuthenticationSourceSettings struct {
-	Hostname         string
-	Port             int
+	Hostname string
+	Port     int
+	// One of the LDAPSECURITYMETHOD_ constants (e.g. "plain" / "ldaps" / "starttls")
 	SecurityMethod   LDAPSecurityMethod
 	AcceptInvalidSSL bool
 	FallbackServers  []ExternalLDAPAuthenticationSourceServer
@@ -2018,11 +2122,16 @@ type InstallCreds struct {
 }
 
 type InstallToken struct {
-	Username   string
-	Server     string
-	Token      string
+	Username string
+	// The URL of the Comet Server (Auth Role) for the target user to log in to.
+	Server string
+	// The token for use with the "/TOKEN=" silent install flag.
+	Token string
+	// Unix timestamp, in seconds.
 	CreateTime int64
-	Used       bool
+	// If the token has been used, it cannot be used again.
+	Used bool
+	// Unix timestamp, in seconds.
 	ExpireTime int64
 }
 
@@ -2087,12 +2196,15 @@ type LocalStorageDirectory struct {
 }
 
 type MSSQLConnection struct {
-	Type         string
-	Username     string
-	Password     string
+	// One of the MSSQL_AUTH_ constants (e.g. "windows" or "native")
+	Type     string
+	Username string
+	Password string
+	// Deprecated: This member has been deprecated since Comet version Unused
 	Hostname     string
 	InstanceName string
-	Method       string
+	// One of the MSSQL_METHOD_ constants, to control using x86_32 or x86_64 OLEDB drivers
+	Method string
 }
 
 type MSSQLLoginArgs struct {
@@ -2108,17 +2220,23 @@ type MSSQLLoginArgs struct {
 
 type MacOSCodeSignProperties struct {
 	// One of the MACOSCODESIGN_LEVEL_ constants
-	Level                 MacOSCodesignLevel
-	SignLocally           bool
-	SSHServer             SSHConnection
-	CertificateName       string
-	AppCertificateName    string
-	AppleID               string
-	AppleIDPass           string
-	AppleIDPassFormat     uint64
-	CertificateFile       string
-	AppCertificateFile    string
-	PfxFilePassword       string
+	Level       MacOSCodesignLevel
+	SignLocally bool
+	SSHServer   SSHConnection
+	// "Developer ID Installer" certificate, either a local filepath or a resource:// URI. Used for
+	// signing the final flat *.pkg.
+	CertificateName string
+	// "Developer ID Application" certificate, either a local filepath or a resource:// URI. Used for
+	// signing internal binaries if Notary is enabled
+	AppCertificateName string
+	AppleID            string
+	AppleIDPass        string
+	// One of the ENCRYPTIONMETHOD_ constants
+	AppleIDPassFormat  uint64
+	CertificateFile    string
+	AppCertificateFile string
+	PfxFilePassword    string
+	// One of the ENCRYPTIONMETHOD_ constants
 	PfxFilePasswordFormat uint64
 	NotaryAPIIssuerID     string
 	NotaryAPIKeyID        string
@@ -2171,14 +2289,25 @@ type NewBucketDetail struct {
 
 type NewsEntry struct {
 	OrganizationID string
-	DateTime       int64
-	TextContent    string
+	// Unix timestamp, in seconds.
+	DateTime    int64
+	TextContent string
 }
 
+// OSInfo represents the common set of version information between all operating systems
 type OSInfo struct {
-	Version      string `json:"version,omitempty"`
+	// The primary version number (e.g. on Windows: 1703 / 2009, on Linux: 20.04 / 22.04)
+	Version string `json:"version,omitempty"`
+	// The primary presentation name (e.g. "Windows 10 Pro", "debian", "Synology DSM")
 	Distribution string `json:"distribution,omitempty"`
-	Build        string `json:"build,omitempty"`
+	// The detailed build number (e.g. 19043)
+	Build string `json:"build,omitempty"`
+	// The GOOS value
+	// This field is available in Comet 23.6.0 and later.
+	OS string `json:"os,omitempty"`
+	// The GOARCH value
+	// This field is available in Comet 23.6.0 and later.
+	Arch string `json:"arch,omitempty"`
 }
 
 type Office365Connection struct {
@@ -2280,51 +2409,65 @@ type OrganizationResponse struct {
 }
 
 type PSAConfig struct {
+	// For PSA_TYPE_GRADIENT. Defaults to enabled
 	AlertsDisabled bool
 	CustomHeaders  map[string]string `json:",omitempty"`
-	PartnerKey     string            `json:",omitempty"`
-	Type           PSAType
-	URL            string
+	// Specified credentials for the target PSA
+	PartnerKey string `json:",omitempty"`
+	// One of the PSA_TYPE_ constants
+	Type PSAType
+	// For PSA_TYPE_GENERIC
+	URL string
 }
 
 type Partition struct {
-	DeviceName                string
-	Filesystem                string
-	VolumeName                string
-	VolumeGuid                string
-	VolumeSerial              string
-	MountPoints               []string
-	ReadOffset                int64
-	Size                      int64
+	DeviceName string
+	// The name of the filesystem used on this partition (e.g. "NTFS")
+	Filesystem   string
+	VolumeName   string
+	VolumeGuid   string
+	VolumeSerial string
+	MountPoints  []string
+	// Bytes. The partition's offset within the DeviceName. It will be zero if this partition has a
+	// direct DeviceName handle.
+	ReadOffset int64
+	// Bytes
+	Size int64
+	// Bytes. Only present for supported filesystems that are currently mounted by the OS
 	UsedSize                  int64
 	Flags                     int64
 	BytesPerFilesystemCluster int64
 }
 
 type PrivateBrandingProperties struct {
-	BuildMode                           ClientBrandingBuildMode
-	PathIcoFile                         string
-	PathIcnsFile                        string
-	PathMenuBarIcnsFile                 string
-	PathEulaRtf                         string
-	PathTilePng                         string
-	PathHeaderImage                     string
-	PathAppIconImage                    string
-	PackageIdentifier                   string
-	WindowsCodeSignMethod               WindowsCodesignMethod
-	WindowsCodeSignPKCS12FilePath       string
+	// One of the CLIENTBRANDINGBUILD_ constants
+	BuildMode           ClientBrandingBuildMode
+	PathIcoFile         string
+	PathIcnsFile        string
+	PathMenuBarIcnsFile string
+	PathEulaRtf         string
+	PathTilePng         string
+	PathHeaderImage     string
+	PathAppIconImage    string
+	PackageIdentifier   string
+	// One of the WINDOWSCODESIGN_METHOD_ constants
+	WindowsCodeSignMethod         WindowsCodesignMethod
+	WindowsCodeSignPKCS12FilePath string
+	// One of the ENCRYPTIONMETHOD_ constants
 	WindowsCodeSignPKCS12PasswordFormat uint64
 	WindowsCodeSignPKCS12Password       string
 	WindowsCodeSignPKCS11Engine         string
 	WindowsCodeSignPKCS11Module         string
 	// Deprecated: This member has been deprecated since Comet version 22.12.7
-	WindowsCodeSignPKCS11Certfile       string
-	WindowsCodeSignPKCS11KeyID          string
+	WindowsCodeSignPKCS11Certfile string
+	WindowsCodeSignPKCS11KeyID    string
+	// One of the ENCRYPTIONMETHOD_ constants
 	WindowsCodeSignPKCS11PasswordFormat uint64
 	WindowsCodeSignPKCS11Password       string
 	WindowsCodeSignAzureVaultName       string
 	WindowsCodeSignAzureCertName        string
 	WindowsCodeSignAzureAppID           string
+	// One of the ENCRYPTIONMETHOD_ constants
 	WindowsCodeSignAzureAppSecretFormat uint64
 	WindowsCodeSignAzureAppSecret       string
 	WindowsCodeSignAzureTenantID        string
@@ -2459,6 +2602,12 @@ type RestoreJobAdvancedOptions struct {
 	// For RESTORETYPE_FILE_ARCHIVE or RESTORETYPE_PROCESS_ARCHIVE. Default 0 is *.tar, for backward
 	// compatibility
 	ArchiveFormat RestoreArchiveFormat
+	// Corresponds to the "Allow partial file restores (zero-out unrecoverable data)" option
+	// This field is available in Comet 23.6.4 and later.
+	SkipUnreadableChunks bool
+	// Corresponds to the "Prefer temporary files instead of RAM (slower)" option
+	// This field is available in Comet 23.6.4 and later.
+	OnDiskIndexesKey bool
 	// For RESTORETYPE_OFFICE365_CLOUD.
 	Office365Credential RestoreOffice365Credential `json:",omitempty"`
 	// For RESTORETYPE_MYSQL
@@ -2489,15 +2638,23 @@ type RetentionPolicy struct {
 	Ranges []RetentionRange
 }
 
+// The Type field controls which fields of this data type are used. For additional information, see
+// the notes on the RETENTIONRANGE_ constants.
 type RetentionRange struct {
-	Type      RetentionRangeType
+	// One of the RETENTIONRANGE_ constants
+	Type RetentionRangeType
+	// Unix timestamp, in seconds. Used by RETENTIONRANGE_NEWER_THAN_X.
 	Timestamp int64
 	Jobs      int64
 	Days      int64
 	Weeks     int64
 	Months    int64
 	// 0: Sunday, 6: Saturday
-	WeekOffset  int64
+	WeekOffset int64
+	// 1: 1st, 31: 31st
+	// Prior to Comet version 23.6.2, 31 was treated as 30.
+	// For months that do not have a day equal to the specified offset, no backup will be retained.
+	// For example, if the offset is set to 30, no backup will be kept for February.
 	MonthOffset int64
 }
 
@@ -2575,10 +2732,26 @@ type ScheduleConfig struct {
 }
 
 type SearchClause struct {
-	ClauseType     SearchClauseType
-	RuleField      string
-	RuleOperator   SearchOperatorType
-	RuleValue      string
+	// One of the SEARCHCLAUSE_ constants (e.g. empty-string if this is a rule, or "and"/"or" if there
+	// are ClauseChildren)
+	ClauseType SearchClauseType
+	// The field name to search. Check the specific API for more information about which fields are
+	// available for searching. For use with ClauseType = SEARCHCLAUSE_RULE.
+	RuleField string
+	// One of the SEARCHOPERATOR_ constants. The operator must match the type of the particular field.
+	// For use with ClauseType = SEARCHCLAUSE_RULE.
+	RuleOperator SearchOperatorType
+	// The value to compare the field against.
+	// - If the field is a string, any string is permissable.
+	// - If the field is an integer, the integer should be cast to a base-10 string. There is currently
+	// no support for fractional or floating-point numbers.
+	// - If the field is a boolean, the following values can be used for true ("1", "t", "T", "true",
+	// "TRUE", "True") and the following values can be used for false ("0", "f", "F", "false", "FALSE",
+	// "False").
+	// For use with ClauseType = SEARCHCLAUSE_RULE.
+	RuleValue string
+	// If ClauseType is not SEARCHCLAUSE_RULE, the child rules will be applied according to the
+	// ClauseType (e.g. "and"/"or")
 	ClauseChildren []SearchClause `json:",omitempty"`
 }
 
@@ -2613,8 +2786,9 @@ type SearchSnapshotsResponse struct {
 }
 
 type SelfBackupExportOptions struct {
-	Location            DestinationLocation
-	EncryptionKey       string
+	Location      DestinationLocation
+	EncryptionKey string
+	// One of the ENCRYPTIONMETHOD_ constants
 	EncryptionKeyFormat uint64
 	// One of the COMPRESS_LVL_ constants
 	Compression CompressMode
@@ -2641,10 +2815,11 @@ type SelfBackupStatistics struct {
 type SelfBackupTarget struct {
 	Schedule []ScheduleConfig
 	// Timezone in IANA format
-	ScheduleTimezone    string
-	RetentionPolicy     RetentionPolicy
-	Location            DestinationLocation
-	EncryptionKey       string
+	ScheduleTimezone string
+	RetentionPolicy  RetentionPolicy
+	Location         DestinationLocation
+	EncryptionKey    string
+	// One of the ENCRYPTIONMETHOD_ constants
 	EncryptionKeyFormat uint64
 	// One of the COMPRESS_LVL_ constants
 	Compression CompressMode
@@ -2671,8 +2846,9 @@ type ServerConfigOptions struct {
 	// An array of GUIDs that can enable additional early-access functionality
 	ExperimentalOptions      []string `json:",omitempty"`
 	ExternalAdminUserSources map[string]ExternalAuthenticationSource
-	IPRateLimit              RatelimitOptions
-	License                  LicenseOptions
+	// The Comet Server can enforce a bandwidth limit based on the target IP address
+	IPRateLimit RatelimitOptions
+	License     LicenseOptions
 	// Configure ip, port, and SSL settings for this self-hosted Comet Server.
 	ListenAddresses []HTTPConnectorOptions
 	// Tenants
@@ -2708,8 +2884,10 @@ type ServerMetaBrandingProperties struct {
 	HasImage bool
 	// A value that will change if the branding image (/gen/logo.img) changes. You can use this as a
 	// cache key.
-	ImageEtag                     string
-	TopColor                      string
+	ImageEtag string
+	// Colour in RGB hex format (e.g. "#FFFFFF")
+	TopColor string
+	// Colour in RGB hex format (e.g. "#FFFFFF")
 	AccentColor                   string
 	HideNewsArea                  bool
 	AllowUnauthenticatedDownloads bool
@@ -2738,9 +2916,10 @@ type ServerMetaVersionInfo struct {
 	CurrentTime int64
 	// A hash derived from the Comet Server's serial number. You can check this value to see if two
 	// Comet Server endpoints point to an identical server.
-	ServerLicenseHash                              string
-	ServerLicenseFeaturesAll                       bool
-	ServerLicenseFeatureSet                        uint32
+	ServerLicenseHash        string
+	ServerLicenseFeaturesAll bool
+	ServerLicenseFeatureSet  uint32
+	// Unix timestamp, in seconds.
 	LicenseValidUntil                              int64
 	EmailsSentSuccessfully                         int64
 	EmailsSentErrors                               int64
@@ -2750,14 +2929,17 @@ type ServerMetaVersionInfo struct {
 	ScheduledEmailThreadWaitingUntil               int64
 	ScheduledEmailThreadLastWakeTime               int64
 	ScheduledEmailThreadLastWakeSentEmails         bool
-	SelfBackup                                     []SelfBackupStatistics
+	// This field is available in Comet 21.3.2 and later.
+	SelfBackup []SelfBackupStatistics
 }
 
 type SessionKeyRegeneratedResponse struct {
 	// If the operation was successful, the status will be in the 200-299 range.
-	Status      int
-	Message     string
-	SessionKey  string
+	Status     int
+	Message    string
+	SessionKey string
+	// e.g. "admin" or "user"
+	// This field is available in Comet 18.12.3 and later.
 	SessionType string
 }
 
@@ -2769,6 +2951,7 @@ type SessionOptions struct {
 
 type SingleFieldSource struct {
 	FieldName string
+	// One of "bool" / "int" / "string"
 	FieldType string
 	BoolVal   bool
 	IntVal    int64
@@ -2790,12 +2973,18 @@ type SoftwareBuildRoleOptions struct {
 }
 
 type SoftwareUpdateNewsResponse struct {
-	LatestStable     string   `json:"latest_stable"`
-	LatestPrerelease string   `json:"latest_prerelease"`
-	DownloadsURL     string   `json:"downloads_url"`
-	WhatsNew         []string `json:"updates_info"`
+	// The latest "Quarterly" release version of Comet known to the account.cometbackup.com system.
+	LatestStable string `json:"latest_stable"`
+	// The latest "Voyager" release version of Comet known to the account.cometbackup.com system.
+	LatestPrerelease string `json:"latest_prerelease"`
+	// A URL linking to the Comet Server downloads page.
+	DownloadsURL string `json:"downloads_url"`
+	// An array of recent news items written by Comet Backup staff. Entries are english plaintext.
+	WhatsNew []string `json:"updates_info"`
 }
 
+// SourceBasicInfo is the minimal amount of information one device knows about another device's
+// Protected Items, in order to safely perform retention passes on their behalf.
 type SourceBasicInfo struct {
 	Description      string
 	O365AccountCount int64
@@ -2864,6 +3053,13 @@ type SourceConfig struct {
 	// only)" backup job.
 	//
 	EngineProps map[string]string
+	// If set, this SourceConfig was added from a Policy with the specified ID.
+	// This field is available in Comet 23.6.0 and later.
+	PolicySourceID string
+	// For a Policy-defined SourceConfig, this field controls whether the Protected Item will stay
+	// linked with the policy.
+	// This field is available in Comet 23.6.0 and later.
+	ExistingUserUpdate bool
 	// By default, backup jobs from this Protected Item will be subject
 	// to the overall retention policy for the Storage Vault. You can override the policy
 	// for specific Storage Vaults by putting their destination ID as a key here.
@@ -2923,8 +3119,9 @@ type StorageFreeSpaceInfo struct {
 }
 
 type StorageRoleOptions struct {
-	RoleEnabled         bool
-	Storage             DestinationLocation
+	RoleEnabled bool
+	Storage     DestinationLocation
+	// Deprecated: This member has been deprecated since Comet version 17.3.5
 	LocalStorage_Legacy []LocalStorageDirectory `json:"LocalStorage,omitempty"`
 	ReplicateTo         []ReplicaServer
 }
@@ -3026,10 +3223,13 @@ type TimeSpan struct {
 
 type TotpRegeneratedResponse struct {
 	// If the operation was successful, the status will be in the 200-299 range.
-	Status      int
-	Message     string
-	Image       string
-	URL         string
+	Status  int
+	Message string
+	// A data URI of an image of a TOTP code (e.g. "data:image/png;base64,AAA...")
+	Image string
+	// This field is available in Comet 18.9.9 and later.
+	URL string
+	// This field is available in Comet 20.3.2 and later.
 	ProfileHash string
 }
 
@@ -3083,6 +3283,7 @@ type UninstallConfig struct {
 }
 
 type UpdateCampaignDeviceStatus struct {
+	// One of the UPDATESTATUS_ constants
 	Status UpdateStatus
 }
 
@@ -3116,8 +3317,9 @@ type UpdateCampaignProperties struct {
 	// software update.
 	ApplyDeviceFilter bool
 	DeviceFilter      SearchClause
-	StartTime         int64
-	TargetVersion     string
+	// Unix timestamp, in seconds
+	StartTime     int64
+	TargetVersion string
 }
 
 type UpdateCampaignStatus struct {
@@ -3132,15 +3334,17 @@ type UpdateCampaignStatus struct {
 	// software update.
 	ApplyDeviceFilter bool
 	DeviceFilter      SearchClause
-	StartTime         int64
-	TargetVersion     string
-	Devices           []UpdateCampaignStatusDeviceEntry
+	// Unix timestamp, in seconds
+	StartTime     int64
+	TargetVersion string
+	Devices       []UpdateCampaignStatusDeviceEntry
 }
 
 type UpdateCampaignStatusDeviceEntry struct {
 	Username string
 	DeviceID string
-	Status   UpdateStatus
+	// One of the UPDATESTATUS_ constants
+	Status UpdateStatus
 }
 
 type UserCustomEmailSettings struct {
@@ -3300,8 +3504,9 @@ type VMDKSnapshotViewOptions struct {
 }
 
 type VSSComponent struct {
-	Path       string
-	Name       string
+	Path string
+	Name string
+	// "VSS_CT_DATABASE" or "VSS_CT_FILEGROUP"
 	CType      string
 	Selectable bool
 }
@@ -3312,9 +3517,10 @@ type VSSWriterInfo struct {
 }
 
 type VaultSnapshot struct {
-	Snapshot            string
-	Source              string
-	CreateTime          int64
+	Snapshot   string
+	Source     string
+	CreateTime int64
+	// This field is available in Comet 20.12.4 and later.
 	HasOriginalPathInfo bool
 }
 
@@ -3335,11 +3541,13 @@ type WebAuthnAuthenticatorSelection struct {
 }
 
 type WebAuthnCredential struct {
+	// When this field is expressed as a Go WebAuthnCredential struct, this field may contain binary data. When this field is expressed as JSON, the field must be expressed as base64. The encoding/json marshaller will automatically perform base64 conversion as necessary.
 	PublicKey       []byte
 	AttestationType string
-	AAGUID          []byte
-	SignCount       uint32
-	CloneWarning    bool
+	// When this field is expressed as a Go WebAuthnCredential struct, this field may contain binary data. When this field is expressed as JSON, the field must be expressed as base64. The encoding/json marshaller will automatically perform base64 conversion as necessary.
+	AAGUID       []byte
+	SignCount    uint32
+	CloneWarning bool
 }
 
 type WebAuthnCredentialAssertion struct {
@@ -3347,7 +3555,8 @@ type WebAuthnCredentialAssertion struct {
 }
 
 type WebAuthnCredentialDescriptor struct {
-	Type         string   `json:"type"`
+	Type string `json:"type"`
+	// When this field is expressed as a Go WebAuthnCredentialDescriptor struct, this field may contain binary data. When this field is expressed as JSON, the field must be expressed as base64. The encoding/json marshaller will automatically perform base64 conversion as necessary.
 	CredentialID []byte   `json:"id"`
 	Transport    []string `json:"transports,omitempty"`
 }
@@ -3363,6 +3572,7 @@ type WebAuthnCredentialParameter struct {
 }
 
 type WebAuthnPublicKeyCredentialCreationOptions struct {
+	// When this field is expressed as a Go WebAuthnPublicKeyCredentialCreationOptions struct, this field may contain binary data. When this field is expressed as JSON, the field must be expressed as base64. The encoding/json marshaller will automatically perform base64 conversion as necessary.
 	Challenge              []byte                           `json:"challenge"`
 	RelyingParty           WebAuthnRelyingPartyEntity       `json:"rp"`
 	User                   WebAuthnUserEntity               `json:"user"`
@@ -3375,6 +3585,7 @@ type WebAuthnPublicKeyCredentialCreationOptions struct {
 }
 
 type WebAuthnPublicKeyCredentialRequestOptions struct {
+	// When this field is expressed as a Go WebAuthnPublicKeyCredentialRequestOptions struct, this field may contain binary data. When this field is expressed as JSON, the field must be expressed as base64. The encoding/json marshaller will automatically perform base64 conversion as necessary.
 	Challenge          []byte                           `json:"challenge"`
 	Timeout            int                              `json:"timeout,omitempty"`
 	RelyingPartyID     string                           `json:"rpId,omitempty"`
@@ -3411,7 +3622,8 @@ type WebAuthnUserEntity struct {
 	Name        string `json:"name"`
 	Icon        string `json:"icon,omitempty"`
 	DisplayName string `json:"displayName,omitempty"`
-	ID          []byte `json:"id"`
+	// When this field is expressed as a Go WebAuthnUserEntity struct, this field may contain binary data. When this field is expressed as JSON, the field must be expressed as base64. The encoding/json marshaller will automatically perform base64 conversion as necessary.
+	ID []byte `json:"id"`
 }
 
 type WebInterfaceBrandingProperties struct {
@@ -3457,20 +3669,24 @@ type WinSMBAuth struct {
 }
 
 type WindowsCodeSignProperties struct {
-	WindowsCodeSignMethod               WindowsCodesignMethod
-	WindowsCodeSignPKCS12FilePath       string
+	// One of the WINDOWSCODESIGN_METHOD_ constants
+	WindowsCodeSignMethod         WindowsCodesignMethod
+	WindowsCodeSignPKCS12FilePath string
+	// One of the ENCRYPTIONMETHOD_ constants
 	WindowsCodeSignPKCS12PasswordFormat uint64
 	WindowsCodeSignPKCS12Password       string
 	WindowsCodeSignPKCS11Engine         string
 	WindowsCodeSignPKCS11Module         string
 	// Deprecated: This member has been deprecated since Comet version 22.12.7
-	WindowsCodeSignPKCS11Certfile       string
-	WindowsCodeSignPKCS11KeyID          string
+	WindowsCodeSignPKCS11Certfile string
+	WindowsCodeSignPKCS11KeyID    string
+	// One of the ENCRYPTIONMETHOD_ constants
 	WindowsCodeSignPKCS11PasswordFormat uint64
 	WindowsCodeSignPKCS11Password       string
 	WindowsCodeSignAzureVaultName       string
 	WindowsCodeSignAzureCertName        string
 	WindowsCodeSignAzureAppID           string
+	// One of the ENCRYPTIONMETHOD_ constants
 	WindowsCodeSignAzureAppSecretFormat uint64
 	WindowsCodeSignAzureAppSecret       string
 	WindowsCodeSignAzureTenantID        string
@@ -5860,7 +6076,16 @@ func (this *CometAPIClient) AdminDispatcherRunRestore(TargetID string, Path stri
 // Snapshot: (Optional) If present, restore a specific snapshot. Otherwise, restore the latest
 // snapshot for the selected Protected Item + Storage Vault pair
 // Paths: (Optional) If present, restore these paths only. Otherwise, restore all data
-func (this *CometAPIClient) AdminDispatcherRunRestoreCustom(TargetID string, Source string, Destination string, Options RestoreJobAdvancedOptions, Snapshot *string, Paths []string) (*CometAPIResponseMessage, error) {
+// KnownFileCount: (Optional) The number of files to restore, if known. Supplying this means we
+// don't need to walk the entire tree just to find the file count and will speed up the restoration
+// process.
+// KnownByteCount: (Optional) The total size in bytes of files to restore, if known. Supplying this
+// means we don't need to walk the entire tree just to find the total file size and will speed up
+// the restoration process.
+// KnownDirCount: (Optional) The number of directories to restore, if known. Supplying this means we
+// don't need to walk the entire tree just to find the number of directories and will speed up the
+// restoration process.
+func (this *CometAPIClient) AdminDispatcherRunRestoreCustom(TargetID string, Source string, Destination string, Options RestoreJobAdvancedOptions, Snapshot *string, Paths []string, KnownFileCount *int, KnownByteCount *int, KnownDirCount *int) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -5887,6 +6112,30 @@ func (this *CometAPIClient) AdminDispatcherRunRestoreCustom(TargetID string, Sou
 			return nil, err
 		}
 		data["Paths"] = []string{string(b)}
+	}
+
+	if KnownFileCount != nil {
+		b, err = json.Marshal(KnownFileCount)
+		if err != nil {
+			return nil, err
+		}
+		data["KnownFileCount"] = []string{string(b)}
+	}
+
+	if KnownByteCount != nil {
+		b, err = json.Marshal(KnownByteCount)
+		if err != nil {
+			return nil, err
+		}
+		data["KnownByteCount"] = []string{string(b)}
+	}
+
+	if KnownDirCount != nil {
+		b, err = json.Marshal(KnownDirCount)
+		if err != nil {
+			return nil, err
+		}
+		data["KnownDirCount"] = []string{string(b)}
 	}
 
 	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/run-restore-custom", data)
@@ -9227,7 +9476,16 @@ func (this *CometAPIClient) UserWebDispatcherRunRestore(TargetID string, Path st
 // Snapshot: (Optional) If present, restore a specific snapshot. Otherwise, restore the latest
 // snapshot for the selected Protected Item + Storage Vault pair
 // Paths: (Optional) If present, restore these paths only. Otherwise, restore all data (>= 19.3.0)
-func (this *CometAPIClient) UserWebDispatcherRunRestoreCustom(TargetID string, Source string, Destination string, Options RestoreJobAdvancedOptions, Snapshot *string, Paths []string) (*CometAPIResponseMessage, error) {
+// KnownFileCount: (Optional) The number of files to restore, if known. Supplying this means we
+// don't need to walk the entire tree just to find the file count and will speed up the restoration
+// process.
+// KnownByteCount: (Optional) The total size in bytes of files to restore, if known. Supplying this
+// means we don't need to walk the entire tree just to find the total file size and will speed up
+// the restoration process.
+// KnownDirCount: (Optional) The number of directories to restore, if known. Supplying this means we
+// don't need to walk the entire tree just to find the number of directories and will speed up the
+// restoration process.
+func (this *CometAPIClient) UserWebDispatcherRunRestoreCustom(TargetID string, Source string, Destination string, Options RestoreJobAdvancedOptions, Snapshot *string, Paths []string, KnownFileCount *int, KnownByteCount *int, KnownDirCount *int) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -9254,6 +9512,30 @@ func (this *CometAPIClient) UserWebDispatcherRunRestoreCustom(TargetID string, S
 			return nil, err
 		}
 		data["Paths"] = []string{string(b)}
+	}
+
+	if KnownFileCount != nil {
+		b, err = json.Marshal(KnownFileCount)
+		if err != nil {
+			return nil, err
+		}
+		data["KnownFileCount"] = []string{string(b)}
+	}
+
+	if KnownByteCount != nil {
+		b, err = json.Marshal(KnownByteCount)
+		if err != nil {
+			return nil, err
+		}
+		data["KnownByteCount"] = []string{string(b)}
+	}
+
+	if KnownDirCount != nil {
+		b, err = json.Marshal(KnownDirCount)
+		if err != nil {
+			return nil, err
+		}
+		data["KnownDirCount"] = []string{string(b)}
 	}
 
 	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/run-restore-custom", data)
