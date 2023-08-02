@@ -16,10 +16,10 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "23.6.5"
+const APPLICATION_VERSION string = "23.6.9"
 const APPLICATION_VERSION_MAJOR int = 23
 const APPLICATION_VERSION_MINOR int = 6
-const APPLICATION_VERSION_REVISION int = 5
+const APPLICATION_VERSION_REVISION int = 9
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
@@ -403,6 +403,15 @@ const OS_ONLY_WINDOWS_X8664 ExtraFileExclusionOSRestriction = 3
 // will re-hash the credential automatically.
 const PASSWORD_FORMAT_PLAINTEXT int = 0
 
+// OidcProvider
+const PROVIDER_AZUREADV2 OidcProvider = "azure-ad-v2"
+
+// OidcProvider
+const PROVIDER_GENERIC OidcProvider = "oidc"
+
+// OidcProvider
+const PROVIDER_GOOGLE OidcProvider = "google"
+
 // PSAType
 const PSA_TYPE_GENERIC PSAType = 0
 
@@ -427,6 +436,9 @@ const REMOTESERVER_IDRIVEE2 RemoteServerType = "idrivee2"
 
 // RemoteServerType
 const REMOTESERVER_LDAP RemoteServerType = "ldap"
+
+// RemoteServerType
+const REMOTESERVER_OIDC RemoteServerType = "oidc"
 
 // RemoteServerType
 const REMOTESERVER_S3_GENERIC RemoteServerType = "s3"
@@ -1002,9 +1014,9 @@ const WEBAUTHN_DEVICE_TYPE__TPM_WINDOWS WebAuthnDeviceType = 5
 // WebAuthnDeviceType
 const WEBAUTHN_DEVICE_TYPE__UNKNOWN WebAuthnDeviceType = 0
 
-// WindowsCodesignMethod: When upgrading from a version of Comet Server prior to 22.12.7, this
-// option will be automatically converted to a more specific type.
-// Deprecated: This const has been deprecated since Comet version 22.12.7
+// WindowsCodesignMethod: When upgrading from a version of Comet Server prior to 23.3.0, this option
+// will be automatically converted to a more specific type.
+// Deprecated: This const has been deprecated since Comet version 23.3.0
 const WINDOWSCODESIGN_METHOD_AUTO WindowsCodesignMethod = 0
 
 // WindowsCodesignMethod: Use a configured Azure Key Vault for Authenticode codesigning
@@ -1047,6 +1059,7 @@ type MSSQLMethod string
 type MSSQLRestoreOpt string
 type MacOSCodesignLevel int
 type NewsEntries map[string]NewsEntry
+type OidcProvider string
 type PSAType int
 type RemoteServerType string
 type ReplicaDeletionStrategy string
@@ -1128,14 +1141,15 @@ type AdminU2FRegistration struct {
 }
 
 type AdminUserPermissions struct {
-	PreventEditServerSettings bool `json:",omitempty"`
-	PreventServerShutdown     bool `json:",omitempty"`
-	PreventChangePassword     bool `json:",omitempty"`
-	AllowEditBranding         bool `json:",omitempty"`
-	AllowEditEmailOptions     bool `json:",omitempty"`
-	AllowEditRemoteStorage    bool `json:",omitempty"`
-	AllowEditWebhooks         bool `json:",omitempty"`
-	DenyConstellationRole     bool `json:",omitempty"`
+	PreventEditServerSettings    bool `json:",omitempty"`
+	PreventServerShutdown        bool `json:",omitempty"`
+	PreventChangePassword        bool `json:",omitempty"`
+	AllowEditBranding            bool `json:",omitempty"`
+	AllowEditEmailOptions        bool `json:",omitempty"`
+	AllowEditRemoteStorage       bool `json:",omitempty"`
+	AllowEditWebhooks            bool `json:",omitempty"`
+	AllowEditExternalAuthSources bool `json:",omitempty"`
+	DenyConstellationRole        bool `json:",omitempty"`
 	// This field is available in Comet 23.6.0 and later.
 	DenyViewServerHistory bool `json:",omitempty"`
 	// This field is available in Comet 23.6.0 and later.
@@ -1418,7 +1432,7 @@ type BrandingOptions struct {
 	WindowsCodeSignPKCS12Password       string
 	WindowsCodeSignPKCS11Engine         string
 	WindowsCodeSignPKCS11Module         string
-	// Deprecated: This member has been deprecated since Comet version 22.12.7
+	// This field was deprecated between 23.3.0 and 23.6.x, but is now used again.
 	WindowsCodeSignPKCS11Certfile string
 	WindowsCodeSignPKCS11KeyID    string
 	// One of the ENCRYPTIONMETHOD_ constants
@@ -1461,7 +1475,7 @@ type BrandingProperties struct {
 	WindowsCodeSignPKCS12Password       string
 	WindowsCodeSignPKCS11Engine         string
 	WindowsCodeSignPKCS11Module         string
-	// Deprecated: This member has been deprecated since Comet version 22.12.7
+	// This field was deprecated between 23.3.0 and 23.6.x, but is now used again.
 	WindowsCodeSignPKCS11Certfile string
 	WindowsCodeSignPKCS11KeyID    string
 	// One of the ENCRYPTIONMETHOD_ constants
@@ -1974,6 +1988,7 @@ type ExternalAuthenticationSource struct {
 	Username      string                                   `json:",omitempty"`
 	Password      string                                   `json:",omitempty"`
 	LDAP          ExternalLDAPAuthenticationSourceSettings `json:",omitempty"`
+	OIDC          OidcConfig                               `json:",omitempty"`
 	B2            B2VirtualStorageRoleSettings             `json:",omitempty"`
 	Wasabi        WasabiVirtualStorageRoleSettings         `json:",omitempty"`
 	Custom        CustomRemoteBucketSettings               `json:",omitempty"`
@@ -1982,6 +1997,18 @@ type ExternalAuthenticationSource struct {
 	AWS                AmazonAWSVirtualStorageRoleSettings `json:",omitempty"`
 	Storj              StorjVirtualStorageRoleSetting      `json:",omitempty"`
 	NewUserPermissions AdminUserPermissions
+}
+
+type ExternalAuthenticationSourceDisplay struct {
+	DisplayName   string
+	LoginStartURL string
+}
+
+type ExternalAuthenticationSourceResponse struct {
+	Status  int
+	Message string
+	ID      string
+	Source  ExternalAuthenticationSource
 }
 
 type ExternalLDAPAuthenticationSourceServer struct {
@@ -2382,6 +2409,26 @@ type Office365ObjectInfo struct {
 	Members []string
 }
 
+type OidcClaim struct {
+	Name  string
+	Value string `json:",omitempty"`
+}
+
+type OidcConfig struct {
+	DisplayName                    string
+	Hosts                          []string `json:",omitempty"`
+	OrganizationID                 string   `json:",omitempty"`
+	Provider                       OidcProvider
+	ClientID                       string
+	ClientSecret                   string
+	SkipMFA                        bool
+	Scopes                         []string    `json:",omitempty"`
+	RequiredClaims                 []OidcClaim `json:",omitempty"`
+	GenericOP_DiscoveryDocumentURL string      `json:"DiscoveryDocumentURL,omitempty"`
+	AzureADV2OP_TenantID           string      `json:"AzureTenantID,omitempty"`
+	GoogleOP_HostedDomain          string      `json:"GoogleHostedDomain,omitempty"`
+}
+
 type Organization struct {
 	AuditFileOptions    map[string]FileOption
 	Branding            BrandingOptions
@@ -2458,7 +2505,7 @@ type PrivateBrandingProperties struct {
 	WindowsCodeSignPKCS12Password       string
 	WindowsCodeSignPKCS11Engine         string
 	WindowsCodeSignPKCS11Module         string
-	// Deprecated: This member has been deprecated since Comet version 22.12.7
+	// This field was deprecated between 23.3.0 and 23.6.x, but is now used again.
 	WindowsCodeSignPKCS11Certfile string
 	WindowsCodeSignPKCS11KeyID    string
 	// One of the ENCRYPTIONMETHOD_ constants
@@ -2519,6 +2566,7 @@ type RemoteServerAddress struct {
 	Username      string                                   `json:",omitempty"`
 	Password      string                                   `json:",omitempty"`
 	LDAP          ExternalLDAPAuthenticationSourceSettings `json:",omitempty"`
+	OIDC          OidcConfig                               `json:",omitempty"`
 	B2            B2VirtualStorageRoleSettings             `json:",omitempty"`
 	Wasabi        WasabiVirtualStorageRoleSettings         `json:",omitempty"`
 	Custom        CustomRemoteBucketSettings               `json:",omitempty"`
@@ -2535,6 +2583,7 @@ type RemoteStorageOption struct {
 	Username      string                                   `json:",omitempty"`
 	Password      string                                   `json:",omitempty"`
 	LDAP          ExternalLDAPAuthenticationSourceSettings `json:",omitempty"`
+	OIDC          OidcConfig                               `json:",omitempty"`
 	B2            B2VirtualStorageRoleSettings             `json:",omitempty"`
 	Wasabi        WasabiVirtualStorageRoleSettings         `json:",omitempty"`
 	Custom        CustomRemoteBucketSettings               `json:",omitempty"`
@@ -2554,6 +2603,7 @@ type ReplicaServer struct {
 	Username      string                                   `json:",omitempty"`
 	Password      string                                   `json:",omitempty"`
 	LDAP          ExternalLDAPAuthenticationSourceSettings `json:",omitempty"`
+	OIDC          OidcConfig                               `json:",omitempty"`
 	B2            B2VirtualStorageRoleSettings             `json:",omitempty"`
 	Wasabi        WasabiVirtualStorageRoleSettings         `json:",omitempty"`
 	Custom        CustomRemoteBucketSettings               `json:",omitempty"`
@@ -2602,9 +2652,12 @@ type RestoreJobAdvancedOptions struct {
 	// For RESTORETYPE_FILE_ARCHIVE or RESTORETYPE_PROCESS_ARCHIVE. Default 0 is *.tar, for backward
 	// compatibility
 	ArchiveFormat RestoreArchiveFormat
+	// Default disabled. For RESTORETYPE_FILE and RESTORETYPE_WINDISK. Used to continue the restore job
+	// when unreadable data chunks are found.
 	// Corresponds to the "Allow partial file restores (zero-out unrecoverable data)" option
 	// This field is available in Comet 23.6.4 and later.
 	SkipUnreadableChunks bool
+	// Default disabled. Used to store the index files on disk instead of in memory.
 	// Corresponds to the "Prefer temporary files instead of RAM (slower)" option
 	// This field is available in Comet 23.6.4 and later.
 	OnDiskIndexesKey bool
@@ -2894,6 +2947,7 @@ type ServerMetaBrandingProperties struct {
 	AllowAuthenticatedDownloads   bool
 	PruneLogsAfterDays            int64
 	ExpiredInSeconds              int64
+	ExternalAuthenticationSources []ExternalAuthenticationSourceDisplay `json:",omitempty"`
 }
 
 type ServerMetaVersionInfo struct {
@@ -3388,6 +3442,7 @@ type UserPolicy struct {
 	DefaultStorageVaultRetention     RetentionPolicy
 	EnforceStorageVaultRetention     bool
 	PreventProtectedItemRetention    bool
+	AllowEditObjectLockRetention     bool
 	DefaultSources                   map[string]SourceConfig
 	DefaultSourcesBackupRules        map[string]BackupRuleConfig
 	DefaultSourcesWithOSRestriction  map[string]DefaultSourceWithOSRestriction
@@ -3677,7 +3732,7 @@ type WindowsCodeSignProperties struct {
 	WindowsCodeSignPKCS12Password       string
 	WindowsCodeSignPKCS11Engine         string
 	WindowsCodeSignPKCS11Module         string
-	// Deprecated: This member has been deprecated since Comet version 22.12.7
+	// This field was deprecated between 23.3.0 and 23.6.x, but is now used again.
 	WindowsCodeSignPKCS11Certfile string
 	WindowsCodeSignPKCS11KeyID    string
 	// One of the ENCRYPTIONMETHOD_ constants
@@ -3898,6 +3953,33 @@ func (this *CometAPIClient) AdminAccountSessionStartAsUser(TargetUser string) (*
 	}
 
 	result := &SessionKeyRegeneratedResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminAccountSessionUpgrade: Upgrade a session key which is pending an MFA upgrade to a full
+// session key
+//
+// You must supply administrator authentication credentials to use this API.
+//
+// - Params
+// SessionKey: The session key to upgrade
+func (this *CometAPIClient) AdminAccountSessionUpgrade(SessionKey string) (*CometAPIResponseMessage, error) {
+	data := map[string][]string{}
+	var err error
+
+	data["SessionKey"] = []string{SessionKey}
+
+	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/session-upgrade", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CometAPIResponseMessage{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err
@@ -6330,6 +6412,119 @@ func (this *CometAPIClient) AdminDispatcherUpdateSoftware(TargetID string, SelfA
 	}
 
 	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/update-software", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CometAPIResponseMessage{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminExternalAuthSourcesDelete: Delete an external admin authentication source
+//
+// You must supply administrator authentication credentials to use this API.
+//
+// - Params
+// SourceID: (No description available)
+func (this *CometAPIClient) AdminExternalAuthSourcesDelete(SourceID string) (*CometAPIResponseMessage, error) {
+	data := map[string][]string{}
+	var err error
+
+	data["SourceID"] = []string{SourceID}
+
+	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/external-auth-sources/delete", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CometAPIResponseMessage{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminExternalAuthSourcesGet: Get a map of all external admin authentication sources
+//
+// You must supply administrator authentication credentials to use this API.
+func (this *CometAPIClient) AdminExternalAuthSourcesGet() (map[string]ExternalAuthenticationSource, error) {
+	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/external-auth-sources/get", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := map[string]ExternalAuthenticationSource{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminExternalAuthSourcesNew: Create an external admin authentication source
+//
+// You must supply administrator authentication credentials to use this API.
+//
+// - Params
+// Source: (No description available)
+// SourceID: (Optional) (No description available)
+func (this *CometAPIClient) AdminExternalAuthSourcesNew(Source ExternalAuthenticationSource, SourceID *string) (*ExternalAuthenticationSourceResponse, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	b, err = json.Marshal(Source)
+	if err != nil {
+		return nil, err
+	}
+	data["Source"] = []string{string(b)}
+
+	if SourceID != nil {
+		data["SourceID"] = []string{*SourceID}
+	}
+
+	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/external-auth-sources/new", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &ExternalAuthenticationSourceResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminExternalAuthSourcesSet: Updates the current tenant's external admin authentication sources.
+// This will set all
+// sources for the tenant; none will be preserved.
+//
+// You must supply administrator authentication credentials to use this API.
+//
+// - Params
+// Sources: (No description available)
+func (this *CometAPIClient) AdminExternalAuthSourcesSet(Sources map[string]ExternalAuthenticationSource) (*CometAPIResponseMessage, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	b, err = json.Marshal(Sources)
+	if err != nil {
+		return nil, err
+	}
+	data["Sources"] = []string{string(b)}
+
+	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/external-auth-sources/set", data)
 	if err != nil {
 		return nil, err
 	}
