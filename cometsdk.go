@@ -121,6 +121,7 @@ const DESTINATIONTYPE_STORJ uint64 = 1009
 
 // Openstack Swift
 const DESTINATIONTYPE_SWIFT uint64 = 1007
+const DESTINATIONTYPE_WEBDAV uint64 = 1010
 const DESTINATIONTYPE___INVALID uint64 = 0
 
 // SftpAuthMode
@@ -1745,7 +1746,9 @@ type DestinationConfig struct {
 	LocalcopyWinSMBPasswordFormat uint64
 	Swift                         SwiftDestinationLocation
 	B2                            B2DestinationLocation
-	Storj                         StorjDestinationLocation
+	// This field is available in Comet 23.6.9 and later.
+	WebDav WebDavDestinationLocation
+	Storj  StorjDestinationLocation
 	// A list of underlying destinations, that will be combined and presented as one.
 	SpanTargets []DestinationLocation
 	// If true, this Spanned destination will use a consistent hashing scheme
@@ -1846,7 +1849,9 @@ type DestinationLocation struct {
 	LocalcopyWinSMBPasswordFormat uint64
 	Swift                         SwiftDestinationLocation
 	B2                            B2DestinationLocation
-	Storj                         StorjDestinationLocation
+	// This field is available in Comet 23.6.9 and later.
+	WebDav WebDavDestinationLocation
+	Storj  StorjDestinationLocation
 	// A list of underlying destinations, that will be combined and presented as one.
 	SpanTargets []DestinationLocation
 	// If true, this Spanned destination will use a consistent hashing scheme
@@ -3679,6 +3684,18 @@ type WebAuthnUserEntity struct {
 	DisplayName string `json:"displayName,omitempty"`
 	// When this field is expressed as a Go WebAuthnUserEntity struct, this field may contain binary data. When this field is expressed as JSON, the field must be expressed as base64. The encoding/json marshaller will automatically perform base64 conversion as necessary.
 	ID []byte `json:"id"`
+}
+
+// This struct is available in Comet 23.6.9 and later.
+type WebDavDestinationLocation struct {
+	// The URL of the WebDAV server, including http/https and any custom port
+	DavServer string `json:",omitempty"`
+	// The username for logging in to the WebDAV server
+	UserName string `json:",omitempty"`
+	// The password for logging in to the WebDAV server
+	AccessKey string `json:",omitempty"`
+	// The target directory path within the WebDAV server
+	Path string `json:",omitempty"`
 }
 
 type WebInterfaceBrandingProperties struct {
@@ -8568,7 +8585,6 @@ func (this *CometAPIClient) AdminStorageListBuckets() (BucketPropertyList, error
 //
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
-// This API requires the Storage Role to be enabled.
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
 //
