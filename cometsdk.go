@@ -16,10 +16,10 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "23.6.9"
+const APPLICATION_VERSION string = "23.8.0"
 const APPLICATION_VERSION_MAJOR int = 23
-const APPLICATION_VERSION_MINOR int = 6
-const APPLICATION_VERSION_REVISION int = 9
+const APPLICATION_VERSION_MINOR int = 8
+const APPLICATION_VERSION_REVISION int = 0
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
@@ -279,28 +279,32 @@ const JOB_CLASSIFICATION__MAX JobClassification = 4999
 // JobClassification: All BackupJobDetail.Classification fields will fall in the 4xxx range.
 const JOB_CLASSIFICATION__MIN JobClassification = 4000
 
-// JobStatus
+// JobStatus: The job has stopped unexpectedly or has been manually marked as abandoned by an admin.
 const JOB_STATUS_FAILED_ABANDONED JobStatus = 7007
 
-// JobStatus
+// JobStatus: The job was cancelled manually, a device shutdown was detected, or the backup time
+// limit was reached.
 const JOB_STATUS_FAILED_CANCELLED JobStatus = 7005
 
-// JobStatus
+// JobStatus: There was an error during the job and it did not fully complete.
 const JOB_STATUS_FAILED_ERROR JobStatus = 7002
 
-// JobStatus
+// JobStatus: During a backup job either the "All protected items" quota or "Storage Vault" quota
+// was exceeded.
 const JOB_STATUS_FAILED_QUOTA JobStatus = 7003
 
-// JobStatus
+// JobStatus: The job did not start at its scheduled time.
 const JOB_STATUS_FAILED_SCHEDULEMISSED JobStatus = 7004
 
-// JobStatus
+// JobStatus: The backup job was skipped as there was already a backup running and the "Skip if
+// already running" option was enabled.
 const JOB_STATUS_FAILED_SKIPALREADYRUNNING JobStatus = 7006
 
 // JobStatus
 const JOB_STATUS_FAILED_TIMEOUT JobStatus = 7000
 
-// JobStatus
+// JobStatus: The job is complete but there was a problem that may have resulted in issues with the
+// expected result.
 const JOB_STATUS_FAILED_WARNING JobStatus = 7001
 
 // JobStatus
@@ -310,13 +314,15 @@ const JOB_STATUS_FAILED__MAX JobStatus = 7999
 // unsuccessful reason.
 const JOB_STATUS_FAILED__MIN JobStatus = 7000
 
-// JobStatus
+// JobStatus: The last information the server received from the device is that the job is currently
+// running.
 const JOB_STATUS_RUNNING_ACTIVE JobStatus = 6001
 
 // JobStatus: Unused
 const JOB_STATUS_RUNNING_INDETERMINATE JobStatus = 6000
 
-// JobStatus: A backup job that was marked as stopped or abandoned, but has somehow continued to run
+// JobStatus: The job was thought to have been in an Abandoned state but updated the Comet Server
+// with a running status.
 const JOB_STATUS_RUNNING_REVIVED JobStatus = 6002
 
 // JobStatus
@@ -325,7 +331,7 @@ const JOB_STATUS_RUNNING__MAX JobStatus = 6999
 // JobStatus: If the BackupJobDetail.Status field is a 6xxx code, the job is still running.
 const JOB_STATUS_RUNNING__MIN JobStatus = 6000
 
-// JobStatus
+// JobStatus: The job is complete and was successful.
 const JOB_STATUS_STOP_SUCCESS JobStatus = 5000
 
 // JobStatus
@@ -418,7 +424,7 @@ const PSA_TYPE_GENERIC PSAType = 0
 
 // PSAType
 const PSA_TYPE_GRADIENT PSAType = 1
-const RELEASE_CODENAME string = "Voyager"
+const RELEASE_CODENAME string = "Adrastea"
 
 // RemoteServerType
 const REMOTESERVER_AWS RemoteServerType = "aws"
