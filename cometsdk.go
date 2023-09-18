@@ -16,10 +16,10 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "23.8.0"
+const APPLICATION_VERSION string = "23.9.2"
 const APPLICATION_VERSION_MAJOR int = 23
-const APPLICATION_VERSION_MINOR int = 8
-const APPLICATION_VERSION_REVISION int = 0
+const APPLICATION_VERSION_MINOR int = 9
+const APPLICATION_VERSION_REVISION int = 2
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
@@ -381,6 +381,9 @@ const MSSQL_RESTORE_NORECOVERY MSSQLRestoreOpt = "NO_RECOVERY"
 
 // MSSQLRestoreOpt
 const MSSQL_RESTORE_RECOVERY MSSQLRestoreOpt = "RECOVERY"
+const OBJECT_LOCK_LEGACY uint8 = 0
+const OBJECT_LOCK_OFF uint8 = 2
+const OBJECT_LOCK_ON uint8 = 1
 const OFFICE365_REGION_CHINA string = "ChinaCloud"
 const OFFICE365_REGION_GERMANY string = "GermanCloud"
 const OFFICE365_REGION_PUBLIC string = "GlobalPublicCloud"
@@ -424,7 +427,7 @@ const PSA_TYPE_GENERIC PSAType = 0
 
 // PSAType
 const PSA_TYPE_GRADIENT PSAType = 1
-const RELEASE_CODENAME string = "Adrastea"
+const RELEASE_CODENAME string = "Voyager"
 
 // RemoteServerType
 const REMOTESERVER_AWS RemoteServerType = "aws"
@@ -809,6 +812,12 @@ const SEVT_DEVICE_LIVE_CONNECT StreamableEventType = 4702
 // StreamableEventType: Device live connection ended
 const SEVT_DEVICE_LIVE_DISCONNECT StreamableEventType = 4703
 
+// StreamableEventType: Device connected to registration lobby
+const SEVT_DEVICE_LOBBY_CONNECT StreamableEventType = 4704
+
+// StreamableEventType: Device disconnected from registration lobby
+const SEVT_DEVICE_LOBBY_DISCONNECT StreamableEventType = 4705
+
 // StreamableEventType: Device created. Data is device object
 const SEVT_DEVICE_NEW StreamableEventType = 4700
 
@@ -991,6 +1000,7 @@ const UPDATESTATUS_UPDATE_CONFIRMED UpdateStatus = 5
 // advertise the target software version. It's likely that the update failed - please check the
 // device's Update log for more information.
 const UPDATESTATUS_UPDATE_FAILED UpdateStatus = 4
+const USERNAME_MAX_LENGTH int = 255
 
 // If an API response returns in failure, but it includes this value in the
 // CometAPIResponseMessage->Message parameter, it indicates that the specified Device ID was invalid
@@ -1068,6 +1078,8 @@ type MacOSCodesignLevel int
 type NewsEntries map[string]NewsEntry
 type OidcProvider string
 type PSAType int
+type RegistrationLobbyConnectionID string
+type RegistrationLobbyConnectionMap map[RegistrationLobbyConnectionID]RegistrationLobbyConnection
 type RemoteServerType string
 type ReplicaDeletionStrategy string
 type ReplicatorDisplayClass int
@@ -1209,12 +1221,13 @@ type AllowedAdminUser struct {
 }
 
 type AmazonAWSVirtualStorageRoleSettings struct {
-	MasterBucket   string
-	AccessKey      string
-	SecretKey      string
-	UseObjectLock  bool
-	ObjectLockDays int
-	RemoveDeleted  bool
+	MasterBucket                  string
+	AccessKey                     string
+	SecretKey                     string
+	UseObjectLock_Legacy_DoNotUse bool `json:"UseObjectLock"`
+	ObjectLockMode                uint8
+	ObjectLockDays                int
+	RemoveDeleted                 bool
 }
 
 type AuthenticationRoleOptions struct {
@@ -1704,6 +1717,7 @@ type DestinationConfig struct {
 	// If true, use legacy v2 signing. If false (default), use modern v4 signing
 	S3UsesV2Signing  bool
 	S3RemoveDeleted  bool
+	S3ObjectLockMode uint8
 	S3ObjectLockDays int
 	SFTPServer       string
 	SFTPUsername     string
@@ -1807,6 +1821,7 @@ type DestinationLocation struct {
 	// If true, use legacy v2 signing. If false (default), use modern v4 signing
 	S3UsesV2Signing  bool
 	S3RemoveDeleted  bool
+	S3ObjectLockMode uint8
 	S3ObjectLockDays int
 	SFTPServer       string
 	SFTPUsername     string
@@ -2155,6 +2170,7 @@ type HyperVMachineInfo struct {
 type InstallCreds struct {
 	Username  string
 	Password  string
+	TOTPCode  string
 	Server    string
 	AutoLogin bool
 }
@@ -2475,7 +2491,14 @@ type PSAConfig struct {
 	// One of the PSA_TYPE_ constants
 	Type PSAType
 	// For PSA_TYPE_GENERIC
-	URL string
+	URL       string
+	GroupedBy PSAGroupedBy
+}
+
+type PSAGroupedBy struct {
+	Users       bool
+	Tenants     bool
+	AccountName bool
 }
 
 type Partition struct {
@@ -2568,6 +2591,18 @@ type RegisterOfficeApplicationCheckResponse struct {
 	Completed    bool
 	Error        string
 	Result       Office365Credential `json:",omitempty"`
+}
+
+type RegistrationLobbyConnection struct {
+	DeviceID                string
+	OrganizationID          string
+	FriendlyName            string
+	ReportedVersion         string
+	ReportedPlatform        string
+	ReportedPlatformVersion OSInfo `json:",omitempty"`
+	DeviceTimeZone          string `json:",omitempty"`
+	IPAddress               string `json:",omitempty"`
+	ConnectionTime          int64
 }
 
 type RemoteServerAddress struct {
@@ -2733,18 +2768,20 @@ type S3DestinationLocation struct {
 	// If true, use legacy v2 signing. If false (default), use modern v4 signing
 	S3UsesV2Signing  bool
 	S3RemoveDeleted  bool
+	S3ObjectLockMode uint8
 	S3ObjectLockDays int
 }
 
 type S3GenericVirtualStorageRole struct {
-	S3Endpoint     string
-	IAMEndpoint    string
-	MasterBucket   string
-	AccessKey      string
-	SecretKey      string
-	UseObjectLock  bool
-	ObjectLockDays int
-	RemoveDeleted  bool
+	S3Endpoint                    string
+	IAMEndpoint                   string
+	MasterBucket                  string
+	AccessKey                     string
+	SecretKey                     string
+	UseObjectLock_Legacy_DoNotUse bool `json:"UseObjectLock"`
+	ObjectLockMode                uint8
+	ObjectLockDays                int
+	RemoveDeleted                 bool
 }
 
 type SFTPDestinationLocation struct {
@@ -3591,12 +3628,13 @@ type VaultSnapshot struct {
 }
 
 type WasabiVirtualStorageRoleSettings struct {
-	MasterBucket   string
-	AccessKey      string
-	SecretKey      string
-	UseObjectLock  bool
-	ObjectLockDays int
-	RemoveDeleted  bool
+	MasterBucket                  string
+	AccessKey                     string
+	SecretKey                     string
+	UseObjectLock_Legacy_DoNotUse bool `json:"UseObjectLock"`
+	ObjectLockMode                uint8
+	ObjectLockDays                int
+	RemoveDeleted                 bool
 }
 
 type WebAuthnAuthenticatorSelection struct {
@@ -6877,6 +6915,120 @@ func (this *CometAPIClient) AdminGetUserProfileHash(TargetUser string) (*GetProf
 	}
 
 	result := &GetProfileHashResponseMessage{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminInstallationDispatchDropConnection: Instruct a live connected device to disconnect
+// The device will terminate its live-connection process and will not reconnect.
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// DeviceID: The live connection Device GUID
+func (this *CometAPIClient) AdminInstallationDispatchDropConnection(DeviceID string) (*CometAPIResponseMessage, error) {
+	data := map[string][]string{}
+	var err error
+
+	data["DeviceID"] = []string{DeviceID}
+
+	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/installation/dispatch/drop-connection", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CometAPIResponseMessage{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminInstallationDispatchRegisterDevice: Instruct an unregistered device to authenticate with a
+// given user
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// DeviceID: The live connection Device GUID
+// TargetUser: Selected account username
+// TargetPassword: Selected account password
+// TargetTOTPCode: (Optional) Selected account TOTP code
+func (this *CometAPIClient) AdminInstallationDispatchRegisterDevice(DeviceID string, TargetUser string, TargetPassword string, TargetTOTPCode *string) ([]byte, error) {
+	data := map[string][]string{}
+	var err error
+
+	data["DeviceID"] = []string{DeviceID}
+
+	data["TargetUser"] = []string{TargetUser}
+
+	data["TargetPassword"] = []string{TargetPassword}
+
+	if TargetTOTPCode != nil {
+		data["TargetTOTPCode"] = []string{*TargetTOTPCode}
+	}
+
+	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/installation/dispatch/register-device", data)
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
+}
+
+// AdminInstallationListActive: List live connected devices in lobby mode
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+func (this *CometAPIClient) AdminInstallationListActive() (RegistrationLobbyConnectionMap, error) {
+	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/installation/list-active", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := RegistrationLobbyConnectionMap{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminJobAbandon: Mark a running job as abandoned
+// This will change the status of a running job to abandoned.
+// This is intended to be used on jobs which are definitely no longer running but are stuck in the
+// running state; it will not attempt to cancel the job. If the job is detected to still be running
+// after being marked as abandoned, it will be revived.
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetUser: Username
+// JobID: Job ID
+func (this *CometAPIClient) AdminJobAbandon(TargetUser string, JobID string) (*CometAPIResponseMessage, error) {
+	data := map[string][]string{}
+	var err error
+
+	data["TargetUser"] = []string{TargetUser}
+
+	data["JobID"] = []string{JobID}
+
+	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/job/abandon", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CometAPIResponseMessage{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err
