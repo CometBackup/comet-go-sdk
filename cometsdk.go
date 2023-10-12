@@ -16,10 +16,10 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "23.9.2"
+const APPLICATION_VERSION string = "23.9.5"
 const APPLICATION_VERSION_MAJOR int = 23
 const APPLICATION_VERSION_MINOR int = 9
-const APPLICATION_VERSION_REVISION int = 2
+const APPLICATION_VERSION_REVISION int = 5
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
@@ -543,6 +543,9 @@ const RESTORETYPE_VMDK_FILE_NULL RestoreType = 8
 // RestoreType: Restore partitions back to the physical disk
 const RESTORETYPE_WINDISK RestoreType = 4
 
+// RestoreType: Restore disk image backup as VMware-compatible virtual disks
+const RESTORETYPE_WINDISK_ESXI RestoreType = 12
+
 // RetentionMode: Delete everything except for jobs matching the ranges in RetentionPolicy.Ranges.
 const RETENTIONMODE_DELETE_EXCEPT RetentionMode = 802
 
@@ -748,7 +751,7 @@ const SEVERITY_INFO Severity = "I"
 // Severity
 const SEVERITY_WARNING Severity = "W"
 
-// StreamableEventType: Admin authentication suceeded. Only emitted for non-session requests.
+// StreamableEventType: Admin authentication succeeded. Only emitted for non-session requests.
 // Resource is the requested path
 const SEVT_ACCOUNT_ADMIN_LOGIN StreamableEventType = 4153
 
@@ -830,7 +833,7 @@ const SEVT_JOB_COMPLETED StreamableEventType = 4201
 // StreamableEventType: New backup job started. Data is the job object
 const SEVT_JOB_NEW StreamableEventType = 4200
 
-// StreamableEventType: New websocket connection. Data is typically ServerMetaVersionInfo
+// StreamableEventType: New event stream connection. Data is typically ServerMetaVersionInfo
 const SEVT_META_HELLO StreamableEventType = 4000
 
 // StreamableEventType: Policy created. Data is the policy object
@@ -1312,6 +1315,7 @@ type BackupJobAdvancedOptions struct {
 	AllowZeroFilesSuccess bool
 	// If Zero: default Automatic (BACKUPJOBAUTORETENTION_AUTOMATIC)
 	AutoRetentionLevel AutoRetentionLevel
+	LogLevel           string
 }
 
 type BackupJobDetail struct {
@@ -1402,6 +1406,7 @@ type BackupRuleConfig struct {
 	AllowZeroFilesSuccess bool
 	// If Zero: default Automatic (BACKUPJOBAUTORETENTION_AUTOMATIC)
 	AutoRetentionLevel AutoRetentionLevel
+	LogLevel           string
 	// Scheduled start times
 	Schedules []ScheduleConfig
 	// Other events that will cause this scheduled job to start
