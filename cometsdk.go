@@ -16,10 +16,10 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "23.9.5"
+const APPLICATION_VERSION string = "23.9.6"
 const APPLICATION_VERSION_MAJOR int = 23
 const APPLICATION_VERSION_MINOR int = 9
-const APPLICATION_VERSION_REVISION int = 5
+const APPLICATION_VERSION_REVISION int = 6
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
@@ -437,6 +437,9 @@ const REMOTESERVER_B2 RemoteServerType = "b2"
 
 // RemoteServerType
 const REMOTESERVER_COMET RemoteServerType = "comet"
+
+// RemoteServerType
+const REMOTESERVER_COMET_STORAGE RemoteServerType = "cometstorage"
 
 // RemoteServerType
 const REMOTESERVER_CUSTOM RemoteServerType = "custom"
@@ -1787,6 +1790,7 @@ type DestinationConfig struct {
 	//
 	// The default option is false.
 	SpanUseStaticSlots bool
+	Tag                string
 	// One of the ENCRYPTIONMETHOD_ constants
 	EncryptionKeyEncryptionMethod uint64
 	EncryptedEncryptionKey        string
@@ -1891,6 +1895,7 @@ type DestinationLocation struct {
 	//
 	// The default option is false.
 	SpanUseStaticSlots bool
+	Tag                string
 }
 
 type DestinationStatistics struct {
