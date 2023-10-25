@@ -16,10 +16,10 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "23.9.6"
+const APPLICATION_VERSION string = "23.9.7"
 const APPLICATION_VERSION_MAJOR int = 23
 const APPLICATION_VERSION_MINOR int = 9
-const APPLICATION_VERSION_REVISION int = 6
+const APPLICATION_VERSION_REVISION int = 7
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
@@ -215,6 +215,9 @@ const ENGINE_BUILTIN_STDOUT string = "engine1/stdout"
 // Windows Server System State
 const ENGINE_BUILTIN_SYSTEMSTATE string = "engine1/systemstate"
 
+// VMware
+const ENGINE_BUILTIN_VMWARE string = "engine1/vmware"
+
 // Application-Aware Writer
 const ENGINE_BUILTIN_VSSWRITER string = "engine1/vsswriter"
 
@@ -235,6 +238,18 @@ const FTPS_MODE_IMPLICIT FtpsModeType = 1
 
 // FtpsModeType: Use plain FTP, do not use FTPS.
 const FTPS_MODE_PLAINTEXT FtpsModeType = 0
+
+// Back up Hyper-V virtual machines using VSS mode. This includes all previous snapshots.
+const HYPERV_METHOD_VSS string = "vss"
+
+// Back up Hyper-V virtual machines using WMI mode with RCT acceleration. This includes the latest
+// snapshot data only.
+// This const is available in Comet 23.9.8 and later.
+const HYPERV_METHOD_WMI_CBT string = "wmi"
+
+// Back up Hyper-V virtual machines using WMI mode. This includes the latest snapshot data only.
+// This const is available in Comet 23.9.8 and later.
+const HYPERV_METHOD_WMI_COPY string = "copy"
 
 // JobClassification: This is a backup job.
 const JOB_CLASSIFICATION_BACKUP JobClassification = 4001
@@ -1014,6 +1029,30 @@ const USERNAME_MAX_LENGTH int = 255
 const UnknownDeviceError string = "ERR_UNKNOWN_DEVICE"
 const UnsupportVhdxFileSystem string = "ERR_UNSUPPORT_VHDX_FILE_SYSTEM"
 const UnsupportVmdkFileSystem string = "ERR_UNSUPPORT_VMDK_FILE_SYSTEM"
+
+// VmwareBackupType
+const VMWARE_BACKUP_CBT VmwareBackupType = "cbt"
+
+// VmwareBackupType
+const VMWARE_BACKUP_COPY VmwareBackupType = "copy"
+
+// VmwareBackupType
+const VMWARE_BACKUP_FULL VmwareBackupType = "full"
+
+// VMwareConnectionType
+const VMWARE_CONNECTION_SSH VMwareConnectionType = "ssh"
+
+// VMwareConnectionType
+const VMWARE_CONNECTION_VSPHERE VMwareConnectionType = "vsphere"
+
+// VmwareSnapshotType
+const VMWARE_SNAPSHOT_FAST VmwareSnapshotType = ""
+
+// VmwareSnapshotType
+const VMWARE_SNAPSHOT_MEMORY VmwareSnapshotType = "memory"
+
+// VmwareSnapshotType
+const VMWARE_SNAPSHOT_QUIESCE VmwareSnapshotType = "quiesce"
 const VhdxPartitonReadErrMsg string = "ERR_VHDX_PARTITION"
 
 // WebAuthnDeviceType
@@ -1105,6 +1144,9 @@ type StreamLevel string
 type StreamableEventType int
 type StreamerType string
 type UpdateStatus int
+type VMwareConnectionType string
+type VmwareBackupType string
+type VmwareSnapshotType string
 type WebAuthnAuthenticationExtensions map[string]interface{}
 type WebAuthnDeviceType int
 type WindowsCodesignMethod int
@@ -1559,6 +1601,13 @@ type BrowseSQLServerResponse struct {
 	Status  int
 	Message string
 	Objects map[string]string
+}
+
+type BrowseVMwareResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
+	Status          int
+	Message         string
+	VirtualMachines []VMwareMachineInfo
 }
 
 type BrowseVSSResponse struct {
@@ -3616,6 +3665,17 @@ type VMDKSnapshotViewOptions struct {
 	PartitionName string
 }
 
+type VMwareConnection struct {
+	// One of the VMWARE_CONNECTION_ constants
+	ConnectionType VMwareConnectionType
+	SSH            SSHConnection
+	VSphere        VSphereConnection
+}
+
+type VMwareMachineInfo struct {
+	Name string
+}
+
 type VSSComponent struct {
 	Path string
 	Name string
@@ -3627,6 +3687,15 @@ type VSSComponent struct {
 type VSSWriterInfo struct {
 	DisplayName string
 	Components  []VSSComponent
+}
+
+type VSphereConnection struct {
+	Hostname                string
+	Https                   bool
+	AllowInvalidCertificate bool
+	Username                string
+	Password                string
+	ThumbPrint              string
 }
 
 type VaultSnapshot struct {
@@ -5798,6 +5867,42 @@ func (this *CometAPIClient) AdminDispatcherRequestBrowseMysql(TargetID string, C
 	}
 
 	result := &BrowseSQLServerResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminDispatcherRequestBrowseVmware: Request a list of VMware vSphere virtual machines
+// The remote device must have given consent for an MSP to browse their files.
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetID: The live connection GUID
+// Credentials: The VMware vSphere connection settings
+func (this *CometAPIClient) AdminDispatcherRequestBrowseVmware(TargetID string, Credentials VMwareConnection) (*BrowseVMwareResponse, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	data["TargetID"] = []string{TargetID}
+
+	b, err = json.Marshal(Credentials)
+	if err != nil {
+		return nil, err
+	}
+	data["Credentials"] = []string{string(b)}
+
+	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-browse-vmware", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &BrowseVMwareResponse{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err
@@ -9481,6 +9586,42 @@ func (this *CometAPIClient) UserWebDispatcherRequestBrowseMysql(TargetID string,
 	}
 
 	result := &BrowseSQLServerResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// UserWebDispatcherRequestBrowseVmware: Request a list of VMware vSphere virtual machines
+//
+// You must supply user authentication credentials to use this API, and the user account must be
+// authorized for web access.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetID: The live connection GUID
+// Credentials: The VMWare ESXi connection settings
+func (this *CometAPIClient) UserWebDispatcherRequestBrowseVmware(TargetID string, Credentials VMwareConnection) (*BrowseVMwareResponse, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	data["TargetID"] = []string{TargetID}
+
+	b, err = json.Marshal(Credentials)
+	if err != nil {
+		return nil, err
+	}
+	data["Credentials"] = []string{string(b)}
+
+	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-browse-vmware", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &BrowseVMwareResponse{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err
