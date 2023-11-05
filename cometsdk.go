@@ -16,10 +16,10 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "23.9.8"
+const APPLICATION_VERSION string = "23.9.9"
 const APPLICATION_VERSION_MAJOR int = 23
 const APPLICATION_VERSION_MINOR int = 9
-const APPLICATION_VERSION_REVISION int = 8
+const APPLICATION_VERSION_REVISION int = 9
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
@@ -442,6 +442,9 @@ const PSA_TYPE_GENERIC PSAType = 0
 
 // PSAType
 const PSA_TYPE_GRADIENT PSAType = 1
+
+// PSAType
+const PSA_TYPE_SYNCRO PSAType = 2
 const RELEASE_CODENAME string = "Voyager"
 
 // RemoteServerType
@@ -1970,6 +1973,8 @@ type DeviceConfig struct {
 	DeviceTimezone string `json:",omitempty"`
 	// This field is available in Comet 23.6.0 and later.
 	ClientVersion string `json:",omitempty"`
+	// This field is available in Comet 23.9.8 and later.
+	SyncroUUID string `json:",omitempty"`
 }
 
 type DiskDrive struct {
@@ -2544,12 +2549,13 @@ type OrganizationResponse struct {
 type PSAConfig struct {
 	// For PSA_TYPE_GRADIENT. Defaults to enabled
 	AlertsDisabled bool
-	CustomHeaders  map[string]string `json:",omitempty"`
-	// Specified credentials for the target PSA
+	// Custom headers to send with each PSA request
+	CustomHeaders map[string]string `json:",omitempty"`
+	// Specified API key for the target PSA
 	PartnerKey string `json:",omitempty"`
 	// One of the PSA_TYPE_ constants
 	Type PSAType
-	// For PSA_TYPE_GENERIC
+	// The URL or subdomain for outbound PSA requests
 	URL       string
 	GroupedBy PSAGroupedBy
 }
