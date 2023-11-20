@@ -16,10 +16,10 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "23.9.9"
+const APPLICATION_VERSION string = "23.9.11"
 const APPLICATION_VERSION_MAJOR int = 23
 const APPLICATION_VERSION_MINOR int = 9
-const APPLICATION_VERSION_REVISION int = 9
+const APPLICATION_VERSION_REVISION int = 11
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
@@ -430,6 +430,9 @@ const PASSWORD_FORMAT_PLAINTEXT int = 0
 
 // OidcProvider
 const PROVIDER_AZUREADV2 OidcProvider = "azure-ad-v2"
+
+// OidcProvider
+const PROVIDER_DASHBOARD OidcProvider = "dashboard"
 
 // OidcProvider
 const PROVIDER_GENERIC OidcProvider = "oidc"
@@ -1037,12 +1040,14 @@ const UnsupportVmdkFileSystem string = "ERR_UNSUPPORT_VMDK_FILE_SYSTEM"
 const VMWARE_BACKUP_CBT VmwareBackupType = "cbt"
 
 // VmwareBackupType
+// Deprecated: This const has been deprecated since Comet version 23.9.11
 const VMWARE_BACKUP_COPY VmwareBackupType = "copy"
 
 // VmwareBackupType
 const VMWARE_BACKUP_FULL VmwareBackupType = "full"
 
 // VMwareConnectionType
+// Deprecated: This const has been deprecated since Comet version 23.9.11
 const VMWARE_CONNECTION_SSH VMwareConnectionType = "ssh"
 
 // VMwareConnectionType
@@ -1234,6 +1239,8 @@ type AdminUserPermissions struct {
 	ShouldRestrictProviderList bool `json:",omitempty"`
 	// This field is available in Comet 23.6.0 and later.
 	AllowedProvidersWhenRestricted []uint64 `json:",omitempty"`
+	// This field is available in Comet 23.9.11 and later.
+	AllowedUserPolicies []string `json:",omitempty"`
 }
 
 type AdminWebAuthnRegistration struct {
@@ -3674,8 +3681,9 @@ type VMDKSnapshotViewOptions struct {
 type VMwareConnection struct {
 	// One of the VMWARE_CONNECTION_ constants
 	ConnectionType VMwareConnectionType
-	SSH            SSHConnection
-	VSphere        VSphereConnection
+	// Deprecated: This member has been deprecated since Comet version 23.9.11
+	SSH     SSHConnection
+	VSphere VSphereConnection
 }
 
 type VMwareMachineInfo struct {
