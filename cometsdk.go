@@ -16,10 +16,10 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "23.11.2"
+const APPLICATION_VERSION string = "23.12.1"
 const APPLICATION_VERSION_MAJOR int = 23
-const APPLICATION_VERSION_MINOR int = 11
-const APPLICATION_VERSION_REVISION int = 2
+const APPLICATION_VERSION_MINOR int = 12
+const APPLICATION_VERSION_REVISION int = 1
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
@@ -448,7 +448,7 @@ const PSA_TYPE_GRADIENT PSAType = 1
 
 // PSAType
 const PSA_TYPE_SYNCRO PSAType = 2
-const RELEASE_CODENAME string = "Saturn"
+const RELEASE_CODENAME string = "Voyager"
 
 // RemoteServerType
 const REMOTESERVER_AWS RemoteServerType = "aws"
