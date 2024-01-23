@@ -1730,6 +1730,8 @@ type CreateGroupPolicyResponse struct {
 
 type CustomRemoteBucketSettings struct {
 	URL string
+	// This field is available in Comet 23.12.5 and later.
+	CustomHeaders map[string]string
 }
 
 type DaysOfWeekConfig struct {
@@ -4570,6 +4572,33 @@ func (this *CometAPIClient) AdminBrandingGenerateClientByPlatform(Platform int, 
 	}
 
 	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/by-platform", data)
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
+}
+
+// AdminBrandingGenerateClientLinuxDeb: Download software (Linux Debian Package)
+//
+// This API requires administrator authentication credentials, unless the server is configured to
+// allow unauthenticated software downloads.
+// This API requires the Software Build Role to be enabled.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// SelfAddress: (Optional) The external URL of this server, used to resolve conflicts
+func (this *CometAPIClient) AdminBrandingGenerateClientLinuxDeb(SelfAddress *string) ([]byte, error) {
+	data := map[string][]string{}
+	var err error
+
+	if SelfAddress == nil {
+		data["SelfAddress"] = []string{this.ServerURL}
+	} else {
+		data["SelfAddress"] = []string{*SelfAddress}
+	}
+
+	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/linux-deb", data)
 	if err != nil {
 		return nil, err
 	}
