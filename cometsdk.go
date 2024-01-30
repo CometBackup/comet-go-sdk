@@ -4100,6 +4100,7 @@ func (c *CometAPIClient) AdminAccountSessionRevoke() (*CometAPIResponseMessage, 
 // AdminAccountSessionStart: Generate a session key (log in)
 //
 // You must supply administrator authentication credentials to use this API.
+//
 // The SessionKey will be set in the client and used for any further api calls using the same client.
 // You can manually clear the SessionKey if you wish to use Username, Password based authentication again.
 //
@@ -4125,6 +4126,7 @@ func (c *CometAPIClient) AdminAccountSessionStart(SelfAddress *string) (*Session
 	if err != nil {
 		return nil, err
 	}
+
 	if c.ReuseSessionKey {
 		// Set the SessionKey so that future invocations use the SessionKey.
 		c.SessionKey = result.SessionKey
@@ -4136,6 +4138,7 @@ func (c *CometAPIClient) AdminAccountSessionStart(SelfAddress *string) (*Session
 // AdminAccountSessionStartAsUser: Generate a session key for an end-user (log in as end-user)
 //
 // You must supply administrator authentication credentials to use this API.
+//
 // The SessionKey will be set in the client and used for any further api calls using the same client.
 // You can manually clear the SessionKey if you wish to use Username, Password based authentication again.
 //
@@ -4157,6 +4160,7 @@ func (c *CometAPIClient) AdminAccountSessionStartAsUser(TargetUser string) (*Ses
 	if err != nil {
 		return nil, err
 	}
+
 	if c.ReuseSessionKey {
 		// Set the SessionKey so that future invocations use the SessionKey.
 		c.SessionKey = result.SessionKey
@@ -9104,6 +9108,7 @@ func (c *CometAPIClient) BrandingProps() (*ServerMetaBrandingProperties, error) 
 // account.
 // This API behaves like either AdminAccountSessionStart or UserWebSessionStart, depending on what
 // the supplied credentials were valid for.
+//
 // The SessionKey will be set in the client and used for any further api calls using the same client.
 // You can manually clear the SessionKey if you wish to use Username, Password based authentication again.
 func (c *CometAPIClient) HybridSessionStart() (*SessionKeyRegeneratedResponse, error) {
@@ -9117,6 +9122,7 @@ func (c *CometAPIClient) HybridSessionStart() (*SessionKeyRegeneratedResponse, e
 	if err != nil {
 		return nil, err
 	}
+
 	if c.ReuseSessionKey {
 		// Set the SessionKey so that future invocations use the SessionKey.
 		c.SessionKey = result.SessionKey
@@ -10538,6 +10544,7 @@ func (c *CometAPIClient) UserWebSessionRevoke() (*CometAPIResponseMessage, error
 // You must supply user authentication credentials to use this API, and the user account must be
 // authorized for web access.
 // This API requires the Auth Role to be enabled.
+//
 // The SessionKey will be set in the client and used for any further api calls using the same client.
 // You can manually clear the SessionKey if you wish to use Username, Password based authentication again.
 func (c *CometAPIClient) UserWebSessionStart() (*SessionKeyRegeneratedResponse, error) {
@@ -10551,6 +10558,7 @@ func (c *CometAPIClient) UserWebSessionStart() (*SessionKeyRegeneratedResponse, 
 	if err != nil {
 		return nil, err
 	}
+
 	if c.ReuseSessionKey {
 		// Set the SessionKey so that future invocations use the SessionKey.
 		c.SessionKey = result.SessionKey
