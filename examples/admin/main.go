@@ -16,6 +16,7 @@ import (
 	"strings"
 
 	sdk "github.com/CometBackup/comet-go-sdk"
+	"github.com/CometBackup/comet-go-sdk/examples/util"
 )
 
 type Client struct {
@@ -79,11 +80,25 @@ func main() {
 	if (*list && *download != 0) || (!*list && *download == 0) {
 		log.Fatal("Error: A command must be chosen. Choose one of either '--list' or '--download #'")
 	}
-
+	if *username == "" || *password == "" {
+		var err error
+		*username, *password, err = util.Credentials()
+		if err != nil {
+			log.Fatal("Error getting username and password: ", err)
+		}
+	}
 	client, err := NewClient(*url, *username, *password)
 	if err != nil {
 		log.Fatal("Error creating client: ", err)
 	}
+	totp, err := util.Totp()
+	if err != nil {
+		log.Fatal("Error reading TOTP: ", err)
+	}
+	client.client.TOTPKey = totp
+	// ReuseSessionKey is especially useful when using TOTP based authentication, otherwise you need to enter a
+	// new TOTPKey for every api call.
+	client.client.ReuseSessionKey = true
 
 	if *list {
 		err = client.ListAndPrintPlatforms()
