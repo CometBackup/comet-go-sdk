@@ -16,10 +16,10 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "23.12.4"
+const APPLICATION_VERSION string = "23.12.5"
 const APPLICATION_VERSION_MAJOR int = 23
 const APPLICATION_VERSION_MINOR int = 12
-const APPLICATION_VERSION_REVISION int = 4
+const APPLICATION_VERSION_REVISION int = 5
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
