@@ -4076,8 +4076,8 @@ func (c *CometAPIClient) AdminAccountRegenerateTotp() (*TotpRegeneratedResponse,
 // AdminAccountSessionRevoke: Revoke a session key (log out)
 //
 // You must supply administrator authentication credentials to use this API.
-func (this *CometAPIClient) AdminAccountSessionRevoke() (*CometAPIResponseMessage, error) {
-	body, err := this.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/session-revoke", nil)
+func (c *CometAPIClient) AdminAccountSessionRevoke() (*CometAPIResponseMessage, error) {
+	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/session-revoke", nil)
 	if err != nil {
 		return nil, err
 	}
