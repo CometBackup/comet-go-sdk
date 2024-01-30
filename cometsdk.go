@@ -3968,18 +3968,24 @@ func (c *CometAPIClient) Request(contentType, method, path string, data map[stri
 		if data != nil {
 			body = url.Values(data)
 		}
+
 		body.Set("Username", c.Username)
-		body.Set("Password", c.Password)
+
 		if c.SessionKey != "" {
 			body.Set("AuthType", "SessionKey")
 			body.Set("SessionKey", c.SessionKey)
+
 		} else if c.TOTPKey != "" {
 			body.Set("AuthType", "PasswordTOTP")
+			body.Set("Password", c.Password)
 			body.Set("TOTP", c.TOTPKey)
+
 			// Once the TOTPKey is used, it is not usable again.
 			c.TOTPKey = ""
+
 		} else {
 			body.Set("AuthType", "Password")
+			body.Set("Password", c.Password)
 		}
 
 		req.Body = io.NopCloser(strings.NewReader(body.Encode()))
