@@ -3981,7 +3981,7 @@ func (c *CometAPIClient) Request(contentType, method, path string, data map[stri
 		} else {
 			body.Set("AuthType", "Password")
 		}
-		// This is deprecated and needs to switch to io.NopCloser once using Go 1.16+
+
 		req.Body = io.NopCloser(strings.NewReader(body.Encode()))
 
 		req.Header.Add("Content-Type", contentType)
@@ -3993,7 +3993,7 @@ func (c *CometAPIClient) Request(contentType, method, path string, data map[stri
 				m.WriteField(key, value)
 			}
 		}
-		// Same as above, io.NopCloser is deprecated
+
 		req.Body = io.NopCloser(&body)
 
 		req.Header.Add("Content-Type", m.FormDataContentType())
