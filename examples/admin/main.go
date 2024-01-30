@@ -96,6 +96,9 @@ func main() {
 		log.Fatal("Error reading TOTP: ", err)
 	}
 	client.client.TOTPKey = totp
+	// ReuseSessionKey is especially useful when using TOTP based authentication, otherwise you need to enter a
+	// new TOTPKey for every api call.
+	client.client.ReuseSessionKey = true
 
 	if *list {
 		err = client.ListAndPrintPlatforms()

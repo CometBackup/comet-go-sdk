@@ -3909,13 +3909,29 @@ type WindowsCodeSignProperties struct {
 
 // CometAPIClient is the base struct for all request methods
 type CometAPIClient struct {
+	// ServerURL is used to specify server which api calls will be made to.
 	ServerURL string
-	Username  string
-	Password  string
-	// Optional: Specify this value if using PasswordTOTP based login.
+	// Username if specified will be used for api authentication using AuthType "Password" or if
+	// TOTPKey is also specified then AuthType "PasswordTOTP" will be used.
+	Username string
+	// Password if specified will be used for api authentication using AuthType "Password" or if
+	// TOTPKey is also specified then AuthType "PasswordTOTP" will be used.
+	Password string
+	// TOTPKey (optional) if specified will be used for api authentication using AuthType "PasswordTOTP".
+	// The TOTPKey once used is automatically cleared as it cannot be reused.
 	TOTPKey string
-	// Optional: Specify this value if using SessionKey
+	// SessionKey (optional) if specified will be used for api authentication using AuthType "SessionKey".
+	// This value when set takes precedence over other specified values.
+	// If ReuseSessionKey is set to true, this value is set automatically as part of any of the
+	// *SessionStart* api calls and used automatically for subsequent api authentications.
 	SessionKey string
+	// ReuseSessionKey (optional) when set to true, uses the SessionKey returned by the
+	// respective *SessionStart* api calls and automatically sets it on the CometAPIClient.
+	// Any subsequent api calls made on the CometAPIClient without clearing the SessionKey
+	// will result in the same SessionKey being used automatically for api authentication.
+	// ReuseSessionKey is especially useful when using TOTP based authentication, otherwise
+	// you need to enter a new TOTPKey for every api call.
+	ReuseSessionKey bool
 }
 
 // NewCometAPIClient constructs and returns an instance of CometAPIClient
@@ -4103,8 +4119,10 @@ func (c *CometAPIClient) AdminAccountSessionStart(SelfAddress *string) (*Session
 	if err != nil {
 		return nil, err
 	}
-	// Set the SessionKey so that future invocations use the SessionKey.
-	c.SessionKey = result.SessionKey
+	if c.ReuseSessionKey {
+		// Set the SessionKey so that future invocations use the SessionKey.
+		c.SessionKey = result.SessionKey
+	}
 
 	return result, nil
 }
@@ -4133,8 +4151,10 @@ func (c *CometAPIClient) AdminAccountSessionStartAsUser(TargetUser string) (*Ses
 	if err != nil {
 		return nil, err
 	}
-	// Set the SessionKey so that future invocations use the SessionKey.
-	c.SessionKey = result.SessionKey
+	if c.ReuseSessionKey {
+		// Set the SessionKey so that future invocations use the SessionKey.
+		c.SessionKey = result.SessionKey
+	}
 
 	return result, nil
 }
@@ -9091,8 +9111,11 @@ func (c *CometAPIClient) HybridSessionStart() (*SessionKeyRegeneratedResponse, e
 	if err != nil {
 		return nil, err
 	}
-	// Set the SessionKey so that future invocations use the SessionKey.
-	c.SessionKey = result.SessionKey
+	if c.ReuseSessionKey {
+		// Set the SessionKey so that future invocations use the SessionKey.
+		c.SessionKey = result.SessionKey
+	}
+
 	return result, nil
 }
 
@@ -10522,8 +10545,10 @@ func (c *CometAPIClient) UserWebSessionStart() (*SessionKeyRegeneratedResponse, 
 	if err != nil {
 		return nil, err
 	}
-	// Set the SessionKey so that future invocations use the SessionKey.
-	c.SessionKey = result.SessionKey
+	if c.ReuseSessionKey {
+		// Set the SessionKey so that future invocations use the SessionKey.
+		c.SessionKey = result.SessionKey
+	}
 
 	return result, nil
 }

@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## 2024-01-25 v1.23.0
+## Upcoming
 
 - Based on Comet 23.12.4
 - Add TOTP login support
