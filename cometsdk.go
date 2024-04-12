@@ -16,9 +16,9 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "23.12.5"
-const APPLICATION_VERSION_MAJOR int = 23
-const APPLICATION_VERSION_MINOR int = 12
+const APPLICATION_VERSION string = "24.3.5"
+const APPLICATION_VERSION_MAJOR int = 24
+const APPLICATION_VERSION_MINOR int = 3
 const APPLICATION_VERSION_REVISION int = 5
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
@@ -112,6 +112,9 @@ const DESTINATIONTYPE_S3 uint64 = 1000
 
 // SFTP protocol
 const DESTINATIONTYPE_SFTP uint64 = 1001
+
+// SMB Path
+const DESTINATIONTYPE_SMB uint64 = 1011
 
 // Spanned
 const DESTINATIONTYPE_SPANNED uint64 = 1006
@@ -396,6 +399,10 @@ const MSSQL_RESTORE_NORECOVERY MSSQLRestoreOpt = "NO_RECOVERY"
 
 // MSSQLRestoreOpt
 const MSSQL_RESTORE_RECOVERY MSSQLRestoreOpt = "RECOVERY"
+
+// Enable Object Lock capability if the corresponding Days field is greater than zero.
+// New code should explicitly use OBJECT_LOCK_ON / OBJECT_LOCK_OFF instead.
+// Deprecated: This const has been deprecated since Comet version 23.x.x
 const OBJECT_LOCK_LEGACY uint8 = 0
 const OBJECT_LOCK_OFF uint8 = 2
 const OBJECT_LOCK_ON uint8 = 1
@@ -450,37 +457,43 @@ const PSA_TYPE_GRADIENT PSAType = 1
 const PSA_TYPE_SYNCRO PSAType = 2
 const RELEASE_CODENAME string = "Voyager"
 
-// RemoteServerType
+// RemoteServerType: Amazon Web Services
 const REMOTESERVER_AWS RemoteServerType = "aws"
 
-// RemoteServerType
+// RemoteServerType: Backblaze B2
 const REMOTESERVER_B2 RemoteServerType = "b2"
 
-// RemoteServerType
+// RemoteServerType: Comet Server
 const REMOTESERVER_COMET RemoteServerType = "comet"
 
-// RemoteServerType
+// RemoteServerType: Comet Storage powered by Wasabi
 const REMOTESERVER_COMET_STORAGE RemoteServerType = "cometstorage"
 
-// RemoteServerType
+// RemoteServerType: Custom Remote Bucket HTTP protocol
 const REMOTESERVER_CUSTOM RemoteServerType = "custom"
 
-// RemoteServerType
+// RemoteServerType: IDrive e2
 const REMOTESERVER_IDRIVEE2 RemoteServerType = "idrivee2"
 
-// RemoteServerType
+// RemoteServerType: Impossible Cloud
+const REMOTESERVER_IMPOSSIBLECLOUD_IAM RemoteServerType = "impossiblecloud-iam"
+
+// RemoteServerType: Impossible Cloud (Partner API)
+const REMOTESERVER_IMPOSSIBLECLOUD_PARTNER RemoteServerType = "impossiblecloud-partner"
+
+// RemoteServerType: LDAP (Lightweight Directory Access Protocol)
 const REMOTESERVER_LDAP RemoteServerType = "ldap"
 
-// RemoteServerType
+// RemoteServerType: OpenID Connect
 const REMOTESERVER_OIDC RemoteServerType = "oidc"
 
-// RemoteServerType
+// RemoteServerType: Custom IAM-Compatible
 const REMOTESERVER_S3_GENERIC RemoteServerType = "s3"
 
-// RemoteServerType
+// RemoteServerType: Storj DCS
 const REMOTESERVER_STORJ RemoteServerType = "storj"
 
-// RemoteServerType
+// RemoteServerType: Wasabi Cloud Storage
 const REMOTESERVER_WASABI RemoteServerType = "wasabi"
 
 // ReplicatorDisplayClass
@@ -767,6 +780,9 @@ const SETTING_OPTIONAL_DEFAULT_ON DefaultSettingMode = 1
 const SETTING_SYSTEM_DEFAULT DefaultSettingMode = 0
 
 // Severity
+const SEVERITY_DEBUG Severity = "D"
+
+// Severity
 const SEVERITY_ERROR Severity = "E"
 
 // Severity
@@ -979,6 +995,12 @@ const STOREDOBJECTTYPE_VMDK_SYMLINK StoredObjectType = "vmdksymlink"
 
 // StoredObjectType
 const STOREDOBJECTTYPE_VMDK_WINEFS StoredObjectType = "vmdkwinefs"
+
+// StoredObjectType
+const STOREDOBJECTTYPE_WINDOWSDIR StoredObjectType = "windir"
+
+// StoredObjectType
+const STOREDOBJECTTYPE_WINDOWSFILE StoredObjectType = "winfile"
 
 // StoredObjectType
 const STOREDOBJECTTYPE_WINEFS StoredObjectType = "winefs"
@@ -1229,6 +1251,8 @@ type AdminUserPermissions struct {
 	DenyViewServerHistory bool `json:",omitempty"`
 	// This field is available in Comet 23.6.0 and later.
 	DenyViewServerInfo bool `json:",omitempty"`
+	// This field is available in Comet 24.3.2 and later.
+	PreventDeleteStorageVault bool `json:",omitempty"`
 	// This field is available in Comet 23.6.0 and later.
 	PreventRequestStorageVault bool `json:",omitempty"`
 	// This field is available in Comet 23.6.0 and later.
@@ -1279,13 +1303,27 @@ type AllowedAdminUser struct {
 }
 
 type AmazonAWSVirtualStorageRoleSettings struct {
-	MasterBucket                  string
-	AccessKey                     string
-	SecretKey                     string
+	// If set, the Storage Template will generate Storage Vaults pointing to a subdirectory within this
+	// bucket. A single dynamic IAM policy will cover all created Storage Vaults.
+	// This is preferable for platforms that have limits on the total number of IAM policies. However,
+	// it requires a high level of IAM compatibility.
+	// If left blank, the Storage Template will generate Storage Vaults pointing to new, separate S3
+	// buckets each time. An additional IAM policy is created for each new Storage Vault.
+	// This is preferable for platforms that have a lower level of IAM compatibility.
+	MasterBucket string
+	AccessKey    string
+	SecretKey    string
+	// Deprecated: This member has been deprecated since Comet version 23.x.x
 	UseObjectLock_Legacy_DoNotUse bool `json:"UseObjectLock"`
-	ObjectLockMode                uint8
-	ObjectLockDays                int
-	RemoveDeleted                 bool
+	// Control whether the resulting Storage Vaults are configured for Object Lock. One of the
+	// OBJECT_LOCK_ constants
+	ObjectLockMode uint8
+	ObjectLockDays int
+	// Control whether the "Allow removal of deleted files" checkbox is enabled for Storage Vaults
+	// generated from this Storage Template.
+	// When configuring a Storage Template from the Comet Server web interface, this field is set
+	// automatically for Storage Templates using Object Lock.
+	RemoveDeleted bool
 }
 
 type AuthenticationRoleOptions struct {
@@ -1838,6 +1876,7 @@ type DestinationConfig struct {
 	// This field is available in Comet 23.6.9 and later.
 	WebDav WebDavDestinationLocation
 	Storj  StorjDestinationLocation
+	SMB    SMBDestinationLocation
 	// A list of underlying destinations, that will be combined and presented as one.
 	SpanTargets []DestinationLocation
 	// If true, this Spanned destination will use a consistent hashing scheme
@@ -1869,6 +1908,8 @@ type DestinationConfig struct {
 	DefaultRetention RetentionPolicy
 	// The "Prevent users from viewing the actual storage type" option
 	RebrandStorage bool
+	// If not empty, an error occured during a retention pass. Describes the error.
+	RetentionError string
 }
 
 // DestinationLocation describes the underlying storage location for a Storage Vault.
@@ -1943,6 +1984,7 @@ type DestinationLocation struct {
 	// This field is available in Comet 23.6.9 and later.
 	WebDav WebDavDestinationLocation
 	Storj  StorjDestinationLocation
+	SMB    SMBDestinationLocation
 	// A list of underlying destinations, that will be combined and presented as one.
 	SpanTargets []DestinationLocation
 	// If true, this Spanned destination will use a consistent hashing scheme
@@ -2081,20 +2123,32 @@ type EmailReportingOption struct {
 }
 
 type ExternalAuthenticationSource struct {
-	Type          RemoteServerType
-	Description   string
-	RemoteAddress string                                   `json:",omitempty"`
-	Username      string                                   `json:",omitempty"`
-	Password      string                                   `json:",omitempty"`
-	LDAP          ExternalLDAPAuthenticationSourceSettings `json:",omitempty"`
-	OIDC          OidcConfig                               `json:",omitempty"`
-	B2            B2VirtualStorageRoleSettings             `json:",omitempty"`
-	Wasabi        WasabiVirtualStorageRoleSettings         `json:",omitempty"`
-	Custom        CustomRemoteBucketSettings               `json:",omitempty"`
-	S3            S3GenericVirtualStorageRole              `json:",omitempty"`
-	// Amazon AWS - Virtual Storage Role
-	AWS                AmazonAWSVirtualStorageRoleSettings `json:",omitempty"`
-	Storj              StorjVirtualStorageRoleSetting      `json:",omitempty"`
+	Type        RemoteServerType
+	Description string
+	// For use with Comet Server (Storage Role / Auth Role)
+	RemoteAddress string `json:",omitempty"`
+	// For use with Comet Server (Storage Role / Auth Role)
+	Username string `json:",omitempty"`
+	// For use with Comet Server (Storage Role / Auth Role)
+	Password string                                   `json:",omitempty"`
+	LDAP     ExternalLDAPAuthenticationSourceSettings `json:",omitempty"`
+	OIDC     OidcConfig                               `json:",omitempty"`
+	// Backblaze B2 (Storage Template / Constellation)
+	B2 B2VirtualStorageRoleSettings `json:",omitempty"`
+	// Wasabi, or Comet Storage powered by Wasabi (Storage Template / Constellation)
+	Wasabi WasabiVirtualStorageRoleSettings `json:",omitempty"`
+	// Custom Remote Bucket HTTP protocol (Storage Template)
+	Custom CustomRemoteBucketSettings `json:",omitempty"`
+	// IDrive e2, or Custom IAM-compatible (Storage Template / Constellation)
+	S3 S3GenericVirtualStorageRole `json:",omitempty"`
+	// Amazon AWS (Storage Template / Constellation)
+	AWS AmazonAWSVirtualStorageRoleSettings `json:",omitempty"`
+	// Storj (Storage Template / Constellation)
+	Storj StorjVirtualStorageRoleSetting `json:",omitempty"`
+	// Impossible Cloud Partner API (Storage Template / Constellation)
+	ImpPartner ImpossibleCloudPartnerTemplateSettings `json:",omitempty"`
+	// Impossible Cloud IAM API (Storage Template / Constellation)
+	ImpUser            ImpossibleCloudIAMTemplateSettings `json:",omitempty"`
 	NewUserPermissions AdminUserPermissions
 }
 
@@ -2238,6 +2292,34 @@ type HourSchedConfig struct {
 type HyperVMachineInfo struct {
 	ID          string
 	DisplayName string `json:"Name"`
+}
+
+// This struct is available in Comet 24.3.1 and later.
+type ImpossibleCloudIAMTemplateSettings struct {
+	AccessKey string
+	SecretKey string
+	// Optional. The region for both IAM communication and for provisioning new buckets. If blank, uses
+	// the default region for Impossible Cloud (eu-central-2).
+	Region string
+	// Deprecated: This member has been deprecated since Comet version 23.x.x
+	UseObjectLock_Legacy_DoNotUse bool `json:"UseObjectLock"`
+	// Control whether the resulting Storage Vaults are configured for Object Lock. One of the
+	// OBJECT_LOCK_ constants
+	ObjectLockMode uint8
+	ObjectLockDays int
+	// Control whether the "Allow removal of deleted files" checkbox is enabled for Storage Vaults
+	// generated from this Storage Template.
+	// When configuring a Storage Template from the Comet Server web interface, this field is set
+	// automatically for Storage Templates using Object Lock.
+	RemoveDeleted bool
+}
+
+// This struct is available in Comet 24.3.1 and later.
+type ImpossibleCloudPartnerTemplateSettings struct {
+	// Optional. The region for your Partner console and for provisioning new buckets. If blank, uses
+	// the default region for Impossible Cloud (eu-central-2).
+	Region    string
+	AccessKey string
 }
 
 type InstallCreds struct {
@@ -2435,6 +2517,20 @@ type OSInfo struct {
 	// The GOARCH value
 	// This field is available in Comet 23.6.0 and later.
 	Arch string `json:"arch,omitempty"`
+}
+
+type ObjectLockStorageTemplateSettings struct {
+	// Deprecated: This member has been deprecated since Comet version 23.x.x
+	UseObjectLock_Legacy_DoNotUse bool `json:"UseObjectLock"`
+	// Control whether the resulting Storage Vaults are configured for Object Lock. One of the
+	// OBJECT_LOCK_ constants
+	ObjectLockMode uint8
+	ObjectLockDays int
+	// Control whether the "Allow removal of deleted files" checkbox is enabled for Storage Vaults
+	// generated from this Storage Template.
+	// When configuring a Storage Template from the Comet Server web interface, this field is set
+	// automatically for Storage Templates using Object Lock.
+	RemoveDeleted bool
 }
 
 type Office365Connection struct {
@@ -2680,58 +2776,94 @@ type RegistrationLobbyConnection struct {
 }
 
 type RemoteServerAddress struct {
-	Type          RemoteServerType
-	Description   string
-	RemoteAddress string                                   `json:",omitempty"`
-	Username      string                                   `json:",omitempty"`
-	Password      string                                   `json:",omitempty"`
-	LDAP          ExternalLDAPAuthenticationSourceSettings `json:",omitempty"`
-	OIDC          OidcConfig                               `json:",omitempty"`
-	B2            B2VirtualStorageRoleSettings             `json:",omitempty"`
-	Wasabi        WasabiVirtualStorageRoleSettings         `json:",omitempty"`
-	Custom        CustomRemoteBucketSettings               `json:",omitempty"`
-	S3            S3GenericVirtualStorageRole              `json:",omitempty"`
-	// Amazon AWS - Virtual Storage Role
-	AWS   AmazonAWSVirtualStorageRoleSettings `json:",omitempty"`
-	Storj StorjVirtualStorageRoleSetting      `json:",omitempty"`
+	Type        RemoteServerType
+	Description string
+	// For use with Comet Server (Storage Role / Auth Role)
+	RemoteAddress string `json:",omitempty"`
+	// For use with Comet Server (Storage Role / Auth Role)
+	Username string `json:",omitempty"`
+	// For use with Comet Server (Storage Role / Auth Role)
+	Password string                                   `json:",omitempty"`
+	LDAP     ExternalLDAPAuthenticationSourceSettings `json:",omitempty"`
+	OIDC     OidcConfig                               `json:",omitempty"`
+	// Backblaze B2 (Storage Template / Constellation)
+	B2 B2VirtualStorageRoleSettings `json:",omitempty"`
+	// Wasabi, or Comet Storage powered by Wasabi (Storage Template / Constellation)
+	Wasabi WasabiVirtualStorageRoleSettings `json:",omitempty"`
+	// Custom Remote Bucket HTTP protocol (Storage Template)
+	Custom CustomRemoteBucketSettings `json:",omitempty"`
+	// IDrive e2, or Custom IAM-compatible (Storage Template / Constellation)
+	S3 S3GenericVirtualStorageRole `json:",omitempty"`
+	// Amazon AWS (Storage Template / Constellation)
+	AWS AmazonAWSVirtualStorageRoleSettings `json:",omitempty"`
+	// Storj (Storage Template / Constellation)
+	Storj StorjVirtualStorageRoleSetting `json:",omitempty"`
+	// Impossible Cloud Partner API (Storage Template / Constellation)
+	ImpPartner ImpossibleCloudPartnerTemplateSettings `json:",omitempty"`
+	// Impossible Cloud IAM API (Storage Template / Constellation)
+	ImpUser ImpossibleCloudIAMTemplateSettings `json:",omitempty"`
 }
 
 type RemoteStorageOption struct {
-	Type          RemoteServerType
-	Description   string
-	RemoteAddress string                                   `json:",omitempty"`
-	Username      string                                   `json:",omitempty"`
-	Password      string                                   `json:",omitempty"`
-	LDAP          ExternalLDAPAuthenticationSourceSettings `json:",omitempty"`
-	OIDC          OidcConfig                               `json:",omitempty"`
-	B2            B2VirtualStorageRoleSettings             `json:",omitempty"`
-	Wasabi        WasabiVirtualStorageRoleSettings         `json:",omitempty"`
-	Custom        CustomRemoteBucketSettings               `json:",omitempty"`
-	S3            S3GenericVirtualStorageRole              `json:",omitempty"`
-	// Amazon AWS - Virtual Storage Role
-	AWS                 AmazonAWSVirtualStorageRoleSettings `json:",omitempty"`
-	Storj               StorjVirtualStorageRoleSetting      `json:",omitempty"`
+	Type        RemoteServerType
+	Description string
+	// For use with Comet Server (Storage Role / Auth Role)
+	RemoteAddress string `json:",omitempty"`
+	// For use with Comet Server (Storage Role / Auth Role)
+	Username string `json:",omitempty"`
+	// For use with Comet Server (Storage Role / Auth Role)
+	Password string                                   `json:",omitempty"`
+	LDAP     ExternalLDAPAuthenticationSourceSettings `json:",omitempty"`
+	OIDC     OidcConfig                               `json:",omitempty"`
+	// Backblaze B2 (Storage Template / Constellation)
+	B2 B2VirtualStorageRoleSettings `json:",omitempty"`
+	// Wasabi, or Comet Storage powered by Wasabi (Storage Template / Constellation)
+	Wasabi WasabiVirtualStorageRoleSettings `json:",omitempty"`
+	// Custom Remote Bucket HTTP protocol (Storage Template)
+	Custom CustomRemoteBucketSettings `json:",omitempty"`
+	// IDrive e2, or Custom IAM-compatible (Storage Template / Constellation)
+	S3 S3GenericVirtualStorageRole `json:",omitempty"`
+	// Amazon AWS (Storage Template / Constellation)
+	AWS AmazonAWSVirtualStorageRoleSettings `json:",omitempty"`
+	// Storj (Storage Template / Constellation)
+	Storj StorjVirtualStorageRoleSetting `json:",omitempty"`
+	// Impossible Cloud Partner API (Storage Template / Constellation)
+	ImpPartner ImpossibleCloudPartnerTemplateSettings `json:",omitempty"`
+	// Impossible Cloud IAM API (Storage Template / Constellation)
+	ImpUser             ImpossibleCloudIAMTemplateSettings `json:",omitempty"`
 	StorageLimitEnabled bool
 	StorageLimitBytes   int64
 	RebrandStorage      bool
 }
 
 type ReplicaServer struct {
-	Type          RemoteServerType
-	Description   string
-	RemoteAddress string                                   `json:",omitempty"`
-	Username      string                                   `json:",omitempty"`
-	Password      string                                   `json:",omitempty"`
-	LDAP          ExternalLDAPAuthenticationSourceSettings `json:",omitempty"`
-	OIDC          OidcConfig                               `json:",omitempty"`
-	B2            B2VirtualStorageRoleSettings             `json:",omitempty"`
-	Wasabi        WasabiVirtualStorageRoleSettings         `json:",omitempty"`
-	Custom        CustomRemoteBucketSettings               `json:",omitempty"`
-	S3            S3GenericVirtualStorageRole              `json:",omitempty"`
-	// Amazon AWS - Virtual Storage Role
-	AWS                     AmazonAWSVirtualStorageRoleSettings `json:",omitempty"`
-	Storj                   StorjVirtualStorageRoleSetting      `json:",omitempty"`
-	ReplicaDeletionStrategy ReplicaDeletionStrategy             `json:",omitempty"`
+	Type        RemoteServerType
+	Description string
+	// For use with Comet Server (Storage Role / Auth Role)
+	RemoteAddress string `json:",omitempty"`
+	// For use with Comet Server (Storage Role / Auth Role)
+	Username string `json:",omitempty"`
+	// For use with Comet Server (Storage Role / Auth Role)
+	Password string                                   `json:",omitempty"`
+	LDAP     ExternalLDAPAuthenticationSourceSettings `json:",omitempty"`
+	OIDC     OidcConfig                               `json:",omitempty"`
+	// Backblaze B2 (Storage Template / Constellation)
+	B2 B2VirtualStorageRoleSettings `json:",omitempty"`
+	// Wasabi, or Comet Storage powered by Wasabi (Storage Template / Constellation)
+	Wasabi WasabiVirtualStorageRoleSettings `json:",omitempty"`
+	// Custom Remote Bucket HTTP protocol (Storage Template)
+	Custom CustomRemoteBucketSettings `json:",omitempty"`
+	// IDrive e2, or Custom IAM-compatible (Storage Template / Constellation)
+	S3 S3GenericVirtualStorageRole `json:",omitempty"`
+	// Amazon AWS (Storage Template / Constellation)
+	AWS AmazonAWSVirtualStorageRoleSettings `json:",omitempty"`
+	// Storj (Storage Template / Constellation)
+	Storj StorjVirtualStorageRoleSetting `json:",omitempty"`
+	// Impossible Cloud Partner API (Storage Template / Constellation)
+	ImpPartner ImpossibleCloudPartnerTemplateSettings `json:",omitempty"`
+	// Impossible Cloud IAM API (Storage Template / Constellation)
+	ImpUser                 ImpossibleCloudIAMTemplateSettings `json:",omitempty"`
+	ReplicaDeletionStrategy ReplicaDeletionStrategy            `json:",omitempty"`
 }
 
 type ReplicatorStateAPIResponse struct {
@@ -2763,6 +2895,8 @@ type RestoreJobAdvancedOptions struct {
 	OverwriteExistingFiles bool
 	// For RESTORETYPE_FILE. If set, OverwriteExistingFiles must be true
 	OverwriteIfNewer bool
+	// For RESTORETYPE_FILE. If set, OverwriteExistingFiles must be true
+	OverwriteIfDifferentContent bool
 	// For RESTORETYPE_FILE. If set, DestPath must be blank
 	DestIsOriginalLocation bool
 	// For RESTORETYPE_FILE or RESTORETYPE_PROCESS_xxx
@@ -2847,15 +2981,35 @@ type S3DestinationLocation struct {
 }
 
 type S3GenericVirtualStorageRole struct {
-	S3Endpoint                    string
-	IAMEndpoint                   string
-	MasterBucket                  string
-	AccessKey                     string
-	SecretKey                     string
+	// The URL for S3 API calls (e.g. "s3.amazonaws.com")
+	S3Endpoint string
+	// The URL for IAM API calls (e.g. "iam.amazonaws.com")
+	IAMEndpoint string
+	// If set, the Storage Template will generate Storage Vaults pointing to a subdirectory within this
+	// bucket. A single dynamic IAM policy will cover all created Storage Vaults.
+	// This is preferable for platforms that have limits on the total number of IAM policies. However,
+	// it requires a high level of IAM compatibility.
+	// If left blank, the Storage Template will generate Storage Vaults pointing to new, separate S3
+	// buckets each time. An additional IAM policy is created for each new Storage Vault.
+	// This is preferable for platforms that have a lower level of IAM compatibility.
+	MasterBucket string
+	AccessKey    string
+	SecretKey    string
+	// Deprecated: This member has been deprecated since Comet version 23.x.x
 	UseObjectLock_Legacy_DoNotUse bool `json:"UseObjectLock"`
-	ObjectLockMode                uint8
-	ObjectLockDays                int
-	RemoveDeleted                 bool
+	// Control whether the resulting Storage Vaults are configured for Object Lock. One of the
+	// OBJECT_LOCK_ constants
+	ObjectLockMode uint8
+	ObjectLockDays int
+	// Control whether the "Allow removal of deleted files" checkbox is enabled for Storage Vaults
+	// generated from this Storage Template.
+	// When configuring a Storage Template from the Comet Server web interface, this field is set
+	// automatically for Storage Templates using Object Lock.
+	RemoveDeleted bool
+	// Optional. The region to be used for new buckets. If blank, uses the default region for the
+	// S3-compatible provider (e.g. us-east-1).
+	// This field is available in Comet 24.3.1 and later.
+	Region string
 }
 
 type SFTPDestinationLocation struct {
@@ -2875,6 +3029,14 @@ type SFTPDestinationLocation struct {
 	SFTPCustomAuth_UseKnownHostsFile bool
 	// If SFTPCustomAuth_UseKnownHostFile is true, the path to the SSH known_hosts file.
 	SFTPCustomAuth_KnownHostsFile string
+}
+
+type SMBDestinationLocation struct {
+	SMBServer    string
+	SMBShare     string
+	SMBDirectory string
+	SMBUsername  string
+	SMBPassword  string
 }
 
 type SSHConnection struct {
@@ -3201,6 +3363,8 @@ type SourceConfig struct {
 	// - USE_WIN_VSS: If present, the 'Take filesystem snapshot' checkbox is checked
 	// - CONFIRM_EFS: If present, the 'Dismiss EFS warning' checkbox is checked
 	// - RESCAN_UNCHANGED: If present, the 'Rescan unchanged files' checkbox is checked
+	// - EXTRA_ATTRIBUTES: If present, the 'Back up extra system permissions and attributes' checkbox
+	// is checked
 	//
 	// For engine1/mssql, Comet understands the following EngineProp keys:
 	//
@@ -3722,14 +3886,29 @@ type VaultSnapshot struct {
 	HasOriginalPathInfo bool
 }
 
+// This is an alias type for AmazonAWSVirtualStorageRoleSettings.
 type WasabiVirtualStorageRoleSettings struct {
-	MasterBucket                  string
-	AccessKey                     string
-	SecretKey                     string
+	// If set, the Storage Template will generate Storage Vaults pointing to a subdirectory within this
+	// bucket. A single dynamic IAM policy will cover all created Storage Vaults.
+	// This is preferable for platforms that have limits on the total number of IAM policies. However,
+	// it requires a high level of IAM compatibility.
+	// If left blank, the Storage Template will generate Storage Vaults pointing to new, separate S3
+	// buckets each time. An additional IAM policy is created for each new Storage Vault.
+	// This is preferable for platforms that have a lower level of IAM compatibility.
+	MasterBucket string
+	AccessKey    string
+	SecretKey    string
+	// Deprecated: This member has been deprecated since Comet version 23.x.x
 	UseObjectLock_Legacy_DoNotUse bool `json:"UseObjectLock"`
-	ObjectLockMode                uint8
-	ObjectLockDays                int
-	RemoveDeleted                 bool
+	// Control whether the resulting Storage Vaults are configured for Object Lock. One of the
+	// OBJECT_LOCK_ constants
+	ObjectLockMode uint8
+	ObjectLockDays int
+	// Control whether the "Allow removal of deleted files" checkbox is enabled for Storage Vaults
+	// generated from this Storage Template.
+	// When configuring a Storage Template from the Comet Server web interface, this field is set
+	// automatically for Storage Templates using Object Lock.
+	RemoveDeleted bool
 }
 
 type WebAuthnAuthenticatorSelection struct {
@@ -7666,6 +7845,37 @@ func (c *CometAPIClient) AdminMetaReadLogs(Log int) ([]byte, error) {
 	return body, nil
 }
 
+// AdminMetaReadSelectLogs: Get logs file content
+// On non-Windows platforms, log content uses LF line endings. On Windows, Comet changed from LF to
+// CRLF line endings in 18.3.2.
+// This API does not automatically convert line endings; around the 18.3.2 timeframe, log content
+// may even contain mixed line-endings.
+//
+// You must supply administrator authentication credentials to use this API.
+// This API is only available for top-level administrator accounts, not for Tenant administrator
+// accounts.
+//
+// - Params
+// Logs: An array of log days, selected from the options returned by the Get Log Files API
+func (c *CometAPIClient) AdminMetaReadSelectLogs(Logs []int) ([]byte, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	b, err = json.Marshal(Logs)
+	if err != nil {
+		return nil, err
+	}
+	data["Logs"] = []string{string(b)}
+
+	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/read-select-logs", data)
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
+}
+
 // AdminMetaRemoteStorageVaultGet: Get Requesting Remote Storage Vault Config
 //
 // You must supply administrator authentication credentials to use this API.
@@ -7871,7 +8081,9 @@ func (c *CometAPIClient) AdminMetaSendTestEmail(EmailOptions EmailOptions, Recip
 //
 // - Params
 // EmailReportingOption: Test email reporting option for sending
-func (c *CometAPIClient) AdminMetaSendTestReport(EmailReportingOption EmailReportingOption) (*CometAPIResponseMessage, error) {
+// TargetOrganization: (Optional) If present, Testing email with a target organization. Only allowed
+// for top-level admins. (>= 24.3.0)
+func (c *CometAPIClient) AdminMetaSendTestReport(EmailReportingOption EmailReportingOption, TargetOrganization *string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -7881,6 +8093,10 @@ func (c *CometAPIClient) AdminMetaSendTestReport(EmailReportingOption EmailRepor
 		return nil, err
 	}
 	data["EmailReportingOption"] = []string{string(b)}
+
+	if TargetOrganization != nil {
+		data["TargetOrganization"] = []string{*TargetOrganization}
+	}
 
 	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/send-test-report", data)
 	if err != nil {
