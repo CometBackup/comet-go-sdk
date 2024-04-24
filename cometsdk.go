@@ -20,6 +20,7 @@ const APPLICATION_VERSION string = "24.3.5"
 const APPLICATION_VERSION_MAJOR int = 24
 const APPLICATION_VERSION_MINOR int = 3
 const APPLICATION_VERSION_REVISION int = 5
+const DEFAULT_USER_AGENT string = "CometBackup/" + APPLICATION_VERSION
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
@@ -4111,6 +4112,8 @@ type CometAPIClient struct {
 	// ReuseSessionKey is especially useful when using TOTP based authentication, otherwise
 	// you need to enter a new TOTPKey for every api call.
 	ReuseSessionKey bool
+	// User-Agent header value that will be set for the requests being made to the server.
+	UserAgent string
 }
 
 // NewCometAPIClient constructs and returns an instance of CometAPIClient
@@ -4124,6 +4127,7 @@ func NewCometAPIClient(serverURL, username, password string) (*CometAPIClient, e
 		ServerURL: serverURL,
 		Username:  username,
 		Password:  password,
+		UserAgent: DEFAULT_USER_AGENT,
 	}, nil
 }
 
@@ -4139,6 +4143,9 @@ func (c *CometAPIClient) Request(contentType, method, path string, data map[stri
 	req, err := http.NewRequest(strings.ToUpper(method), u.String(), nil)
 	if err != nil {
 		return nil, err
+	}
+	if c.UserAgent != "" {
+		req.Header.Add("User-Agent", c.UserAgent)
 	}
 
 	switch contentType {
