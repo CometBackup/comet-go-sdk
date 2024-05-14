@@ -1408,7 +1408,10 @@ type BackupJobAdvancedOptions struct {
 	AllowZeroFilesSuccess bool
 	// If Zero: default Automatic (BACKUPJOBAUTORETENTION_AUTOMATIC)
 	AutoRetentionLevel AutoRetentionLevel
-	LogLevel           string
+	// Desired concurrency count. If Zero, uses mode defaults
+	ConcurrencyCount int64
+	// Log verbosity level. LOG_DEBUG has the greatest verbosity
+	LogLevel string
 }
 
 type BackupJobDetail struct {
@@ -1499,7 +1502,10 @@ type BackupRuleConfig struct {
 	AllowZeroFilesSuccess bool
 	// If Zero: default Automatic (BACKUPJOBAUTORETENTION_AUTOMATIC)
 	AutoRetentionLevel AutoRetentionLevel
-	LogLevel           string
+	// Desired concurrency count. If Zero, uses mode defaults
+	ConcurrencyCount int64
+	// Log verbosity level. LOG_DEBUG has the greatest verbosity
+	LogLevel string
 	// Scheduled start times
 	Schedules []ScheduleConfig
 	// Other events that will cause this scheduled job to start
@@ -2534,12 +2540,14 @@ type ObjectLockStorageTemplateSettings struct {
 }
 
 type Office365Connection struct {
-	FeatureFlag          string
+	Concurrency          int
 	Credential           Office365Credential
 	CustomSetting        Office365CustomSetting
+	CustomSettingV2      Office365CustomSettingV2
+	FeatureFlag          string
+	LogLevel             string
 	MailboxUniqueMembers []string
 	SiteUniqueMembers    []string
-	CustomSettingV2      Office365CustomSettingV2
 }
 
 type Office365Credential struct {
