@@ -16,10 +16,10 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "24.3.7"
+const APPLICATION_VERSION string = "24.3.8"
 const APPLICATION_VERSION_MAJOR int = 24
 const APPLICATION_VERSION_MINOR int = 3
-const APPLICATION_VERSION_REVISION int = 7
+const APPLICATION_VERSION_REVISION int = 8
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
@@ -3316,6 +3316,9 @@ type SizeMeasurement struct {
 type SoftwareBuildRoleOptions struct {
 	RoleEnabled                   bool
 	AllowUnauthenticatedDownloads bool
+	// 0 will default to CPU core count - 2
+	// This field is available in Comet 24.3.8 and later.
+	MaxBuilders int
 }
 
 type SoftwareUpdateNewsResponse struct {
@@ -3426,6 +3429,7 @@ type SourceIncludePattern struct {
 }
 
 type SourceStatistics struct {
+	LastStartTime           int64
 	LastBackupJob           BackupJobDetail
 	LastSuccessfulBackupJob BackupJobDetail
 }
