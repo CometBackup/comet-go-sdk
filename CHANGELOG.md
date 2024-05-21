@@ -1,5 +1,25 @@
 # CHANGELOG
 
+## 2024-05-17 v1.28.0
+
+- Based on Comet 24.3.8
+- Added support for configuring Software Build Role builder count
+- Added LastStartTime field to job statistics
+
+## 2024-05-14 v1.27.0
+
+- Based on Comet 24.3.7
+- Added support for configuring concurrency in Microsoft 365 Protected Items
+
+## 2024-05-02 v1.26.0
+
+- No changes
+
+## 2024-05-02 v1.25.0
+
+- Based on Comet 24.3.6
+- Testing new release process
+
 ## 2024-04-12 v1.24.0
 
 - Based on Comet 24.3.5

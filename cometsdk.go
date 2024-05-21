@@ -16,10 +16,10 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "24.3.5"
+const APPLICATION_VERSION string = "24.3.8"
 const APPLICATION_VERSION_MAJOR int = 24
 const APPLICATION_VERSION_MINOR int = 3
-const APPLICATION_VERSION_REVISION int = 5
+const APPLICATION_VERSION_REVISION int = 8
 const USER_AGENT_HEADER string = "UserAgent"
 const DEFAULT_USER_AGENT string = "CometBackup/" + APPLICATION_VERSION
 
@@ -1410,7 +1410,10 @@ type BackupJobAdvancedOptions struct {
 	AllowZeroFilesSuccess bool
 	// If Zero: default Automatic (BACKUPJOBAUTORETENTION_AUTOMATIC)
 	AutoRetentionLevel AutoRetentionLevel
-	LogLevel           string
+	// Desired concurrency count. If Zero, uses mode defaults
+	ConcurrencyCount int64
+	// Log verbosity level. LOG_DEBUG has the greatest verbosity
+	LogLevel string
 }
 
 type BackupJobDetail struct {
@@ -1501,7 +1504,10 @@ type BackupRuleConfig struct {
 	AllowZeroFilesSuccess bool
 	// If Zero: default Automatic (BACKUPJOBAUTORETENTION_AUTOMATIC)
 	AutoRetentionLevel AutoRetentionLevel
-	LogLevel           string
+	// Desired concurrency count. If Zero, uses mode defaults
+	ConcurrencyCount int64
+	// Log verbosity level. LOG_DEBUG has the greatest verbosity
+	LogLevel string
 	// Scheduled start times
 	Schedules []ScheduleConfig
 	// Other events that will cause this scheduled job to start
@@ -2536,12 +2542,14 @@ type ObjectLockStorageTemplateSettings struct {
 }
 
 type Office365Connection struct {
-	FeatureFlag          string
+	Concurrency          int
 	Credential           Office365Credential
 	CustomSetting        Office365CustomSetting
+	CustomSettingV2      Office365CustomSettingV2
+	FeatureFlag          string
+	LogLevel             string
 	MailboxUniqueMembers []string
 	SiteUniqueMembers    []string
-	CustomSettingV2      Office365CustomSettingV2
 }
 
 type Office365Credential struct {
@@ -3310,6 +3318,9 @@ type SizeMeasurement struct {
 type SoftwareBuildRoleOptions struct {
 	RoleEnabled                   bool
 	AllowUnauthenticatedDownloads bool
+	// 0 will default to CPU core count - 2
+	// This field is available in Comet 24.3.8 and later.
+	MaxBuilders int
 }
 
 type SoftwareUpdateNewsResponse struct {
@@ -3420,6 +3431,7 @@ type SourceIncludePattern struct {
 }
 
 type SourceStatistics struct {
+	LastStartTime           int64
 	LastBackupJob           BackupJobDetail
 	LastSuccessfulBackupJob BackupJobDetail
 }
