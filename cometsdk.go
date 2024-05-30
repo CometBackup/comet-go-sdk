@@ -16,12 +16,12 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "24.3.8"
+const APPLICATION_VERSION string = "24.3.9"
 const APPLICATION_VERSION_MAJOR int = 24
 const APPLICATION_VERSION_MINOR int = 3
-const APPLICATION_VERSION_REVISION int = 8
+const APPLICATION_VERSION_REVISION int = 9
 const USER_AGENT_HEADER string = "User-Agent"
-const DEFAULT_USER_AGENT string = "CometBackup/" + APPLICATION_VERSION
+const DEFAULT_USER_AGENT string = "comet-go-sdk/" + APPLICATION_VERSION
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
