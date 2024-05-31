@@ -16,10 +16,10 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "24.3.9"
+const APPLICATION_VERSION string = "24.5.0"
 const APPLICATION_VERSION_MAJOR int = 24
-const APPLICATION_VERSION_MINOR int = 3
-const APPLICATION_VERSION_REVISION int = 9
+const APPLICATION_VERSION_MINOR int = 5
+const APPLICATION_VERSION_REVISION int = 0
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
@@ -79,6 +79,18 @@ const COMPRESS_LVL_5 CompressMode = 5
 
 // CompressMode
 const COMPRESS_MAX CompressMode = COMPRESS_LVL_5
+
+// CustomRemoteBucketCustomBodyType
+const CUSTOMREMOTEBUCKET_CUSTOMBODY_FORM CustomRemoteBucketCustomBodyType = "form"
+
+// CustomRemoteBucketCustomBodyType
+const CUSTOMREMOTEBUCKET_CUSTOMBODY_JSON CustomRemoteBucketCustomBodyType = "json"
+
+// CustomRemoteBucketCustomBodyType
+const CUSTOMREMOTEBUCKET_CUSTOMBODY_NONE CustomRemoteBucketCustomBodyType = "none"
+
+// CustomRemoteBucketCustomBodyType
+const CUSTOMREMOTEBUCKET_CUSTOMBODY_URLENC CustomRemoteBucketCustomBodyType = "urlencoded"
 
 // LanguageCode
 const DEFAULT_LANGUAGE LanguageCode = "en_US"
@@ -455,7 +467,7 @@ const PSA_TYPE_GRADIENT PSAType = 1
 
 // PSAType
 const PSA_TYPE_SYNCRO PSAType = 2
-const RELEASE_CODENAME string = "Voyager"
+const RELEASE_CODENAME string = "Enceladus"
 
 // RemoteServerType: Amazon Web Services
 const REMOTESERVER_AWS RemoteServerType = "aws"
@@ -1133,6 +1145,7 @@ type BucketPropertyList map[string]BucketProperties
 type BucketUsageMap map[string]BucketUsageInfo
 type ClientBrandingBuildMode int
 type CompressMode int
+type CustomRemoteBucketCustomBodyType string
 type DefaultSettingMode int
 type DefaultSourceOSRestriction int
 type EmailDeliveryType string
@@ -1776,6 +1789,9 @@ type CustomRemoteBucketSettings struct {
 	URL string
 	// This field is available in Comet 23.12.5 and later.
 	CustomHeaders map[string]string
+	// This field is available in Comet 24.5.0 and later.
+	CustomBody     string
+	CustomBodyType CustomRemoteBucketCustomBodyType
 }
 
 type DaysOfWeekConfig struct {
@@ -2326,6 +2342,17 @@ type ImpossibleCloudPartnerTemplateSettings struct {
 	// the default region for Impossible Cloud (eu-central-2).
 	Region    string
 	AccessKey string
+	// Deprecated: This member has been deprecated since Comet version 23.x.x
+	UseObjectLock_Legacy_DoNotUse bool `json:"UseObjectLock"`
+	// Control whether the resulting Storage Vaults are configured for Object Lock. One of the
+	// OBJECT_LOCK_ constants
+	ObjectLockMode uint8
+	ObjectLockDays int
+	// Control whether the "Allow removal of deleted files" checkbox is enabled for Storage Vaults
+	// generated from this Storage Template.
+	// When configuring a Storage Template from the Comet Server web interface, this field is set
+	// automatically for Storage Templates using Object Lock.
+	RemoveDeleted bool
 }
 
 type InstallCreds struct {
@@ -2588,16 +2615,17 @@ type Office365CustomSettingV2 struct {
 }
 
 type Office365MixedVirtualAccount struct {
-	ID                   string   `json:"id"`
-	Type                 uint     `json:",omitempty"`
+	DefaultDriveID       string   `json:",omitempty"`
 	DisplayName          string   `json:",omitempty"`
-	Mail                 string   `json:",omitempty"`
+	EnabledServiceOption uint     `json:",omitempty"`
+	ID                   string   `json:"id"`
 	JobTitle             string   `json:",omitempty"`
+	Mail                 string   `json:",omitempty"`
 	SiteID               string   `json:",omitempty"`
+	Type                 uint     `json:",omitempty"`
+	UserPrincipalName    string   `json:",omitempty"`
 	WebID                string   `json:",omitempty"`
 	WebURL               string   `json:",omitempty"`
-	UserPrincipalName    string   `json:",omitempty"`
-	EnabledServiceOption uint     `json:",omitempty"`
 	Members              []string `json:",omitempty"`
 	ServiceOptions       uint     `json:",omitempty"`
 	MemberServiceOptions uint     `json:",omitempty"`
