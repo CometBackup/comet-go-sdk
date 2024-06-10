@@ -16,9 +16,9 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "24.5.0"
+const APPLICATION_VERSION string = "24.6.0"
 const APPLICATION_VERSION_MAJOR int = 24
-const APPLICATION_VERSION_MINOR int = 5
+const APPLICATION_VERSION_MINOR int = 6
 const APPLICATION_VERSION_REVISION int = 0
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
@@ -467,7 +467,7 @@ const PSA_TYPE_GRADIENT PSAType = 1
 
 // PSAType
 const PSA_TYPE_SYNCRO PSAType = 2
-const RELEASE_CODENAME string = "Enceladus"
+const RELEASE_CODENAME string = "Voyager"
 
 // RemoteServerType: Amazon Web Services
 const REMOTESERVER_AWS RemoteServerType = "aws"
@@ -1135,6 +1135,8 @@ const WINDOWSCODESIGN_METHOD_PKCS11HSM WindowsCodesignMethod = 3
 
 // WindowsCodesignMethod: Use a configured PKCS#12 key file for Authenticode codesigning
 const WINDOWSCODESIGN_METHOD_PKCS12FILE WindowsCodesignMethod = 2
+const USER_AGENT_HEADER string = "User-Agent"
+const DEFAULT_USER_AGENT string = "comet-go-sdk/" + APPLICATION_VERSION
 
 //
 // DATA TYPES
@@ -2112,6 +2114,9 @@ type EmailOptions struct {
 	SMTPPassword                string                 `json:",omitempty"`
 	SMTPAllowInvalidCertificate bool                   `json:",omitempty"`
 	SMTPAllowUnencrypted        bool                   `json:",omitempty"`
+	// Override the HELO/EHLO hostname for SMTP or MX Direct modes. If blank, uses system default
+	// HELO/EHLO hostname.
+	SMTPCustomEhlo string `json:",omitempty"`
 }
 
 type EmailReportConfig struct {
@@ -2616,6 +2621,7 @@ type Office365CustomSettingV2 struct {
 
 type Office365MixedVirtualAccount struct {
 	DefaultDriveID       string   `json:",omitempty"`
+	Disabled             bool     `json:",omitempty"`
 	DisplayName          string   `json:",omitempty"`
 	EnabledServiceOption uint     `json:",omitempty"`
 	ID                   string   `json:"id"`
@@ -3919,7 +3925,9 @@ type VSphereConnection struct {
 }
 
 type VaultSnapshot struct {
-	Snapshot   string
+	Snapshot string
+	// This field is available in Comet 24.3.x and later.
+	EngineType string
 	Source     string
 	CreateTime int64
 	// This field is available in Comet 20.12.4 and later.
@@ -4151,6 +4159,8 @@ type CometAPIClient struct {
 	// ReuseSessionKey is especially useful when using TOTP based authentication, otherwise
 	// you need to enter a new TOTPKey for every api call.
 	ReuseSessionKey bool
+	// Custom headers that will be set for the requests being made to the server.
+	CustomHeaders map[string]string
 }
 
 // NewCometAPIClient constructs and returns an instance of CometAPIClient
@@ -4164,6 +4174,9 @@ func NewCometAPIClient(serverURL, username, password string) (*CometAPIClient, e
 		ServerURL: serverURL,
 		Username:  username,
 		Password:  password,
+		CustomHeaders: map[string]string{
+			USER_AGENT_HEADER: DEFAULT_USER_AGENT,
+		},
 	}, nil
 }
 
@@ -4179,6 +4192,11 @@ func (c *CometAPIClient) Request(contentType, method, path string, data map[stri
 	req, err := http.NewRequest(strings.ToUpper(method), u.String(), nil)
 	if err != nil {
 		return nil, err
+	}
+	if c.CustomHeaders != nil {
+		for header, value := range c.CustomHeaders {
+			req.Header.Add(header, value)
+		}
 	}
 
 	switch contentType {
