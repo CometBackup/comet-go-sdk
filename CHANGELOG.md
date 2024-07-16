@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 2024-07-16 v1.32.0
+
+- Based on Comet 24.6.4
+- Added Server Device and Booster Limits
+- Added API to count devices registered on a Server
+- Added Software Build Role configuration per tenant
+
 ## 2024-06-11 v1.31.0
 
 - Based on Comet 24.6.0
