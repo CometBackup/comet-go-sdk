@@ -16,10 +16,10 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "24.6.0"
+const APPLICATION_VERSION string = "24.6.4"
 const APPLICATION_VERSION_MAJOR int = 24
 const APPLICATION_VERSION_MINOR int = 6
-const APPLICATION_VERSION_REVISION int = 0
+const APPLICATION_VERSION_REVISION int = 4
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
@@ -1280,6 +1280,8 @@ type AdminUserPermissions struct {
 	AllowedProvidersWhenRestricted []uint64 `json:",omitempty"`
 	// This field is available in Comet 23.9.11 and later.
 	AllowedUserPolicies []string `json:",omitempty"`
+	// This field is available in Comet 24.6.1 and later.
+	DenySoftwareBuildRole bool `json:",omitempty"`
 }
 
 type AdminWebAuthnRegistration struct {
@@ -2398,6 +2400,11 @@ type JobEntry struct {
 	Message  string
 }
 
+type LicenseLimits struct {
+	DeviceCount  int            `json:"deviceCount,omitempty"`
+	BoosterCount map[string]int `json:"boosterCount,omitempty"`
+}
+
 type LicenseOptions struct {
 	Email        string `json:",omitempty"`
 	SerialNumber string
@@ -3299,6 +3306,16 @@ type ServerMetaVersionInfo struct {
 	ServerLicenseHash        string
 	ServerLicenseFeaturesAll bool
 	ServerLicenseFeatureSet  uint32
+	// If non-zero, the maximum numbers of devices and Protected Item types that this server is
+	// allowed.
+	// This field is available in Comet 24.6.3 and later.
+	ServerLicenseLimit LicenseLimits
+	// A count of the devices registered on the server that have a configured Protected Item.
+	// This field is available in Comet 24.6.3 and later.
+	ConfiguredDevices int
+	// The current number of Protected Item types configured on the server.
+	// This field is available in Comet 24.6.3 and later.
+	BoosterLimit map[string]int
 	// Unix timestamp, in seconds.
 	LicenseValidUntil                              int64
 	EmailsSentSuccessfully                         int64
