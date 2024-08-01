@@ -16,10 +16,10 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "24.6.4"
+const APPLICATION_VERSION string = "24.6.6"
 const APPLICATION_VERSION_MAJOR int = 24
 const APPLICATION_VERSION_MINOR int = 6
-const APPLICATION_VERSION_REVISION int = 4
+const APPLICATION_VERSION_REVISION int = 6
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
@@ -94,6 +94,14 @@ const CUSTOMREMOTEBUCKET_CUSTOMBODY_URLENC CustomRemoteBucketCustomBodyType = "u
 
 // LanguageCode
 const DEFAULT_LANGUAGE LanguageCode = "en_US"
+
+// The number of retry attempts a backup job can do
+// This const is available in Comet 24.6.6 and later.
+const DEFAULT_RETRY_COUNT int = 1
+
+// The number of minutes between backup job retry attempts
+// This const is available in Comet 24.6.6 and later.
+const DEFAULT_RETRY_TIME int = 30
 const DEFAULT_TIMEZONE string = "UTC"
 
 // When defining a schedule via policy, use this option to create a schedule for each Storage Vault
@@ -355,6 +363,9 @@ const JOB_STATUS_RUNNING_INDETERMINATE JobStatus = 6000
 // with a running status.
 const JOB_STATUS_RUNNING_REVIVED JobStatus = 6002
 
+// JobStatus: The job has encountered an error and will wait to retry.
+const JOB_STATUS_RUNNING_TRYAGAIN JobStatus = 6003
+
 // JobStatus
 const JOB_STATUS_RUNNING__MAX JobStatus = 6999
 
@@ -388,6 +399,8 @@ const MACOSCODESIGN_LEVEL_SIGN_NOTARISE MacOSCodesignLevel = 1
 
 // MacOSCodesignLevel: Sign, notarize, and staple
 const MACOSCODESIGN_LEVEL_SIGN_NOTARISE_STAPLE MacOSCodesignLevel = 2
+const MIN_BUILD_NUMBER_WIN_10 int = 10240
+const MIN_BUILD_NUMBER_WIN_SERVER_2016 int = 14393
 const MIXED_VIRTUAL_ACCOUNT_TYPE_GROUP uint = 2
 const MIXED_VIRTUAL_ACCOUNT_TYPE_SHAREPOINT_ONLY uint = 4
 const MIXED_VIRTUAL_ACCOUNT_TYPE_TEAM_GROUP uint = 3
@@ -1439,13 +1452,17 @@ type BackupJobDetail struct {
 	// Unix timestamp in seconds
 	StartTime int64
 	// Unix timestamp in seconds. Will be zero if the job is still running.
-	EndTime int64
+	EndTime    int64
+	RetryCount int64
 	// The Protected Item that this job is for
 	SourceGUID string
 	// The Storage Vault that this job is for
-	DestinationGUID  string
-	DeviceID         string
-	SnapshotID       string `json:",omitempty"`
+	DestinationGUID string
+	DeviceID        string
+	SnapshotID      string `json:",omitempty"`
+	// The ID of the backup rule that contains the schedule that triggered this job
+	// This field is available in Comet 24.6.6 and later.
+	BackupRuleGUID   string `json:",omitempty"`
 	ClientVersion    string
 	TotalDirectories int64
 	TotalFiles       int64
@@ -1535,6 +1552,15 @@ type BackupRuleEventTriggers struct {
 	// The "If the last job was Missed" option. In Comet 23.12.3 and later, this condition is evaluated
 	// when the PC starts and/or when the live connection is resumed.
 	OnPCBootIfLastJobMissed bool `json:",omitempty"`
+	// The option to enable retrying when a backup job failed.
+	// This field is available in Comet 24.6.6 and later.
+	OnLastJobFailDoRetry bool `json:",omitempty"`
+	// The number of retries when the backup job fails.
+	// This field is available in Comet 24.6.6 and later.
+	LastJobFailDoRetryCount uint64 `json:",omitempty"`
+	// The number of minutes before retrying when the backup job fails.
+	// This field is available in Comet 24.6.6 and later.
+	LastJobFailDoRetryTime uint64 `json:",omitempty"`
 }
 
 type BrandingOptions struct {
@@ -3059,6 +3085,9 @@ type S3GenericVirtualStorageRole struct {
 	// S3-compatible provider (e.g. us-east-1).
 	// This field is available in Comet 24.3.1 and later.
 	Region string
+	// Optional. Prefix to use for bucket paths.
+	// This field is available in Comet 24.6.3 and later.
+	Prefix string
 }
 
 type SFTPDestinationLocation struct {
@@ -3774,6 +3803,9 @@ type UserPolicy struct {
 	ProtectedItemEngineTypes         ProtectedItemEngineTypePolicy
 	FileAndFolderMandatoryExclusions []ExtraFileExclusion `json:",omitempty"`
 	ModeScheduleSkipAlreadyRunning   DefaultSettingMode   `json:",omitempty"`
+	ModeScheduleLastJobFailDoRetry   DefaultSettingMode   `json:",omitempty"`
+	ModeLastJobFailDoRetryTime       uint64               `json:",omitempty"`
+	ModeLastJobFailDoRetryCount      uint64               `json:",omitempty"`
 	ModeAdminResetPassword           DefaultSettingMode   `json:",omitempty"`
 	ModeAdminViewFilenames           DefaultSettingMode   `json:",omitempty"`
 	ModeRequireUserResetPassword     DefaultSettingMode   `json:",omitempty"`
@@ -5362,6 +5394,35 @@ func (c *CometAPIClient) AdminConstellationStatus() (*ConstellationStatusAPIResp
 	}
 
 	result := &ConstellationStatusAPIResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminConvertStorageRole: Convert IAM Storage Role vault to its underlying S3 type
+//
+// You must supply administrator authentication credentials to use this API.
+//
+// - Params
+// TargetUser: The user to receive the new Storage Vault
+// DestinationId: The id of the old storage role destination to convert
+func (c *CometAPIClient) AdminConvertStorageRole(TargetUser string, DestinationId string) (*RequestStorageVaultResponseMessage, error) {
+	data := map[string][]string{}
+	var err error
+
+	data["TargetUser"] = []string{TargetUser}
+
+	data["DestinationId"] = []string{DestinationId}
+
+	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/convert-storage-role", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &RequestStorageVaultResponseMessage{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err
