@@ -3,7 +3,7 @@
 ## 2024-08-01 v1.34.0
 
 - Based on Comet 24.6.10
-- Added TOTP and SessionKey support for multipart/form-data requests
+- Add TOTP and SessionKey support for multipart/form-data requests
 
 ## 2024-08-01 v1.33.0
 
