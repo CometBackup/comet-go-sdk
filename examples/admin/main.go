@@ -5,6 +5,7 @@ package main
 
 	This quick commandline tool allows you to list and download any available CometBackup Clients
 	hosted on the Comet Server you're sending requests to.
+	It also demonstrates how to upload a resource file using AdminMetaResourceNew.
 */
 
 import (
@@ -28,10 +29,30 @@ func NewClient(url, username, password string) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
+	if _, errIn := client.AdminAccountSessionStart(nil); errIn != nil {
+		return retryWithTOTP(client, errIn, url)
+	}
 
 	return &Client{
 		client: client,
 	}, nil
+}
+
+func retryWithTOTP(c *sdk.CometAPIClient, errIn error, serverURL string) (client *Client, err error) {
+	if strings.Contains(errIn.Error(), "449") {
+		fmt.Printf("re-connecting to server: %s\n", serverURL)
+		totp, err := util.Totp()
+		if err != nil {
+			log.Fatal("Error reading TOTP: ", err)
+		}
+		client.client.TOTPKey = totp
+		// ReuseSessionKey is especially useful when using TOTP based authentication, otherwise you need to enter a
+		// new TOTPKey for every api call.
+		client.client.ReuseSessionKey = true
+		fmt.Println("Connection successful.")
+		return &Client{c}, nil
+	}
+	return nil, fmt.Errorf("error starting admin account session: %w", errIn)
 }
 
 func (c *Client) DownloadBrandedClient(platform int) ([]byte, error) {
@@ -68,6 +89,15 @@ func (c *Client) ListAndPrintPlatforms() error {
 	return nil
 }
 
+func (c *Client) UploadResource(filePath string) error {
+	response, err := c.client.AdminMetaResourceNew(filePath)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Resource uploaded successfully. response: %s\n", response)
+	return nil
+}
+
 func main() {
 	url := flag.String("s", "http://localhost:8060", "The URL for the CometServer API")
 	username := flag.String("u", "", "The username to authenticate with")
@@ -75,10 +105,11 @@ func main() {
 
 	list := flag.Bool("list", false, "List platforms available for download")
 	download := flag.Int("download", 0, "The id of the platform to download")
+	upload := flag.String("upload", "README.md", "Path to the file to upload as a resource")
 	flag.Parse()
 
-	if (*list && *download != 0) || (!*list && *download == 0) {
-		log.Fatal("Error: A command must be chosen. Choose one of either '--list' or '--download #'")
+	if (*list && *download != 0) || (!*list && *download == 0 && *upload == "") {
+		log.Fatal("Error: A command must be chosen. Choose one of '--list', '--download #', or '--upload <file>'")
 	}
 	if *username == "" || *password == "" {
 		var err error
@@ -91,14 +122,6 @@ func main() {
 	if err != nil {
 		log.Fatal("Error creating client: ", err)
 	}
-	totp, err := util.Totp()
-	if err != nil {
-		log.Fatal("Error reading TOTP: ", err)
-	}
-	client.client.TOTPKey = totp
-	// ReuseSessionKey is especially useful when using TOTP based authentication, otherwise you need to enter a
-	// new TOTPKey for every api call.
-	client.client.ReuseSessionKey = true
 
 	if *list {
 		err = client.ListAndPrintPlatforms()
@@ -141,5 +164,12 @@ func main() {
 		}
 
 		fmt.Println("Congratulations! You now have a branded Comet client: ", fileName)
+	}
+
+	if *upload != "" {
+		err := client.UploadResource(*upload)
+		if err != nil {
+			log.Fatal("Error uploading resource: ", err)
+		}
 	}
 }
