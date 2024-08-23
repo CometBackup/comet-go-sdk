@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 2024-08-23 v1.35.0
+
+- Based on Comet 24.6.10
+- Fix multipart/form-data requests used in AdminMetaResourceNew.
+- AdminMetaResourceNew now accepts a file path instead of the file contents.
+
 ## 2024-08-23 v1.34.0
 
 - Based on Comet 24.6.10

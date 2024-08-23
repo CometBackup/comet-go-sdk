@@ -9,6 +9,8 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -4237,19 +4239,14 @@ func (c *CometAPIClient) Request(contentType, method, path string, data map[stri
 	}
 	u.Path = path
 
-	// req.Body must be set later on
-	req, err := http.NewRequest(strings.ToUpper(method), u.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-	if c.CustomHeaders != nil {
-		for header, value := range c.CustomHeaders {
-			req.Header.Add(header, value)
-		}
-	}
-
+	var req *http.Request
 	switch contentType {
 	case "application/x-www-form-urlencoded":
+		// req.Body must be set later on
+		req, err = http.NewRequest(strings.ToUpper(method), u.String(), nil)
+		if err != nil {
+			return nil, err
+		}
 		body := url.Values{}
 		if data != nil {
 			body = url.Values(data)
@@ -4283,36 +4280,52 @@ func (c *CometAPIClient) Request(contentType, method, path string, data map[stri
 		m := multipart.NewWriter(&body)
 		for key, values := range data {
 			for _, value := range values {
-				m.WriteField(key, value)
+				file, err := os.Open(value)
+				if err != nil {
+					return nil, fmt.Errorf("error opening file: %w", err)
+				}
+				defer file.Close()
+				part, err := m.CreateFormFile(key, filepath.Base(value))
+				if err != nil {
+					return nil, err
+				}
+
+				if _, err := io.Copy(part, file); err != nil {
+					return nil, err
+				}
+				if err := m.Close(); err != nil {
+					return nil, err
+				}
 			}
 		}
-
-		req.Body = io.NopCloser(&body)
-
+		req, err = http.NewRequest(strings.ToUpper(method), u.String(), bytes.NewReader(body.Bytes()))
+		if err != nil {
+			return nil, err
+		}
 		req.Header.Add("Content-Type", m.FormDataContentType())
 		req.Header.Add("X-Comet-Admin-Username", c.Username)
 
 		if c.SessionKey != "" {
 			req.Header.Add("X-Comet-Admin-AuthType", "SessionKey")
 			req.Header.Add("X-Comet-Admin-SessionKey", c.SessionKey)
-
 		} else if c.TOTPKey != "" {
 			req.Header.Add("X-Comet-Admin-AuthType", "PasswordTOTP")
 			req.Header.Add("X-Comet-Admin-Password", c.Password)
 			req.Header.Add("X-Comet-Admin-TOTP", c.TOTPKey)
 
 			c.TOTPKey = "" // Once the TOTPKey is used, it is not usable again.
-
 		} else {
 			req.Header.Add("X-Comet-Admin-AuthType", "Password")
 			req.Header.Add("X-Comet-Admin-Password", c.Password)
-
 		}
-
 	default:
 		return nil, fmt.Errorf("Unexpected content type: %s", contentType)
 	}
-
+	if c.CustomHeaders != nil {
+		for header, value := range c.CustomHeaders {
+			req.Header.Add(header, value)
+		}
+	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
@@ -8143,7 +8156,7 @@ func (c *CometAPIClient) AdminMetaResourceGet(Hash string) ([]byte, error) {
 // You must supply administrator authentication credentials to use this API.
 //
 // - Params
-// upload: The uploaded file contents, as a multipart/form-data part.
+// upload: The path of the file to upload.
 func (c *CometAPIClient) AdminMetaResourceNew(upload string) (*AdminResourceResponse, error) {
 	data := map[string][]string{}
 	var err error
