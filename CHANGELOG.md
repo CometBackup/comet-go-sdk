@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## 2024-08-01 v1.34.0
+## 2024-08-23 v1.34.0
 
 - Based on Comet 24.6.10
 - Add TOTP and SessionKey support for multipart/form-data requests
@@ -111,8 +111,7 @@
 
 - Based on Comet 23.9.5
 - Add new field `LogLevel` to control job log verbosity
-- Add new `RESTORETYPE_WINDISK_ESXI` for restoring to VMware-compatible
-  virtual disks
+- Add new `RESTORETYPE_WINDISK_ESXI` for restoring to VMware-compatible virtual disks
 
 ## 2023-09-19 v1.12.0
 
@@ -121,11 +120,7 @@
 - New Streamable event SEVT_DEVICE_LOBBY_CONNECT and SEVT_DEVICE_LOBBY_DISCONNECT
 - Added 'TOTPCode' to 'InstallCreds' used for device registration.
 - 'GroupedBy' added to 'PSAConfig' for grouping statistics.
-- New APIs
-  - AdminInstallationDispatchDropConnection
-  - AdminInstallationDispatchRegisterDevice
-  - AdminInstallationListActive
-  - AdminJobAbandon
+- New APIs: AdminInstallationDispatchDropConnection, AdminInstallationDispatchRegisterDevice, AdminInstallationListActiveAdminJobAbandon
 
 ## 2023-08-29 v1.11.0
 
