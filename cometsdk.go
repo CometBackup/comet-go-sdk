@@ -4277,6 +4277,7 @@ func (c *CometAPIClient) Request(contentType, method, path string, data map[stri
 		req.Body = io.NopCloser(strings.NewReader(body.Encode()))
 
 		req.Header.Add("Content-Type", contentType)
+
 	case "multipart/form-data":
 		body := bytes.Buffer{}
 		m := multipart.NewWriter(&body)
@@ -4290,18 +4291,24 @@ func (c *CometAPIClient) Request(contentType, method, path string, data map[stri
 
 		req.Header.Add("Content-Type", m.FormDataContentType())
 		req.Header.Add("X-Comet-Admin-Username", c.Username)
+
 		if c.SessionKey != "" {
 			req.Header.Add("X-Comet-Admin-AuthType", "SessionKey")
 			req.Header.Add("X-Comet-Admin-SessionKey", c.SessionKey)
+
 		} else if c.TOTPKey != "" {
 			req.Header.Add("X-Comet-Admin-AuthType", "PasswordTOTP")
 			req.Header.Add("X-Comet-Admin-Password", c.Password)
 			req.Header.Add("X-Comet-Admin-TOTP", c.TOTPKey)
+
 			c.TOTPKey = "" // Once the TOTPKey is used, it is not usable again.
+
 		} else {
 			req.Header.Add("X-Comet-Admin-AuthType", "Password")
 			req.Header.Add("X-Comet-Admin-Password", c.Password)
+
 		}
+
 	default:
 		return nil, fmt.Errorf("Unexpected content type: %s", contentType)
 	}
