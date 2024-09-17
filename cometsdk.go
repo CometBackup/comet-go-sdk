@@ -16,10 +16,10 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "24.6.10"
+const APPLICATION_VERSION string = "24.9.1"
 const APPLICATION_VERSION_MAJOR int = 24
-const APPLICATION_VERSION_MINOR int = 6
-const APPLICATION_VERSION_REVISION int = 10
+const APPLICATION_VERSION_MINOR int = 9
+const APPLICATION_VERSION_REVISION int = 1
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
@@ -2972,6 +2972,9 @@ type RestoreJobAdvancedOptions struct {
 	OverwriteIfNewer bool
 	// For RESTORETYPE_FILE. If set, OverwriteExistingFiles must be true
 	OverwriteIfDifferentContent bool
+	// For RESTORETYPE_FILE. If set, OverwriteExistingFiles must be true. This can be set in
+	// combination with other OverwriteIf options.
+	OverwriteForcePermissions bool
 	// For RESTORETYPE_FILE. If set, DestPath must be blank
 	DestIsOriginalLocation bool
 	// For RESTORETYPE_FILE or RESTORETYPE_PROCESS_xxx
@@ -3415,8 +3418,10 @@ type SoftwareUpdateNewsResponse struct {
 // SourceBasicInfo is the minimal amount of information one device knows about another device's
 // Protected Items, in order to safely perform retention passes on their behalf.
 type SourceBasicInfo struct {
+	Engine           string
 	Description      string
 	O365AccountCount int64
+	TotalVmCount     int64
 	// Bytes
 	Size                         int64
 	OverrideDestinationRetention map[string]RetentionPolicy `json:",omitempty"`
@@ -3885,6 +3890,12 @@ type UserProfileConfig struct {
 	// A limit on the total number of Office 365 Protected Accounts across all Office 365 Protected
 	// Items in this account. Set to zero to allow unlimited Office 365 Protected Accounts.
 	QuotaOffice365ProtectedAccounts int64
+	// A limit on the total number of Hyper-V guests across all Hyper-V Protected Items in this
+	// account. Set to zero to allow unlimited Office 365 Protected Accounts.
+	QuotaHyperVGuests int64
+	// A limit on the total number of VMware guests across all VMware Protected Items in this account.
+	// Set to zero to allow unlimited Office 365 Protected Accounts.
+	QuotaVMwareGuests int64
 	// If the PolicyID field is set to a non-empty string, the Comet Server will enforce the contents
 	// of the Policy field based on the matching server's policy. Otherwise if the PolicyID field is
 	// set to an empty string, the administrator may configure any custom values in the Policy field.
