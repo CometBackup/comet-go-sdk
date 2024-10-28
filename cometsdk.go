@@ -16,10 +16,10 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "24.9.1"
+const APPLICATION_VERSION string = "24.9.6"
 const APPLICATION_VERSION_MAJOR int = 24
 const APPLICATION_VERSION_MINOR int = 9
-const APPLICATION_VERSION_REVISION int = 1
+const APPLICATION_VERSION_REVISION int = 6
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
@@ -607,6 +607,9 @@ const RESTORETYPE_WINDISK RestoreType = 4
 
 // RestoreType: Restore disk image backup as VMware-compatible virtual disks
 const RESTORETYPE_WINDISK_ESXI RestoreType = 12
+
+// RestoreType: Restore disk image backup as Hyper-V-compatible virtual disks (.vhdx format)
+const RESTORETYPE_WINDISK_VHDX RestoreType = 13
 
 // RetentionMode: Delete everything except for jobs matching the ranges in RetentionPolicy.Ranges.
 const RETENTIONMODE_DELETE_EXCEPT RetentionMode = 802
@@ -1482,6 +1485,10 @@ type BackupJobDetail struct {
 	TotalLicensedMailsCount int64 `json:",omitempty"`
 	// For Office 365 backup jobs, the number of unlicensed mailboxes.
 	TotalUnlicensedMailsCount int64 `json:",omitempty"`
+	// If this field is present, this job did not perform some work because the Storage Vault is
+	// currently busy.
+	// This field is available in Comet 24.9.2 and later.
+	ConflictingJobID string `json:",omitempty"`
 	// If this field is present, it is possible to request cancellation of this job via the API.
 	CancellationID string `json:",omitempty"`
 	// If this backup job is still running, additional partial-progress information may be present in
@@ -1503,6 +1510,7 @@ type BackupJobProgress struct {
 	RecievedTime int64
 	BytesDone    int64
 	ItemsDone    int64
+	ItemsTotal   int64
 }
 
 // A backup rule connects one source Protected Item and one destination Storage Vault, with multiple
@@ -2086,13 +2094,22 @@ type DiskDrive struct {
 	Caption      string
 	Model        string
 	SerialNumber string
-	Size         int64
-	Partitions   []Partition
-	Flags        int64
-	Cylinders    int64
-	Heads        int64
-	Sectors      int64
-	SectorSize   int64
+	// Bytes
+	Size       int64
+	Partitions []Partition
+	// For physical disks, this array will be empty. For virtual disks, RAID devices or Linux DM
+	// devices, this array may contain the DeviceName of the parent device.
+	// This field is available in Comet 24.6.x and later.
+	DeviceParents []string
+	// See WINDISKFLAG_ constants
+	Flags int64
+	// Deprecated: This member has been deprecated since Comet version 24.6.x This value is reported from the disk driver if available. Otherwise emulates a value based on modern LBA addressing. The field value is not used.
+	Cylinders int64
+	// Deprecated: This member has been deprecated since Comet version 24.6.x This value is reported from the disk driver if available. Otherwise emulates a value based on modern LBA addressing. The field value is not used.
+	Heads int64
+	// Deprecated: This member has been deprecated since Comet version 24.6.x This value is reported from the disk driver if available. Otherwise emulates a value based on modern LBA addressing. The field value is not used.
+	Sectors    int64
+	SectorSize int64
 }
 
 type DispatcherAdminSourcesResponse struct {
@@ -4292,10 +4309,30 @@ func (c *CometAPIClient) Request(contentType, method, path string, data map[stri
 	case "multipart/form-data":
 		body := bytes.Buffer{}
 		m := multipart.NewWriter(&body)
+
 		for key, values := range data {
 			for _, value := range values {
-				m.WriteField(key, value)
+				switch key {
+				case "upload":
+					part, err := m.CreateFormFile(key, "file.dat") // filename isn't used
+					if err != nil {
+						return nil, err
+					}
+					_, err = io.Copy(part, strings.NewReader(value))
+					if err != nil {
+						return nil, err
+					}
+				default:
+					err := m.WriteField(key, value)
+					if err != nil {
+						return nil, err
+					}
+				}
 			}
+		}
+
+		if err = m.Close(); err != nil {
+			return nil, err
 		}
 
 		req.Body = io.NopCloser(&body)
@@ -6885,6 +6922,41 @@ func (c *CometAPIClient) AdminDispatcherSearchSnapshots(TargetID string, Destina
 	}
 
 	result := &SearchSnapshotsResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminDispatcherTestSmbAuth: Test a set of Windows SMB credentials
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetID: The live connection GUID
+// Wsa: The target credentials to test
+func (c *CometAPIClient) AdminDispatcherTestSmbAuth(TargetID string, Wsa WinSMBAuth) (*CometAPIResponseMessage, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	data["TargetID"] = []string{TargetID}
+
+	b, err = json.Marshal(Wsa)
+	if err != nil {
+		return nil, err
+	}
+	data["Wsa"] = []string{string(b)}
+
+	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/test-smb-auth", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CometAPIResponseMessage{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err
@@ -10593,6 +10665,42 @@ func (c *CometAPIClient) UserWebDispatcherSearchSnapshots(TargetID string, Desti
 	}
 
 	result := &SearchSnapshotsResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// UserWebDispatcherTestSmbAuth: Test a set of Windows SMB credentials
+//
+// You must supply user authentication credentials to use this API, and the user account must be
+// authorized for web access.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetID: The live connection GUID
+// Wsa: The target credentials to test
+func (c *CometAPIClient) UserWebDispatcherTestSmbAuth(TargetID string, Wsa WinSMBAuth) (*CometAPIResponseMessage, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	data["TargetID"] = []string{TargetID}
+
+	b, err = json.Marshal(Wsa)
+	if err != nil {
+		return nil, err
+	}
+	data["Wsa"] = []string{string(b)}
+
+	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/test-smb-auth", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CometAPIResponseMessage{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err
