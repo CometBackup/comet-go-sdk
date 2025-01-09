@@ -3373,6 +3373,8 @@ type ServerMetaBrandingProperties struct {
 	PruneLogsAfterDays            int64
 	ExpiredInSeconds              int64
 	ExternalAuthenticationSources []ExternalAuthenticationSourceDisplay `json:",omitempty"`
+	// If true, this Comet Server currently has no admins or users.
+	ServerIsEmpty bool
 }
 
 type ServerMetaVersionInfo struct {
@@ -4781,6 +4783,33 @@ func (c *CometAPIClient) AdminAccountWebauthnSubmitChallengeResponse(SelfAddress
 	data["Credential"] = []string{Credential}
 
 	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/webauthn/submit-challenge-response", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CometAPIResponseMessage{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminAddFirstAdminUser: Add first admin user account on new server
+//
+// - Params
+// TargetUser: the username for this new admin
+// TargetPassword: the password for this new admin user
+func (c *CometAPIClient) AdminAddFirstAdminUser(TargetUser string, TargetPassword string) (*CometAPIResponseMessage, error) {
+	data := map[string][]string{}
+	var err error
+
+	data["TargetUser"] = []string{TargetUser}
+
+	data["TargetPassword"] = []string{TargetPassword}
+
+	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/add-first-admin-user", data)
 	if err != nil {
 		return nil, err
 	}
