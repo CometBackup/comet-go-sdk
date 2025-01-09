@@ -247,7 +247,7 @@ const ENGINE_BUILTIN_VSSWRITER string = "engine1/vsswriter"
 // Disk Image
 const ENGINE_BUILTIN_WINDISK string = "engine1/windisk"
 
-// Windows System Backup
+// Windows System Backup, deprecated from version 24.12.2
 const ENGINE_BUILTIN_WINDOWSSYSTEM string = "engine1/windowssystem"
 
 // FtpsModeType: Use explicit FTPS, first creating an insecure connection and then upgrading to
@@ -3352,9 +3352,11 @@ type ServerMetaVersionInfo struct {
 	CurrentTime int64
 	// A hash derived from the Comet Server's serial number. You can check this value to see if two
 	// Comet Server endpoints point to an identical server.
-	ServerLicenseHash        string
+	ServerLicenseHash string
+	// Deprecated: This member has been deprecated since Comet version 24.9.x
 	ServerLicenseFeaturesAll bool
-	ServerLicenseFeatureSet  uint32
+	// A bitset of feature flags representing functionality available in this Comet Server's plan
+	ServerLicenseFeatureSet uint32
 	// If non-zero, the maximum numbers of devices and Protected Item types that this server is
 	// allowed.
 	// This field is available in Comet 24.6.3 and later.
@@ -3870,7 +3872,7 @@ type UserProfileConfig struct {
 	OrganizationID string `json:",omitempty"`
 	// A list of email addresses to send reports to.
 	Emails []string
-	// By default, all the email addresses in the Emails field will receieve the policy-default or
+	// By default, all the email addresses in the Emails field will receive the policy-default or
 	// server-wide-default style of email report. Add an override for a specific email address in here
 	// to allow customizing the email report that will be received.
 	OverrideEmailSettings map[string]UserCustomEmailSettings
@@ -3928,7 +3930,9 @@ type UserProfileConfig struct {
 	// If this field is empty, the "Allow administrator to reset my password" feature is turned off. If
 	// this field is filled, it contains a cryptographic root of trust that can decrypt and re-encrypt
 	// other secrets in this profile.
-	PasswordRecovery   string `json:",omitempty"`
+	PasswordRecovery string `json:",omitempty"`
+	// Allow login using the password alone. Set this to false if the password alone should not be
+	// sufficient.
 	AllowPasswordLogin bool
 	// If true, then TOTP is required to open the desktop app or the Comet Server web interface with
 	// this user's credentials.
@@ -4550,7 +4554,9 @@ func (c *CometAPIClient) AdminAccountSessionUpgrade(SessionKey string) (*CometAP
 // AdminAccountSetProperties: Update settings for your own admin account
 // Updating your account password requires you to supply your current password.
 // To set a new plaintext password, use a password format of 0 (PASSWORD_FORMAT_PLAINTEXT).
-// This API does not currently allow you to modify your TOTP secret or IP whitelist.
+// This API does not currently allow you to modify your TOTP secret.
+// In Comet 24.12.2 and later, this API can change the IPWhitelist field. Prior to this, changes to
+// the IPWhitelist field were ignored.
 //
 // You must supply administrator authentication credentials to use this API.
 //
@@ -6479,6 +6485,7 @@ func (c *CometAPIClient) AdminDispatcherRequestImportSources(TargetID string) (*
 
 // AdminDispatcherRequestOffice365Accounts: Request a list of Office365 mailbox accounts
 // The remote device must have given consent for an MSP to browse their files.
+// This is primarily used for testing the connection to Graph API, not for actual listing
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
