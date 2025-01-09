@@ -3,7 +3,9 @@ package cometsdk
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -4332,8 +4334,29 @@ func NewCometAPIClient(serverURL, username, password string) (*CometAPIClient, e
 	}, nil
 }
 
+type ErrCometAPIResponseMessage struct {
+	Carm CometAPIResponseMessage
+}
+
+func (ecarm ErrCometAPIResponseMessage) Error() string {
+	return fmt.Sprintf("Error returned from API (code %d): %s", ecarm.Carm.Status, ecarm.Carm.Message)
+}
+
+var _ error = ErrCometAPIResponseMessage{} // interface assertion
+
+type ErrHttpCode struct {
+	Status     string
+	StatusCode int
+}
+
+func (ehc ErrHttpCode) Error() string {
+	return fmt.Sprintf("HTTP request failed (code %d): %v", ehc.StatusCode, ehc.Status)
+}
+
+var _ error = ErrHttpCode{} // interface assertion
+
 // Request is a convenience method wrapping a basic http request
-func (c *CometAPIClient) Request(contentType, method, path string, data map[string][]string) ([]byte, error) {
+func (c *CometAPIClient) Request(ctx context.Context, contentType, method, path string, data map[string][]string) ([]byte, error) {
 	u, err := url.ParseRequestURI(c.ServerURL)
 	if err != nil {
 		return nil, err
@@ -4345,6 +4368,9 @@ func (c *CometAPIClient) Request(contentType, method, path string, data map[stri
 	if err != nil {
 		return nil, err
 	}
+
+	req = req.WithContext(ctx)
+
 	if c.CustomHeaders != nil {
 		for header, value := range c.CustomHeaders {
 			req.Header.Add(header, value)
@@ -4378,6 +4404,18 @@ func (c *CometAPIClient) Request(contentType, method, path string, data map[stri
 		}
 
 		req.Body = io.NopCloser(strings.NewReader(body.Encode()))
+
+		req.Header.Add("Content-Type", contentType)
+
+	case "application/json":
+		if len(data) != 1 {
+			return nil, errors.New("Expected data to contain one element")
+		}
+
+		for _, v := range data {
+			req.Body = io.NopCloser(strings.NewReader(v[0]))
+			break
+		}
 
 		req.Header.Add("Content-Type", contentType)
 
@@ -4443,7 +4481,8 @@ func (c *CometAPIClient) Request(contentType, method, path string, data map[stri
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("HTTP request failed (code %d): %v", resp.StatusCode, resp.Status)
+		// ErrHttpCode implements error on the value receiver
+		return nil, ErrHttpCode{Status: resp.Status, StatusCode: resp.StatusCode}
 	}
 
 	respBody, err := io.ReadAll(resp.Body)
@@ -4452,10 +4491,11 @@ func (c *CometAPIClient) Request(contentType, method, path string, data map[stri
 	}
 
 	// Test for CometAPIResponseMessage (Error)
-	carm := &CometAPIResponseMessage{}
-	err = json.Unmarshal(respBody, carm)
+	carm := CometAPIResponseMessage{}
+	err = json.Unmarshal(respBody, &carm)
 	if err == nil && carm.Message != "" && carm.Status != 0 && carm.Status >= 400 {
-		return nil, fmt.Errorf("Error returned from API (code %d): %s", carm.Status, carm.Message)
+		// ErrCometAPIResponseMessage implements error on the value receiver
+		return nil, ErrCometAPIResponseMessage{Carm: carm}
 	}
 
 	return respBody, nil
@@ -4470,8 +4510,8 @@ func (c *CometAPIClient) Request(contentType, method, path string, data map[stri
 // corresponding AdminAccountSetProperties API.
 //
 // You must supply administrator authentication credentials to use this API.
-func (c *CometAPIClient) AdminAccountProperties() (*AdminAccountPropertiesResponse, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/properties", nil)
+func (c *CometAPIClient) AdminAccountProperties(ctx context.Context) (*AdminAccountPropertiesResponse, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/properties", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -4490,8 +4530,8 @@ func (c *CometAPIClient) AdminAccountProperties() (*AdminAccountPropertiesRespon
 // to the current admin account.
 //
 // You must supply administrator authentication credentials to use this API.
-func (c *CometAPIClient) AdminAccountRegenerateTotp() (*TotpRegeneratedResponse, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/regenerate-totp", nil)
+func (c *CometAPIClient) AdminAccountRegenerateTotp(ctx context.Context) (*TotpRegeneratedResponse, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/regenerate-totp", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -4508,8 +4548,8 @@ func (c *CometAPIClient) AdminAccountRegenerateTotp() (*TotpRegeneratedResponse,
 // AdminAccountSessionRevoke: Revoke a session key (log out)
 //
 // You must supply administrator authentication credentials to use this API.
-func (c *CometAPIClient) AdminAccountSessionRevoke() (*CometAPIResponseMessage, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/session-revoke", nil)
+func (c *CometAPIClient) AdminAccountSessionRevoke(ctx context.Context) (*CometAPIResponseMessage, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/session-revoke", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -4532,7 +4572,7 @@ func (c *CometAPIClient) AdminAccountSessionRevoke() (*CometAPIResponseMessage, 
 //
 // - Params
 // SelfAddress: (Optional) External URL of this server
-func (c *CometAPIClient) AdminAccountSessionStart(SelfAddress *string) (*SessionKeyRegeneratedResponse, error) {
+func (c *CometAPIClient) AdminAccountSessionStart(ctx context.Context, SelfAddress *string) (*SessionKeyRegeneratedResponse, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -4542,7 +4582,7 @@ func (c *CometAPIClient) AdminAccountSessionStart(SelfAddress *string) (*Session
 		data["SelfAddress"] = []string{*SelfAddress}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/session-start", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/session-start", data)
 	if err != nil {
 		return nil, err
 	}
@@ -4570,13 +4610,13 @@ func (c *CometAPIClient) AdminAccountSessionStart(SelfAddress *string) (*Session
 //
 // - Params
 // TargetUser: Target account username
-func (c *CometAPIClient) AdminAccountSessionStartAsUser(TargetUser string) (*SessionKeyRegeneratedResponse, error) {
+func (c *CometAPIClient) AdminAccountSessionStartAsUser(ctx context.Context, TargetUser string) (*SessionKeyRegeneratedResponse, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["TargetUser"] = []string{TargetUser}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/session-start-as-user", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/session-start-as-user", data)
 	if err != nil {
 		return nil, err
 	}
@@ -4602,13 +4642,13 @@ func (c *CometAPIClient) AdminAccountSessionStartAsUser(TargetUser string) (*Ses
 //
 // - Params
 // SessionKey: The session key to upgrade
-func (c *CometAPIClient) AdminAccountSessionUpgrade(SessionKey string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminAccountSessionUpgrade(ctx context.Context, SessionKey string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["SessionKey"] = []string{SessionKey}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/session-upgrade", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/session-upgrade", data)
 	if err != nil {
 		return nil, err
 	}
@@ -4633,7 +4673,7 @@ func (c *CometAPIClient) AdminAccountSessionUpgrade(SessionKey string) (*CometAP
 //
 // - Params
 // Security: Updated account properties
-func (c *CometAPIClient) AdminAccountSetProperties(Security AdminSecurityOptions) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminAccountSetProperties(ctx context.Context, Security AdminSecurityOptions) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -4644,7 +4684,7 @@ func (c *CometAPIClient) AdminAccountSetProperties(Security AdminSecurityOptions
 	}
 	data["Security"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/set-properties", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/set-properties", data)
 	if err != nil {
 		return nil, err
 	}
@@ -4667,13 +4707,13 @@ func (c *CometAPIClient) AdminAccountSetProperties(Security AdminSecurityOptions
 //
 // - Params
 // SelfAddress: External URL of this server, used as U2F AppID and Facet
-func (c *CometAPIClient) AdminAccountU2fRequestRegistrationChallenge(SelfAddress string) (*U2FRegistrationChallengeResponse, error) {
+func (c *CometAPIClient) AdminAccountU2fRequestRegistrationChallenge(ctx context.Context, SelfAddress string) (*U2FRegistrationChallengeResponse, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["SelfAddress"] = []string{SelfAddress}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/u2f/request-registration-challenge", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/u2f/request-registration-challenge", data)
 	if err != nil {
 		return nil, err
 	}
@@ -4700,7 +4740,7 @@ func (c *CometAPIClient) AdminAccountU2fRequestRegistrationChallenge(SelfAddress
 // U2FRegistrationData: U2F response data supplied by hardware token
 // U2FVersion: U2F response data supplied by hardware token
 // Description: (Optional) Description of the token
-func (c *CometAPIClient) AdminAccountU2fSubmitChallengeResponse(U2FChallengeID string, U2FClientData string, U2FRegistrationData string, U2FVersion string, Description *string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminAccountU2fSubmitChallengeResponse(ctx context.Context, U2FChallengeID string, U2FClientData string, U2FRegistrationData string, U2FVersion string, Description *string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -4716,7 +4756,7 @@ func (c *CometAPIClient) AdminAccountU2fSubmitChallengeResponse(U2FChallengeID s
 		data["Description"] = []string{*Description}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/u2f/submit-challenge-response", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/u2f/submit-challenge-response", data)
 	if err != nil {
 		return nil, err
 	}
@@ -4736,13 +4776,13 @@ func (c *CometAPIClient) AdminAccountU2fSubmitChallengeResponse(U2FChallengeID s
 //
 // - Params
 // TOTPCode: Six-digit code after scanning barcode image
-func (c *CometAPIClient) AdminAccountValidateTotp(TOTPCode string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminAccountValidateTotp(ctx context.Context, TOTPCode string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["TOTPCode"] = []string{TOTPCode}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/validate-totp", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/validate-totp", data)
 	if err != nil {
 		return nil, err
 	}
@@ -4762,13 +4802,13 @@ func (c *CometAPIClient) AdminAccountValidateTotp(TOTPCode string) (*CometAPIRes
 //
 // - Params
 // SelfAddress: External URL of this server, used as WebAuthn ID
-func (c *CometAPIClient) AdminAccountWebauthnRequestRegistrationChallenge(SelfAddress string) (*WebAuthnRegistrationChallengeResponse, error) {
+func (c *CometAPIClient) AdminAccountWebauthnRequestRegistrationChallenge(ctx context.Context, SelfAddress string) (*WebAuthnRegistrationChallengeResponse, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["SelfAddress"] = []string{SelfAddress}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/webauthn/request-registration-challenge", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/webauthn/request-registration-challenge", data)
 	if err != nil {
 		return nil, err
 	}
@@ -4790,7 +4830,7 @@ func (c *CometAPIClient) AdminAccountWebauthnRequestRegistrationChallenge(SelfAd
 // SelfAddress: External URL of this server, used as WebAuthn ID
 // ChallengeID: Associated value from AdminAccountWebAuthnRequestRegistrationChallenge API
 // Credential: JSON-encoded credential
-func (c *CometAPIClient) AdminAccountWebauthnSubmitChallengeResponse(SelfAddress string, ChallengeID string, Credential string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminAccountWebauthnSubmitChallengeResponse(ctx context.Context, SelfAddress string, ChallengeID string, Credential string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -4800,7 +4840,7 @@ func (c *CometAPIClient) AdminAccountWebauthnSubmitChallengeResponse(SelfAddress
 
 	data["Credential"] = []string{Credential}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/webauthn/submit-challenge-response", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/webauthn/submit-challenge-response", data)
 	if err != nil {
 		return nil, err
 	}
@@ -4819,7 +4859,7 @@ func (c *CometAPIClient) AdminAccountWebauthnSubmitChallengeResponse(SelfAddress
 // - Params
 // TargetUser: the username for this new admin
 // TargetPassword: the password for this new admin user
-func (c *CometAPIClient) AdminAddFirstAdminUser(TargetUser string, TargetPassword string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminAddFirstAdminUser(ctx context.Context, TargetUser string, TargetPassword string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -4827,7 +4867,7 @@ func (c *CometAPIClient) AdminAddFirstAdminUser(TargetUser string, TargetPasswor
 
 	data["TargetPassword"] = []string{TargetPassword}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/add-first-admin-user", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/add-first-admin-user", data)
 	if err != nil {
 		return nil, err
 	}
@@ -4855,7 +4895,7 @@ func (c *CometAPIClient) AdminAddFirstAdminUser(TargetUser string, TargetPasswor
 // the generated user (>= 20.3.4)
 // TargetOrganization: (Optional) If present, create the user account on behalf of another
 // organization. Only allowed for administrator accounts in the top-level organization. (>= 22.3.7)
-func (c *CometAPIClient) AdminAddUser(TargetUser string, TargetPassword string, StoreRecoveryCode *int, RequirePasswordChange *int, TargetOrganization *string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminAddUser(ctx context.Context, TargetUser string, TargetPassword string, StoreRecoveryCode *int, RequirePasswordChange *int, TargetOrganization *string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -4884,7 +4924,7 @@ func (c *CometAPIClient) AdminAddUser(TargetUser string, TargetPassword string, 
 		data["TargetOrganization"] = []string{*TargetOrganization}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/add-user", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/add-user", data)
 	if err != nil {
 		return nil, err
 	}
@@ -4911,7 +4951,7 @@ func (c *CometAPIClient) AdminAddUser(TargetUser string, TargetPassword string, 
 // ProfileData: New account profile
 // TargetOrganization: (Optional) If present, create the user account on behalf of another
 // organization. Only allowed for administrator accounts in the top-level organization. (>= 22.3.7)
-func (c *CometAPIClient) AdminAddUserFromProfile(TargetUser string, ProfileData UserProfileConfig, TargetOrganization *string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminAddUserFromProfile(ctx context.Context, TargetUser string, ProfileData UserProfileConfig, TargetOrganization *string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -4928,7 +4968,7 @@ func (c *CometAPIClient) AdminAddUserFromProfile(TargetUser string, ProfileData 
 		data["TargetOrganization"] = []string{*TargetOrganization}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/add-user-from-profile", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/add-user-from-profile", data)
 	if err != nil {
 		return nil, err
 	}
@@ -4951,13 +4991,13 @@ func (c *CometAPIClient) AdminAddUserFromProfile(TargetUser string, ProfileData 
 //
 // - Params
 // TargetUser: the username of the admin to be deleted
-func (c *CometAPIClient) AdminAdminUserDelete(TargetUser string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminAdminUserDelete(ctx context.Context, TargetUser string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["TargetUser"] = []string{TargetUser}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/admin-user/delete", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/admin-user/delete", data)
 	if err != nil {
 		return nil, err
 	}
@@ -4977,8 +5017,8 @@ func (c *CometAPIClient) AdminAdminUserDelete(TargetUser string) (*CometAPIRespo
 // Access to this API may be prevented on a per-administrator basis.
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
-func (c *CometAPIClient) AdminAdminUserList() ([]AllowedAdminUser, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/admin-user/list", nil)
+func (c *CometAPIClient) AdminAdminUserList(ctx context.Context) ([]AllowedAdminUser, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/admin-user/list", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -5004,7 +5044,7 @@ func (c *CometAPIClient) AdminAdminUserList() ([]AllowedAdminUser, error) {
 // TargetPassword: the password for this new admin user
 // TargetOrgID: (Optional) provide the organization ID for this user, it will default to the org of
 // the authenticating user otherwise
-func (c *CometAPIClient) AdminAdminUserNew(TargetUser string, TargetPassword string, TargetOrgID *string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminAdminUserNew(ctx context.Context, TargetUser string, TargetPassword string, TargetOrgID *string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -5016,7 +5056,7 @@ func (c *CometAPIClient) AdminAdminUserNew(TargetUser string, TargetPassword str
 		data["TargetOrgID"] = []string{*TargetOrgID}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/admin-user/new", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/admin-user/new", data)
 	if err != nil {
 		return nil, err
 	}
@@ -5036,8 +5076,8 @@ func (c *CometAPIClient) AdminAdminUserNew(TargetUser string, TargetPassword str
 // allow unauthenticated software downloads.
 // This API requires the Software Build Role to be enabled.
 // This API requires the Auth Role to be enabled.
-func (c *CometAPIClient) AdminBrandingAvailablePlatforms() (map[int]AvailableDownload, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/available-platforms", nil)
+func (c *CometAPIClient) AdminBrandingAvailablePlatforms(ctx context.Context) (map[int]AvailableDownload, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/available-platforms", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -5061,7 +5101,7 @@ func (c *CometAPIClient) AdminBrandingAvailablePlatforms() (map[int]AvailableDow
 // - Params
 // Platform: The selected download platform, from the AdminBrandingAvailablePlatforms API
 // SelfAddress: (Optional) The external URL of this server, used to resolve conflicts
-func (c *CometAPIClient) AdminBrandingGenerateClientByPlatform(Platform int, SelfAddress *string) ([]byte, error) {
+func (c *CometAPIClient) AdminBrandingGenerateClientByPlatform(ctx context.Context, Platform int, SelfAddress *string) ([]byte, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -5078,7 +5118,7 @@ func (c *CometAPIClient) AdminBrandingGenerateClientByPlatform(Platform int, Sel
 		data["SelfAddress"] = []string{*SelfAddress}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/by-platform", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/by-platform", data)
 	if err != nil {
 		return nil, err
 	}
@@ -5095,7 +5135,7 @@ func (c *CometAPIClient) AdminBrandingGenerateClientByPlatform(Platform int, Sel
 //
 // - Params
 // SelfAddress: (Optional) The external URL of this server, used to resolve conflicts
-func (c *CometAPIClient) AdminBrandingGenerateClientLinuxDeb(SelfAddress *string) ([]byte, error) {
+func (c *CometAPIClient) AdminBrandingGenerateClientLinuxDeb(ctx context.Context, SelfAddress *string) ([]byte, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -5105,7 +5145,7 @@ func (c *CometAPIClient) AdminBrandingGenerateClientLinuxDeb(SelfAddress *string
 		data["SelfAddress"] = []string{*SelfAddress}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/linux-deb", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/linux-deb", data)
 	if err != nil {
 		return nil, err
 	}
@@ -5122,7 +5162,7 @@ func (c *CometAPIClient) AdminBrandingGenerateClientLinuxDeb(SelfAddress *string
 //
 // - Params
 // SelfAddress: (Optional) The external URL of this server, used to resolve conflicts
-func (c *CometAPIClient) AdminBrandingGenerateClientLinuxgeneric(SelfAddress *string) ([]byte, error) {
+func (c *CometAPIClient) AdminBrandingGenerateClientLinuxgeneric(ctx context.Context, SelfAddress *string) ([]byte, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -5132,7 +5172,7 @@ func (c *CometAPIClient) AdminBrandingGenerateClientLinuxgeneric(SelfAddress *st
 		data["SelfAddress"] = []string{*SelfAddress}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/linuxgeneric", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/linuxgeneric", data)
 	if err != nil {
 		return nil, err
 	}
@@ -5149,7 +5189,7 @@ func (c *CometAPIClient) AdminBrandingGenerateClientLinuxgeneric(SelfAddress *st
 //
 // - Params
 // SelfAddress: (Optional) The external URL of this server, used to resolve conflicts
-func (c *CometAPIClient) AdminBrandingGenerateClientMacosArm64(SelfAddress *string) ([]byte, error) {
+func (c *CometAPIClient) AdminBrandingGenerateClientMacosArm64(ctx context.Context, SelfAddress *string) ([]byte, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -5159,7 +5199,7 @@ func (c *CometAPIClient) AdminBrandingGenerateClientMacosArm64(SelfAddress *stri
 		data["SelfAddress"] = []string{*SelfAddress}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/macos-arm64", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/macos-arm64", data)
 	if err != nil {
 		return nil, err
 	}
@@ -5176,7 +5216,7 @@ func (c *CometAPIClient) AdminBrandingGenerateClientMacosArm64(SelfAddress *stri
 //
 // - Params
 // SelfAddress: (Optional) The external URL of this server, used to resolve conflicts
-func (c *CometAPIClient) AdminBrandingGenerateClientMacosX8664(SelfAddress *string) ([]byte, error) {
+func (c *CometAPIClient) AdminBrandingGenerateClientMacosX8664(ctx context.Context, SelfAddress *string) ([]byte, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -5186,7 +5226,7 @@ func (c *CometAPIClient) AdminBrandingGenerateClientMacosX8664(SelfAddress *stri
 		data["SelfAddress"] = []string{*SelfAddress}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/macos-x86_64", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/macos-x86_64", data)
 	if err != nil {
 		return nil, err
 	}
@@ -5203,7 +5243,7 @@ func (c *CometAPIClient) AdminBrandingGenerateClientMacosX8664(SelfAddress *stri
 //
 // - Params
 // SelfAddress: (Optional) The external URL of this server, used to resolve conflicts
-func (c *CometAPIClient) AdminBrandingGenerateClientSpkDsm6(SelfAddress *string) ([]byte, error) {
+func (c *CometAPIClient) AdminBrandingGenerateClientSpkDsm6(ctx context.Context, SelfAddress *string) ([]byte, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -5213,7 +5253,7 @@ func (c *CometAPIClient) AdminBrandingGenerateClientSpkDsm6(SelfAddress *string)
 		data["SelfAddress"] = []string{*SelfAddress}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/spk-dsm6", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/spk-dsm6", data)
 	if err != nil {
 		return nil, err
 	}
@@ -5230,7 +5270,7 @@ func (c *CometAPIClient) AdminBrandingGenerateClientSpkDsm6(SelfAddress *string)
 //
 // - Params
 // SelfAddress: (Optional) The external URL of this server, used to resolve conflicts
-func (c *CometAPIClient) AdminBrandingGenerateClientSpkDsm7(SelfAddress *string) ([]byte, error) {
+func (c *CometAPIClient) AdminBrandingGenerateClientSpkDsm7(ctx context.Context, SelfAddress *string) ([]byte, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -5240,7 +5280,7 @@ func (c *CometAPIClient) AdminBrandingGenerateClientSpkDsm7(SelfAddress *string)
 		data["SelfAddress"] = []string{*SelfAddress}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/spk-dsm7", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/spk-dsm7", data)
 	if err != nil {
 		return nil, err
 	}
@@ -5258,7 +5298,7 @@ func (c *CometAPIClient) AdminBrandingGenerateClientSpkDsm7(SelfAddress *string)
 // - Params
 // Platform: The selected download platform, from the AdminBrandingAvailablePlatforms API
 // SelfAddress: (Optional) The external URL of this server, used to resolve conflicts
-func (c *CometAPIClient) AdminBrandingGenerateClientTest(Platform int, SelfAddress *string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminBrandingGenerateClientTest(ctx context.Context, Platform int, SelfAddress *string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -5275,7 +5315,7 @@ func (c *CometAPIClient) AdminBrandingGenerateClientTest(Platform int, SelfAddre
 		data["SelfAddress"] = []string{*SelfAddress}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/test", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/test", data)
 	if err != nil {
 		return nil, err
 	}
@@ -5300,7 +5340,7 @@ func (c *CometAPIClient) AdminBrandingGenerateClientTest(Platform int, SelfAddre
 //
 // - Params
 // SelfAddress: (Optional) The external URL of this server, used to resolve conflicts
-func (c *CometAPIClient) AdminBrandingGenerateClientWindowsAnycpuExe(SelfAddress *string) ([]byte, error) {
+func (c *CometAPIClient) AdminBrandingGenerateClientWindowsAnycpuExe(ctx context.Context, SelfAddress *string) ([]byte, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -5310,7 +5350,7 @@ func (c *CometAPIClient) AdminBrandingGenerateClientWindowsAnycpuExe(SelfAddress
 		data["SelfAddress"] = []string{*SelfAddress}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/windows-anycpu-exe", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/windows-anycpu-exe", data)
 	if err != nil {
 		return nil, err
 	}
@@ -5329,7 +5369,7 @@ func (c *CometAPIClient) AdminBrandingGenerateClientWindowsAnycpuExe(SelfAddress
 //
 // - Params
 // SelfAddress: (Optional) The external URL of this server, used to resolve conflicts
-func (c *CometAPIClient) AdminBrandingGenerateClientWindowsAnycpuZip(SelfAddress *string) ([]byte, error) {
+func (c *CometAPIClient) AdminBrandingGenerateClientWindowsAnycpuZip(ctx context.Context, SelfAddress *string) ([]byte, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -5339,7 +5379,7 @@ func (c *CometAPIClient) AdminBrandingGenerateClientWindowsAnycpuZip(SelfAddress
 		data["SelfAddress"] = []string{*SelfAddress}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/windows-anycpu-zip", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/windows-anycpu-zip", data)
 	if err != nil {
 		return nil, err
 	}
@@ -5358,7 +5398,7 @@ func (c *CometAPIClient) AdminBrandingGenerateClientWindowsAnycpuZip(SelfAddress
 //
 // - Params
 // SelfAddress: (Optional) The external URL of this server, used to resolve conflicts
-func (c *CometAPIClient) AdminBrandingGenerateClientWindowsX8632Exe(SelfAddress *string) ([]byte, error) {
+func (c *CometAPIClient) AdminBrandingGenerateClientWindowsX8632Exe(ctx context.Context, SelfAddress *string) ([]byte, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -5368,7 +5408,7 @@ func (c *CometAPIClient) AdminBrandingGenerateClientWindowsX8632Exe(SelfAddress 
 		data["SelfAddress"] = []string{*SelfAddress}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/windows-x86_32-exe", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/windows-x86_32-exe", data)
 	if err != nil {
 		return nil, err
 	}
@@ -5387,7 +5427,7 @@ func (c *CometAPIClient) AdminBrandingGenerateClientWindowsX8632Exe(SelfAddress 
 //
 // - Params
 // SelfAddress: (Optional) The external URL of this server, used to resolve conflicts
-func (c *CometAPIClient) AdminBrandingGenerateClientWindowsX8632Zip(SelfAddress *string) ([]byte, error) {
+func (c *CometAPIClient) AdminBrandingGenerateClientWindowsX8632Zip(ctx context.Context, SelfAddress *string) ([]byte, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -5397,7 +5437,7 @@ func (c *CometAPIClient) AdminBrandingGenerateClientWindowsX8632Zip(SelfAddress 
 		data["SelfAddress"] = []string{*SelfAddress}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/windows-x86_32-zip", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/windows-x86_32-zip", data)
 	if err != nil {
 		return nil, err
 	}
@@ -5416,7 +5456,7 @@ func (c *CometAPIClient) AdminBrandingGenerateClientWindowsX8632Zip(SelfAddress 
 //
 // - Params
 // SelfAddress: (Optional) The external URL of this server, used to resolve conflicts
-func (c *CometAPIClient) AdminBrandingGenerateClientWindowsX8664Exe(SelfAddress *string) ([]byte, error) {
+func (c *CometAPIClient) AdminBrandingGenerateClientWindowsX8664Exe(ctx context.Context, SelfAddress *string) ([]byte, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -5426,7 +5466,7 @@ func (c *CometAPIClient) AdminBrandingGenerateClientWindowsX8664Exe(SelfAddress 
 		data["SelfAddress"] = []string{*SelfAddress}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/windows-x86_64-exe", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/windows-x86_64-exe", data)
 	if err != nil {
 		return nil, err
 	}
@@ -5445,7 +5485,7 @@ func (c *CometAPIClient) AdminBrandingGenerateClientWindowsX8664Exe(SelfAddress 
 //
 // - Params
 // SelfAddress: (Optional) The external URL of this server, used to resolve conflicts
-func (c *CometAPIClient) AdminBrandingGenerateClientWindowsX8664Zip(SelfAddress *string) ([]byte, error) {
+func (c *CometAPIClient) AdminBrandingGenerateClientWindowsX8664Zip(ctx context.Context, SelfAddress *string) ([]byte, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -5455,7 +5495,7 @@ func (c *CometAPIClient) AdminBrandingGenerateClientWindowsX8664Zip(SelfAddress 
 		data["SelfAddress"] = []string{*SelfAddress}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/windows-x86_64-zip", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/branding/generate-client/windows-x86_64-zip", data)
 	if err != nil {
 		return nil, err
 	}
@@ -5471,7 +5511,7 @@ func (c *CometAPIClient) AdminBrandingGenerateClientWindowsX8664Zip(SelfAddress 
 // - Params
 // Subject: Bulletin subject line
 // Content: Bulletin message content
-func (c *CometAPIClient) AdminBulletinSubmit(Subject string, Content string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminBulletinSubmit(ctx context.Context, Subject string, Content string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -5479,7 +5519,7 @@ func (c *CometAPIClient) AdminBulletinSubmit(Subject string, Content string) (*C
 
 	data["Content"] = []string{Content}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/bulletin/submit", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/bulletin/submit", data)
 	if err != nil {
 		return nil, err
 	}
@@ -5497,8 +5537,8 @@ func (c *CometAPIClient) AdminBulletinSubmit(Subject string, Content string) (*C
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Constellation Role to be enabled.
-func (c *CometAPIClient) AdminConstellationLastReport() (*ConstellationCheckReport, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/constellation/last-report", nil)
+func (c *CometAPIClient) AdminConstellationLastReport(ctx context.Context) (*ConstellationCheckReport, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/constellation/last-report", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -5516,8 +5556,8 @@ func (c *CometAPIClient) AdminConstellationLastReport() (*ConstellationCheckRepo
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Constellation Role to be enabled.
-func (c *CometAPIClient) AdminConstellationNewReport() (*ConstellationCheckReport, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/constellation/new-report", nil)
+func (c *CometAPIClient) AdminConstellationNewReport(ctx context.Context) (*ConstellationCheckReport, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/constellation/new-report", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -5537,8 +5577,8 @@ func (c *CometAPIClient) AdminConstellationNewReport() (*ConstellationCheckRepor
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
 // This API requires the Constellation Role to be enabled.
-func (c *CometAPIClient) AdminConstellationPruneNow() (*CometAPIResponseMessage, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/constellation/prune-now", nil)
+func (c *CometAPIClient) AdminConstellationPruneNow(ctx context.Context) (*CometAPIResponseMessage, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/constellation/prune-now", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -5556,8 +5596,8 @@ func (c *CometAPIClient) AdminConstellationPruneNow() (*CometAPIResponseMessage,
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Constellation Role to be enabled.
-func (c *CometAPIClient) AdminConstellationStatus() (*ConstellationStatusAPIResponse, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/constellation/status", nil)
+func (c *CometAPIClient) AdminConstellationStatus(ctx context.Context) (*ConstellationStatusAPIResponse, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/constellation/status", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -5578,7 +5618,7 @@ func (c *CometAPIClient) AdminConstellationStatus() (*ConstellationStatusAPIResp
 // - Params
 // TargetUser: The user to receive the new Storage Vault
 // DestinationId: The id of the old storage role destination to convert
-func (c *CometAPIClient) AdminConvertStorageRole(TargetUser string, DestinationId string) (*RequestStorageVaultResponseMessage, error) {
+func (c *CometAPIClient) AdminConvertStorageRole(ctx context.Context, TargetUser string, DestinationId string) (*RequestStorageVaultResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -5586,7 +5626,7 @@ func (c *CometAPIClient) AdminConvertStorageRole(TargetUser string, DestinationI
 
 	data["DestinationId"] = []string{DestinationId}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/convert-storage-role", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/convert-storage-role", data)
 	if err != nil {
 		return nil, err
 	}
@@ -5607,7 +5647,7 @@ func (c *CometAPIClient) AdminConvertStorageRole(TargetUser string, DestinationI
 //
 // - Params
 // Query: (No description available)
-func (c *CometAPIClient) AdminCountJobsForCustomSearch(Query SearchClause) (*CountJobsResponse, error) {
+func (c *CometAPIClient) AdminCountJobsForCustomSearch(ctx context.Context, Query SearchClause) (*CountJobsResponse, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -5618,7 +5658,7 @@ func (c *CometAPIClient) AdminCountJobsForCustomSearch(Query SearchClause) (*Cou
 	}
 	data["Query"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/count-jobs-for-custom-search", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/count-jobs-for-custom-search", data)
 	if err != nil {
 		return nil, err
 	}
@@ -5648,7 +5688,7 @@ func (c *CometAPIClient) AdminCountJobsForCustomSearch(Query SearchClause) (*Cou
 // TargetPassword: Selected account password
 // Server: (Optional) External URL of the authentication server that is different from the current
 // server
-func (c *CometAPIClient) AdminCreateInstallToken(TargetUser string, TargetPassword string, Server *string) (*InstallTokenResponse, error) {
+func (c *CometAPIClient) AdminCreateInstallToken(ctx context.Context, TargetUser string, TargetPassword string, Server *string) (*InstallTokenResponse, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -5660,7 +5700,7 @@ func (c *CometAPIClient) AdminCreateInstallToken(TargetUser string, TargetPasswo
 		data["Server"] = []string{*Server}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/create-install-token", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/create-install-token", data)
 	if err != nil {
 		return nil, err
 	}
@@ -5687,7 +5727,7 @@ func (c *CometAPIClient) AdminCreateInstallToken(TargetUser string, TargetPasswo
 // - Params
 // TargetUser: Selected account username
 // UninstallConfig: (Optional) Uninstall software configuration (>= 20.3.5)
-func (c *CometAPIClient) AdminDeleteUser(TargetUser string, UninstallConfig *UninstallConfig) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminDeleteUser(ctx context.Context, TargetUser string, UninstallConfig *UninstallConfig) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -5702,7 +5742,7 @@ func (c *CometAPIClient) AdminDeleteUser(TargetUser string, UninstallConfig *Uni
 		data["UninstallConfig"] = []string{string(b)}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/delete-user", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/delete-user", data)
 	if err != nil {
 		return nil, err
 	}
@@ -5723,13 +5763,13 @@ func (c *CometAPIClient) AdminDeleteUser(TargetUser string, UninstallConfig *Uni
 //
 // - Params
 // TargetUser: Selected account username
-func (c *CometAPIClient) AdminDisableUserTotp(TargetUser string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminDisableUserTotp(ctx context.Context, TargetUser string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["TargetUser"] = []string{TargetUser}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/disable-user-totp", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/disable-user-totp", data)
 	if err != nil {
 		return nil, err
 	}
@@ -5752,7 +5792,7 @@ func (c *CometAPIClient) AdminDisableUserTotp(TargetUser string) (*CometAPIRespo
 // - Params
 // TargetID: The live connection GUID
 // Destination: The Storage Vault GUID
-func (c *CometAPIClient) AdminDispatcherApplyRetentionRules(TargetID string, Destination string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminDispatcherApplyRetentionRules(ctx context.Context, TargetID string, Destination string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -5760,7 +5800,7 @@ func (c *CometAPIClient) AdminDispatcherApplyRetentionRules(TargetID string, Des
 
 	data["Destination"] = []string{Destination}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/apply-retention-rules", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/apply-retention-rules", data)
 	if err != nil {
 		return nil, err
 	}
@@ -5784,7 +5824,7 @@ func (c *CometAPIClient) AdminDispatcherApplyRetentionRules(TargetID string, Des
 // - Params
 // TargetID: The live connection GUID
 // Destination: The Storage Vault GUID
-func (c *CometAPIClient) AdminDispatcherDeepverifyStorageVault(TargetID string, Destination string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminDispatcherDeepverifyStorageVault(ctx context.Context, TargetID string, Destination string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -5792,7 +5832,7 @@ func (c *CometAPIClient) AdminDispatcherDeepverifyStorageVault(TargetID string, 
 
 	data["Destination"] = []string{Destination}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/deepverify-storage-vault", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/deepverify-storage-vault", data)
 	if err != nil {
 		return nil, err
 	}
@@ -5815,7 +5855,7 @@ func (c *CometAPIClient) AdminDispatcherDeepverifyStorageVault(TargetID string, 
 // TargetID: The live connection GUID
 // DestinationID: The Storage Vault GUID
 // SnapshotID: The backup job snapshot ID to delete
-func (c *CometAPIClient) AdminDispatcherDeleteSnapshot(TargetID string, DestinationID string, SnapshotID string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminDispatcherDeleteSnapshot(ctx context.Context, TargetID string, DestinationID string, SnapshotID string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -5825,7 +5865,7 @@ func (c *CometAPIClient) AdminDispatcherDeleteSnapshot(TargetID string, Destinat
 
 	data["SnapshotID"] = []string{SnapshotID}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/delete-snapshot", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/delete-snapshot", data)
 	if err != nil {
 		return nil, err
 	}
@@ -5850,7 +5890,7 @@ func (c *CometAPIClient) AdminDispatcherDeleteSnapshot(TargetID string, Destinat
 // TargetID: The live connection GUID
 // DestinationID: The Storage Vault GUID
 // SnapshotIDs: The backup job snapshot IDs to delete
-func (c *CometAPIClient) AdminDispatcherDeleteSnapshots(TargetID string, DestinationID string, SnapshotIDs []string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminDispatcherDeleteSnapshots(ctx context.Context, TargetID string, DestinationID string, SnapshotIDs []string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -5865,7 +5905,7 @@ func (c *CometAPIClient) AdminDispatcherDeleteSnapshots(TargetID string, Destina
 	}
 	data["SnapshotIDs"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/delete-snapshots", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/delete-snapshots", data)
 	if err != nil {
 		return nil, err
 	}
@@ -5887,13 +5927,13 @@ func (c *CometAPIClient) AdminDispatcherDeleteSnapshots(TargetID string, Destina
 //
 // - Params
 // TargetID: The live connection GUID
-func (c *CometAPIClient) AdminDispatcherDropConnection(TargetID string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminDispatcherDropConnection(ctx context.Context, TargetID string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["TargetID"] = []string{TargetID}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/drop-connection", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/drop-connection", data)
 	if err != nil {
 		return nil, err
 	}
@@ -5918,7 +5958,7 @@ func (c *CometAPIClient) AdminDispatcherDropConnection(TargetID string) (*CometA
 // Snapshot: where the email belongs to
 // Destination: The Storage Vault ID
 // Path: of the email to view
-func (c *CometAPIClient) AdminDispatcherEmailPreview(TargetID string, Snapshot string, Destination string, Path string) (*EmailReportGeneratedPreview, error) {
+func (c *CometAPIClient) AdminDispatcherEmailPreview(ctx context.Context, TargetID string, Snapshot string, Destination string, Path string) (*EmailReportGeneratedPreview, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -5930,7 +5970,7 @@ func (c *CometAPIClient) AdminDispatcherEmailPreview(TargetID string, Snapshot s
 
 	data["Path"] = []string{Path}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/email-preview", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/email-preview", data)
 	if err != nil {
 		return nil, err
 	}
@@ -5953,13 +5993,13 @@ func (c *CometAPIClient) AdminDispatcherEmailPreview(TargetID string, Snapshot s
 //
 // - Params
 // OrganizationID: Target organization
-func (c *CometAPIClient) AdminDispatcherGetDefaultLoginUrl(OrganizationID string) (*OrganizationLoginURLResponse, error) {
+func (c *CometAPIClient) AdminDispatcherGetDefaultLoginUrl(ctx context.Context, OrganizationID string) (*OrganizationLoginURLResponse, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["OrganizationID"] = []string{OrganizationID}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/get-default-login-url", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/get-default-login-url", data)
 	if err != nil {
 		return nil, err
 	}
@@ -5984,7 +6024,7 @@ func (c *CometAPIClient) AdminDispatcherGetDefaultLoginUrl(OrganizationID string
 // TargetID: The live connection GUID
 // ImportSourceID: The selected import source, as found by the AdminDispatcherRequestImportSources
 // API
-func (c *CometAPIClient) AdminDispatcherImportApply(TargetID string, ImportSourceID string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminDispatcherImportApply(ctx context.Context, TargetID string, ImportSourceID string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -5992,7 +6032,7 @@ func (c *CometAPIClient) AdminDispatcherImportApply(TargetID string, ImportSourc
 
 	data["ImportSourceID"] = []string{ImportSourceID}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/import-apply", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/import-apply", data)
 	if err != nil {
 		return nil, err
 	}
@@ -6014,13 +6054,13 @@ func (c *CometAPIClient) AdminDispatcherImportApply(TargetID string, ImportSourc
 //
 // - Params
 // TargetID: The live connection GUID
-func (c *CometAPIClient) AdminDispatcherKillProcess(TargetID string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminDispatcherKillProcess(ctx context.Context, TargetID string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["TargetID"] = []string{TargetID}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/kill-process", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/kill-process", data)
 	if err != nil {
 		return nil, err
 	}
@@ -6041,7 +6081,7 @@ func (c *CometAPIClient) AdminDispatcherKillProcess(TargetID string) (*CometAPIR
 //
 // - Params
 // UserNameFilter: (Optional) User name filter string
-func (c *CometAPIClient) AdminDispatcherListActive(UserNameFilter *string) (LiveUserConnectionMap, error) {
+func (c *CometAPIClient) AdminDispatcherListActive(ctx context.Context, UserNameFilter *string) (LiveUserConnectionMap, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -6049,7 +6089,7 @@ func (c *CometAPIClient) AdminDispatcherListActive(UserNameFilter *string) (Live
 		data["UserNameFilter"] = []string{*UserNameFilter}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/list-active", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/list-active", data)
 	if err != nil {
 		return nil, err
 	}
@@ -6073,7 +6113,7 @@ func (c *CometAPIClient) AdminDispatcherListActive(UserNameFilter *string) (Live
 // - Params
 // TargetID: The live connection GUID
 // Credentials: The Office365 account credential
-func (c *CometAPIClient) AdminDispatcherOffice365ListVirtualAccounts(TargetID string, Credentials Office365Credential) (*BrowseOffice365ListVirtualAccountsResponse, error) {
+func (c *CometAPIClient) AdminDispatcherOffice365ListVirtualAccounts(ctx context.Context, TargetID string, Credentials Office365Credential) (*BrowseOffice365ListVirtualAccountsResponse, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -6086,7 +6126,7 @@ func (c *CometAPIClient) AdminDispatcherOffice365ListVirtualAccounts(TargetID st
 	}
 	data["Credentials"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/office365-list-virtual-accounts", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/office365-list-virtual-accounts", data)
 	if err != nil {
 		return nil, err
 	}
@@ -6108,7 +6148,7 @@ func (c *CometAPIClient) AdminDispatcherOffice365ListVirtualAccounts(TargetID st
 // - Params
 // TargetID: The live connection GUID
 // ExtraData: The destination location settings
-func (c *CometAPIClient) AdminDispatcherPingDestination(TargetID string, ExtraData DestinationLocation) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminDispatcherPingDestination(ctx context.Context, TargetID string, ExtraData DestinationLocation) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -6121,7 +6161,7 @@ func (c *CometAPIClient) AdminDispatcherPingDestination(TargetID string, ExtraDa
 	}
 	data["ExtraData"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/ping-destination", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/ping-destination", data)
 	if err != nil {
 		return nil, err
 	}
@@ -6143,13 +6183,13 @@ func (c *CometAPIClient) AdminDispatcherPingDestination(TargetID string, ExtraDa
 //
 // - Params
 // TargetID: The live connection GUID
-func (c *CometAPIClient) AdminDispatcherRefetchProfile(TargetID string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminDispatcherRefetchProfile(ctx context.Context, TargetID string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["TargetID"] = []string{TargetID}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/refetch-profile", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/refetch-profile", data)
 	if err != nil {
 		return nil, err
 	}
@@ -6175,7 +6215,7 @@ func (c *CometAPIClient) AdminDispatcherRefetchProfile(TargetID string) (*CometA
 // - Params
 // TargetID: The live connection GUID
 // EmailAddress: The email address of the Azure AD administrator
-func (c *CometAPIClient) AdminDispatcherRegisterOfficeApplicationBegin(TargetID string, EmailAddress string) (*RegisterOfficeApplicationBeginResponse, error) {
+func (c *CometAPIClient) AdminDispatcherRegisterOfficeApplicationBegin(ctx context.Context, TargetID string, EmailAddress string) (*RegisterOfficeApplicationBeginResponse, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -6183,7 +6223,7 @@ func (c *CometAPIClient) AdminDispatcherRegisterOfficeApplicationBegin(TargetID 
 
 	data["EmailAddress"] = []string{EmailAddress}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/register-office-application/begin", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/register-office-application/begin", data)
 	if err != nil {
 		return nil, err
 	}
@@ -6208,7 +6248,7 @@ func (c *CometAPIClient) AdminDispatcherRegisterOfficeApplicationBegin(TargetID 
 // - Params
 // TargetID: The live connection GUID
 // Continuation: The ID returned from the AdminDispatcherRegisterOfficeApplicationBegin endpoint
-func (c *CometAPIClient) AdminDispatcherRegisterOfficeApplicationCheck(TargetID string, Continuation string) (*RegisterOfficeApplicationCheckResponse, error) {
+func (c *CometAPIClient) AdminDispatcherRegisterOfficeApplicationCheck(ctx context.Context, TargetID string, Continuation string) (*RegisterOfficeApplicationCheckResponse, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -6216,7 +6256,7 @@ func (c *CometAPIClient) AdminDispatcherRegisterOfficeApplicationCheck(TargetID 
 
 	data["Continuation"] = []string{Continuation}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/register-office-application/check", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/register-office-application/check", data)
 	if err != nil {
 		return nil, err
 	}
@@ -6240,7 +6280,7 @@ func (c *CometAPIClient) AdminDispatcherRegisterOfficeApplicationCheck(TargetID 
 // - Params
 // TargetID: The live connection GUID
 // Destination: The Storage Vault GUID
-func (c *CometAPIClient) AdminDispatcherReindexStorageVault(TargetID string, Destination string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminDispatcherReindexStorageVault(ctx context.Context, TargetID string, Destination string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -6248,7 +6288,7 @@ func (c *CometAPIClient) AdminDispatcherReindexStorageVault(TargetID string, Des
 
 	data["Destination"] = []string{Destination}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/reindex-storage-vault", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/reindex-storage-vault", data)
 	if err != nil {
 		return nil, err
 	}
@@ -6270,13 +6310,13 @@ func (c *CometAPIClient) AdminDispatcherReindexStorageVault(TargetID string, Des
 //
 // - Params
 // TargetID: The live connection GUID
-func (c *CometAPIClient) AdminDispatcherRequestBrowseDiskDrives(TargetID string) (*BrowseDiskDrivesResponse, error) {
+func (c *CometAPIClient) AdminDispatcherRequestBrowseDiskDrives(ctx context.Context, TargetID string) (*BrowseDiskDrivesResponse, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["TargetID"] = []string{TargetID}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-browse-disk-drives", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-browse-disk-drives", data)
 	if err != nil {
 		return nil, err
 	}
@@ -6298,13 +6338,13 @@ func (c *CometAPIClient) AdminDispatcherRequestBrowseDiskDrives(TargetID string)
 //
 // - Params
 // TargetID: The live connection GUID
-func (c *CometAPIClient) AdminDispatcherRequestBrowseExchangeEdb(TargetID string) (*BrowseEDBResponse, error) {
+func (c *CometAPIClient) AdminDispatcherRequestBrowseExchangeEdb(ctx context.Context, TargetID string) (*BrowseEDBResponse, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["TargetID"] = []string{TargetID}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-browse-exchange-edb", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-browse-exchange-edb", data)
 	if err != nil {
 		return nil, err
 	}
@@ -6326,13 +6366,13 @@ func (c *CometAPIClient) AdminDispatcherRequestBrowseExchangeEdb(TargetID string
 //
 // - Params
 // TargetID: The live connection GUID
-func (c *CometAPIClient) AdminDispatcherRequestBrowseHyperv(TargetID string) (*BrowseHVResponse, error) {
+func (c *CometAPIClient) AdminDispatcherRequestBrowseHyperv(ctx context.Context, TargetID string) (*BrowseHVResponse, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["TargetID"] = []string{TargetID}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-browse-hyperv", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-browse-hyperv", data)
 	if err != nil {
 		return nil, err
 	}
@@ -6355,7 +6395,7 @@ func (c *CometAPIClient) AdminDispatcherRequestBrowseHyperv(TargetID string) (*B
 // - Params
 // TargetID: The live connection GUID
 // Credentials: The Mongo database authentication settings
-func (c *CometAPIClient) AdminDispatcherRequestBrowseMongodb(TargetID string, Credentials MongoDBConnection) (*BrowseSQLServerResponse, error) {
+func (c *CometAPIClient) AdminDispatcherRequestBrowseMongodb(ctx context.Context, TargetID string, Credentials MongoDBConnection) (*BrowseSQLServerResponse, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -6368,7 +6408,7 @@ func (c *CometAPIClient) AdminDispatcherRequestBrowseMongodb(TargetID string, Cr
 	}
 	data["Credentials"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-browse-mongodb", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-browse-mongodb", data)
 	if err != nil {
 		return nil, err
 	}
@@ -6391,7 +6431,7 @@ func (c *CometAPIClient) AdminDispatcherRequestBrowseMongodb(TargetID string, Cr
 // - Params
 // TargetID: The live connection GUID
 // Credentials: The MSSQL database authentication settings
-func (c *CometAPIClient) AdminDispatcherRequestBrowseMssql(TargetID string, Credentials MSSQLConnection) (*BrowseSQLServerResponse, error) {
+func (c *CometAPIClient) AdminDispatcherRequestBrowseMssql(ctx context.Context, TargetID string, Credentials MSSQLConnection) (*BrowseSQLServerResponse, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -6404,7 +6444,7 @@ func (c *CometAPIClient) AdminDispatcherRequestBrowseMssql(TargetID string, Cred
 	}
 	data["Credentials"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-browse-mssql", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-browse-mssql", data)
 	if err != nil {
 		return nil, err
 	}
@@ -6427,7 +6467,7 @@ func (c *CometAPIClient) AdminDispatcherRequestBrowseMssql(TargetID string, Cred
 // - Params
 // TargetID: The live connection GUID
 // Credentials: The MySQL database authentication settings
-func (c *CometAPIClient) AdminDispatcherRequestBrowseMysql(TargetID string, Credentials MySQLConnection) (*BrowseSQLServerResponse, error) {
+func (c *CometAPIClient) AdminDispatcherRequestBrowseMysql(ctx context.Context, TargetID string, Credentials MySQLConnection) (*BrowseSQLServerResponse, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -6440,7 +6480,7 @@ func (c *CometAPIClient) AdminDispatcherRequestBrowseMysql(TargetID string, Cred
 	}
 	data["Credentials"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-browse-mysql", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-browse-mysql", data)
 	if err != nil {
 		return nil, err
 	}
@@ -6463,7 +6503,7 @@ func (c *CometAPIClient) AdminDispatcherRequestBrowseMysql(TargetID string, Cred
 // - Params
 // TargetID: The live connection GUID
 // Credentials: The VMware vSphere connection settings
-func (c *CometAPIClient) AdminDispatcherRequestBrowseVmware(TargetID string, Credentials VMwareConnection) (*BrowseVMwareResponse, error) {
+func (c *CometAPIClient) AdminDispatcherRequestBrowseVmware(ctx context.Context, TargetID string, Credentials VMwareConnection) (*BrowseVMwareResponse, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -6476,7 +6516,7 @@ func (c *CometAPIClient) AdminDispatcherRequestBrowseVmware(TargetID string, Cre
 	}
 	data["Credentials"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-browse-vmware", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-browse-vmware", data)
 	if err != nil {
 		return nil, err
 	}
@@ -6498,13 +6538,13 @@ func (c *CometAPIClient) AdminDispatcherRequestBrowseVmware(TargetID string, Cre
 //
 // - Params
 // TargetID: The live connection GUID
-func (c *CometAPIClient) AdminDispatcherRequestBrowseVssAaw(TargetID string) (*BrowseVSSResponse, error) {
+func (c *CometAPIClient) AdminDispatcherRequestBrowseVssAaw(ctx context.Context, TargetID string) (*BrowseVSSResponse, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["TargetID"] = []string{TargetID}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-browse-vss-aaw", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-browse-vss-aaw", data)
 	if err != nil {
 		return nil, err
 	}
@@ -6529,7 +6569,7 @@ func (c *CometAPIClient) AdminDispatcherRequestBrowseVssAaw(TargetID string) (*B
 // TargetID: The live connection GUID
 // Path: (Optional) Browse objects inside this path. If empty or not present, returns the top-level
 // device paths
-func (c *CometAPIClient) AdminDispatcherRequestFilesystemObjects(TargetID string, Path *string) (*DispatcherStoredObjectsResponse, error) {
+func (c *CometAPIClient) AdminDispatcherRequestFilesystemObjects(ctx context.Context, TargetID string, Path *string) (*DispatcherStoredObjectsResponse, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -6539,7 +6579,7 @@ func (c *CometAPIClient) AdminDispatcherRequestFilesystemObjects(TargetID string
 		data["Path"] = []string{*Path}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-filesystem-objects", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-filesystem-objects", data)
 	if err != nil {
 		return nil, err
 	}
@@ -6561,13 +6601,13 @@ func (c *CometAPIClient) AdminDispatcherRequestFilesystemObjects(TargetID string
 //
 // - Params
 // TargetID: The live connection GUID
-func (c *CometAPIClient) AdminDispatcherRequestImportSources(TargetID string) (*DispatcherAdminSourcesResponse, error) {
+func (c *CometAPIClient) AdminDispatcherRequestImportSources(ctx context.Context, TargetID string) (*DispatcherAdminSourcesResponse, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["TargetID"] = []string{TargetID}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-import-sources", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-import-sources", data)
 	if err != nil {
 		return nil, err
 	}
@@ -6591,7 +6631,7 @@ func (c *CometAPIClient) AdminDispatcherRequestImportSources(TargetID string) (*
 // - Params
 // TargetID: The live connection GUID
 // Credentials: The Office365 account credential
-func (c *CometAPIClient) AdminDispatcherRequestOffice365Accounts(TargetID string, Credentials Office365Credential) (*BrowseOffice365ObjectsResponse, error) {
+func (c *CometAPIClient) AdminDispatcherRequestOffice365Accounts(ctx context.Context, TargetID string, Credentials Office365Credential) (*BrowseOffice365ObjectsResponse, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -6604,7 +6644,7 @@ func (c *CometAPIClient) AdminDispatcherRequestOffice365Accounts(TargetID string
 	}
 	data["Credentials"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-office365-accounts", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-office365-accounts", data)
 	if err != nil {
 		return nil, err
 	}
@@ -6627,7 +6667,7 @@ func (c *CometAPIClient) AdminDispatcherRequestOffice365Accounts(TargetID string
 // - Params
 // TargetID: The live connection GUID
 // Credentials: The Office365 account credential
-func (c *CometAPIClient) AdminDispatcherRequestOffice365Sites(TargetID string, Credentials Office365Credential) (*BrowseOffice365ObjectsResponse, error) {
+func (c *CometAPIClient) AdminDispatcherRequestOffice365Sites(ctx context.Context, TargetID string, Credentials Office365Credential) (*BrowseOffice365ObjectsResponse, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -6640,7 +6680,7 @@ func (c *CometAPIClient) AdminDispatcherRequestOffice365Sites(TargetID string, C
 	}
 	data["Credentials"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-office365-sites", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-office365-sites", data)
 	if err != nil {
 		return nil, err
 	}
@@ -6672,7 +6712,7 @@ func (c *CometAPIClient) AdminDispatcherRequestOffice365Sites(TargetID string, C
 // TreeID: (Optional) Browse objects inside subdirectory of backup snapshot. If it is for VMDK
 // single file restore, it should be the disk image's subtree ID.
 // Options: (Optional) Request a list of stored objects in vmdk file
-func (c *CometAPIClient) AdminDispatcherRequestStoredObjects(TargetID string, Destination string, SnapshotID string, TreeID *string, Options *VMDKSnapshotViewOptions) (*DispatcherStoredObjectsResponse, error) {
+func (c *CometAPIClient) AdminDispatcherRequestStoredObjects(ctx context.Context, TargetID string, Destination string, SnapshotID string, TreeID *string, Options *VMDKSnapshotViewOptions) (*DispatcherStoredObjectsResponse, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -6695,7 +6735,7 @@ func (c *CometAPIClient) AdminDispatcherRequestStoredObjects(TargetID string, De
 		data["Options"] = []string{string(b)}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-stored-objects", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-stored-objects", data)
 	if err != nil {
 		return nil, err
 	}
@@ -6718,7 +6758,7 @@ func (c *CometAPIClient) AdminDispatcherRequestStoredObjects(TargetID string, De
 // - Params
 // TargetID: The live connection GUID
 // Destination: The Storage Vault ID
-func (c *CometAPIClient) AdminDispatcherRequestVaultSnapshots(TargetID string, Destination string) (*DispatcherVaultSnapshotsResponse, error) {
+func (c *CometAPIClient) AdminDispatcherRequestVaultSnapshots(ctx context.Context, TargetID string, Destination string) (*DispatcherVaultSnapshotsResponse, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -6726,7 +6766,7 @@ func (c *CometAPIClient) AdminDispatcherRequestVaultSnapshots(TargetID string, D
 
 	data["Destination"] = []string{Destination}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-vault-snapshots", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-vault-snapshots", data)
 	if err != nil {
 		return nil, err
 	}
@@ -6750,7 +6790,7 @@ func (c *CometAPIClient) AdminDispatcherRequestVaultSnapshots(TargetID string, D
 // TargetID: The live connection GUID
 // Destination: The Storage Vault ID
 // SnapshotID: The Snapshot ID
-func (c *CometAPIClient) AdminDispatcherRequestWindiskSnapshot(TargetID string, Destination string, SnapshotID string) (*DispatcherWindiskSnapshotResponse, error) {
+func (c *CometAPIClient) AdminDispatcherRequestWindiskSnapshot(ctx context.Context, TargetID string, Destination string, SnapshotID string) (*DispatcherWindiskSnapshotResponse, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -6760,7 +6800,7 @@ func (c *CometAPIClient) AdminDispatcherRequestWindiskSnapshot(TargetID string, 
 
 	data["SnapshotID"] = []string{SnapshotID}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-windisk-snapshot", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-windisk-snapshot", data)
 	if err != nil {
 		return nil, err
 	}
@@ -6782,7 +6822,7 @@ func (c *CometAPIClient) AdminDispatcherRequestWindiskSnapshot(TargetID string, 
 // - Params
 // TargetID: The live connection GUID
 // BackupRule: The schedule GUID
-func (c *CometAPIClient) AdminDispatcherRunBackup(TargetID string, BackupRule string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminDispatcherRunBackup(ctx context.Context, TargetID string, BackupRule string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -6790,7 +6830,7 @@ func (c *CometAPIClient) AdminDispatcherRunBackup(TargetID string, BackupRule st
 
 	data["BackupRule"] = []string{BackupRule}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/run-backup", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/run-backup", data)
 	if err != nil {
 		return nil, err
 	}
@@ -6814,7 +6854,7 @@ func (c *CometAPIClient) AdminDispatcherRunBackup(TargetID string, BackupRule st
 // Source: The Protected Item GUID
 // Destination: The Storage Vault GUID
 // Options: (Optional) Extra job parameters (>= 19.3.6)
-func (c *CometAPIClient) AdminDispatcherRunBackupCustom(TargetID string, Source string, Destination string, Options *BackupJobAdvancedOptions) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminDispatcherRunBackupCustom(ctx context.Context, TargetID string, Source string, Destination string, Options *BackupJobAdvancedOptions) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -6833,7 +6873,7 @@ func (c *CometAPIClient) AdminDispatcherRunBackupCustom(TargetID string, Source 
 		data["Options"] = []string{string(b)}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/run-backup-custom", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/run-backup-custom", data)
 	if err != nil {
 		return nil, err
 	}
@@ -6861,7 +6901,7 @@ func (c *CometAPIClient) AdminDispatcherRunBackupCustom(TargetID string, Source 
 // Snapshot: (Optional) If present, restore a specific snapshot. Otherwise, restore the latest
 // snapshot for the selected Protected Item + Storage Vault pair
 // Paths: (Optional) If present, restore these paths only. Otherwise, restore all data (>= 19.3.0)
-func (c *CometAPIClient) AdminDispatcherRunRestore(TargetID string, Path string, Source string, Destination string, Snapshot *string, Paths []string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminDispatcherRunRestore(ctx context.Context, TargetID string, Path string, Source string, Destination string, Snapshot *string, Paths []string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -6886,7 +6926,7 @@ func (c *CometAPIClient) AdminDispatcherRunRestore(TargetID string, Path string,
 		data["Paths"] = []string{string(b)}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/run-restore", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/run-restore", data)
 	if err != nil {
 		return nil, err
 	}
@@ -6923,7 +6963,7 @@ func (c *CometAPIClient) AdminDispatcherRunRestore(TargetID string, Path string,
 // KnownDirCount: (Optional) The number of directories to restore, if known. Supplying this means we
 // don't need to walk the entire tree just to find the number of directories and will speed up the
 // restoration process.
-func (c *CometAPIClient) AdminDispatcherRunRestoreCustom(TargetID string, Source string, Destination string, Options RestoreJobAdvancedOptions, Snapshot *string, Paths []string, KnownFileCount *int, KnownByteCount *int, KnownDirCount *int) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminDispatcherRunRestoreCustom(ctx context.Context, TargetID string, Source string, Destination string, Options RestoreJobAdvancedOptions, Snapshot *string, Paths []string, KnownFileCount *int, KnownByteCount *int, KnownDirCount *int) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -6976,7 +7016,7 @@ func (c *CometAPIClient) AdminDispatcherRunRestoreCustom(TargetID string, Source
 		data["KnownDirCount"] = []string{string(b)}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/run-restore-custom", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/run-restore-custom", data)
 	if err != nil {
 		return nil, err
 	}
@@ -7000,7 +7040,7 @@ func (c *CometAPIClient) AdminDispatcherRunRestoreCustom(TargetID string, Source
 // DestinationID: The Storage Vault GUID
 // SnapshotIDs: Snapshots to search
 // Filter: The search filter
-func (c *CometAPIClient) AdminDispatcherSearchSnapshots(TargetID string, DestinationID string, SnapshotIDs []string, Filter SearchClause) (*SearchSnapshotsResponse, error) {
+func (c *CometAPIClient) AdminDispatcherSearchSnapshots(ctx context.Context, TargetID string, DestinationID string, SnapshotIDs []string, Filter SearchClause) (*SearchSnapshotsResponse, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -7021,7 +7061,7 @@ func (c *CometAPIClient) AdminDispatcherSearchSnapshots(TargetID string, Destina
 	}
 	data["Filter"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/search-snapshots", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/search-snapshots", data)
 	if err != nil {
 		return nil, err
 	}
@@ -7043,7 +7083,7 @@ func (c *CometAPIClient) AdminDispatcherSearchSnapshots(TargetID string, Destina
 // - Params
 // TargetID: The live connection GUID
 // Wsa: The target credentials to test
-func (c *CometAPIClient) AdminDispatcherTestSmbAuth(TargetID string, Wsa WinSMBAuth) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminDispatcherTestSmbAuth(ctx context.Context, TargetID string, Wsa WinSMBAuth) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -7056,7 +7096,7 @@ func (c *CometAPIClient) AdminDispatcherTestSmbAuth(TargetID string, Wsa WinSMBA
 	}
 	data["Wsa"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/test-smb-auth", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/test-smb-auth", data)
 	if err != nil {
 		return nil, err
 	}
@@ -7078,7 +7118,7 @@ func (c *CometAPIClient) AdminDispatcherTestSmbAuth(TargetID string, Wsa WinSMBA
 // - Params
 // TargetID: The live connection GUID
 // RemoveConfigFile: Determine if the config.dat file will be deleted at the same time
-func (c *CometAPIClient) AdminDispatcherUninstallSoftware(TargetID string, RemoveConfigFile bool) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminDispatcherUninstallSoftware(ctx context.Context, TargetID string, RemoveConfigFile bool) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -7091,7 +7131,7 @@ func (c *CometAPIClient) AdminDispatcherUninstallSoftware(TargetID string, Remov
 	}
 	data["RemoveConfigFile"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/uninstall-software", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/uninstall-software", data)
 	if err != nil {
 		return nil, err
 	}
@@ -7115,7 +7155,7 @@ func (c *CometAPIClient) AdminDispatcherUninstallSoftware(TargetID string, Remov
 // - Params
 // TargetID: The live connection GUID
 // Destination: The Storage Vault GUID
-func (c *CometAPIClient) AdminDispatcherUnlock(TargetID string, Destination string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminDispatcherUnlock(ctx context.Context, TargetID string, Destination string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -7123,7 +7163,7 @@ func (c *CometAPIClient) AdminDispatcherUnlock(TargetID string, Destination stri
 
 	data["Destination"] = []string{Destination}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/unlock", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/unlock", data)
 	if err != nil {
 		return nil, err
 	}
@@ -7150,7 +7190,7 @@ func (c *CometAPIClient) AdminDispatcherUnlock(TargetID string, Destination stri
 // TargetID: The live connection GUID
 // NewURL: The new external URL of this server
 // Force: (Optional) No checks will be done using previous URL
-func (c *CometAPIClient) AdminDispatcherUpdateLoginUrl(TargetID string, NewURL string, Force *bool) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminDispatcherUpdateLoginUrl(ctx context.Context, TargetID string, NewURL string, Force *bool) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -7167,7 +7207,7 @@ func (c *CometAPIClient) AdminDispatcherUpdateLoginUrl(TargetID string, NewURL s
 		data["Force"] = []string{string(b)}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/update-login-url", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/update-login-url", data)
 	if err != nil {
 		return nil, err
 	}
@@ -7190,7 +7230,7 @@ func (c *CometAPIClient) AdminDispatcherUpdateLoginUrl(TargetID string, NewURL s
 // - Params
 // TargetID: The live connection GUID
 // SelfAddress: (Optional) The external URL of this server, used to resolve conflicts (>= 19.3.11)
-func (c *CometAPIClient) AdminDispatcherUpdateSoftware(TargetID string, SelfAddress *string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminDispatcherUpdateSoftware(ctx context.Context, TargetID string, SelfAddress *string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -7202,7 +7242,7 @@ func (c *CometAPIClient) AdminDispatcherUpdateSoftware(TargetID string, SelfAddr
 		data["SelfAddress"] = []string{*SelfAddress}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/update-software", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/update-software", data)
 	if err != nil {
 		return nil, err
 	}
@@ -7222,13 +7262,13 @@ func (c *CometAPIClient) AdminDispatcherUpdateSoftware(TargetID string, SelfAddr
 //
 // - Params
 // SourceID: (No description available)
-func (c *CometAPIClient) AdminExternalAuthSourcesDelete(SourceID string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminExternalAuthSourcesDelete(ctx context.Context, SourceID string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["SourceID"] = []string{SourceID}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/external-auth-sources/delete", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/external-auth-sources/delete", data)
 	if err != nil {
 		return nil, err
 	}
@@ -7245,8 +7285,8 @@ func (c *CometAPIClient) AdminExternalAuthSourcesDelete(SourceID string) (*Comet
 // AdminExternalAuthSourcesGet: Get a map of all external admin authentication sources
 //
 // You must supply administrator authentication credentials to use this API.
-func (c *CometAPIClient) AdminExternalAuthSourcesGet() (map[string]ExternalAuthenticationSource, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/external-auth-sources/get", nil)
+func (c *CometAPIClient) AdminExternalAuthSourcesGet(ctx context.Context) (map[string]ExternalAuthenticationSource, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/external-auth-sources/get", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -7267,7 +7307,7 @@ func (c *CometAPIClient) AdminExternalAuthSourcesGet() (map[string]ExternalAuthe
 // - Params
 // Source: (No description available)
 // SourceID: (Optional) (No description available)
-func (c *CometAPIClient) AdminExternalAuthSourcesNew(Source ExternalAuthenticationSource, SourceID *string) (*ExternalAuthenticationSourceResponse, error) {
+func (c *CometAPIClient) AdminExternalAuthSourcesNew(ctx context.Context, Source ExternalAuthenticationSource, SourceID *string) (*ExternalAuthenticationSourceResponse, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -7282,7 +7322,7 @@ func (c *CometAPIClient) AdminExternalAuthSourcesNew(Source ExternalAuthenticati
 		data["SourceID"] = []string{*SourceID}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/external-auth-sources/new", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/external-auth-sources/new", data)
 	if err != nil {
 		return nil, err
 	}
@@ -7304,7 +7344,7 @@ func (c *CometAPIClient) AdminExternalAuthSourcesNew(Source ExternalAuthenticati
 //
 // - Params
 // Sources: (No description available)
-func (c *CometAPIClient) AdminExternalAuthSourcesSet(Sources map[string]ExternalAuthenticationSource) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminExternalAuthSourcesSet(ctx context.Context, Sources map[string]ExternalAuthenticationSource) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -7315,7 +7355,7 @@ func (c *CometAPIClient) AdminExternalAuthSourcesSet(Sources map[string]External
 	}
 	data["Sources"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/external-auth-sources/set", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/external-auth-sources/set", data)
 	if err != nil {
 		return nil, err
 	}
@@ -7336,13 +7376,13 @@ func (c *CometAPIClient) AdminExternalAuthSourcesSet(Sources map[string]External
 //
 // - Params
 // JobID: Selected job ID
-func (c *CometAPIClient) AdminGetJobLog(JobID string) ([]byte, error) {
+func (c *CometAPIClient) AdminGetJobLog(ctx context.Context, JobID string) ([]byte, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["JobID"] = []string{JobID}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/get-job-log", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/get-job-log", data)
 	if err != nil {
 		return nil, err
 	}
@@ -7359,7 +7399,7 @@ func (c *CometAPIClient) AdminGetJobLog(JobID string) ([]byte, error) {
 // JobID: Selected job ID
 // MinSeverity: (Optional) Return only job log entries with equal or higher severity
 // MessageContains: (Optional) Return only job log entries that contain exact string
-func (c *CometAPIClient) AdminGetJobLogEntries(JobID string, MinSeverity *string, MessageContains *string) ([]JobEntry, error) {
+func (c *CometAPIClient) AdminGetJobLogEntries(ctx context.Context, JobID string, MinSeverity *string, MessageContains *string) ([]JobEntry, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -7373,7 +7413,7 @@ func (c *CometAPIClient) AdminGetJobLogEntries(JobID string, MinSeverity *string
 		data["MessageContains"] = []string{*MessageContains}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/get-job-log-entries", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/get-job-log-entries", data)
 	if err != nil {
 		return nil, err
 	}
@@ -7394,13 +7434,13 @@ func (c *CometAPIClient) AdminGetJobLogEntries(JobID string, MinSeverity *string
 //
 // - Params
 // JobID: Selected job ID
-func (c *CometAPIClient) AdminGetJobProperties(JobID string) (*BackupJobDetail, error) {
+func (c *CometAPIClient) AdminGetJobProperties(ctx context.Context, JobID string) (*BackupJobDetail, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["JobID"] = []string{JobID}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/get-job-properties", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/get-job-properties", data)
 	if err != nil {
 		return nil, err
 	}
@@ -7419,8 +7459,8 @@ func (c *CometAPIClient) AdminGetJobProperties(JobID string) (*BackupJobDetail, 
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
-func (c *CometAPIClient) AdminGetJobsAll() ([]BackupJobDetail, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/get-jobs-all", nil)
+func (c *CometAPIClient) AdminGetJobsAll(ctx context.Context) ([]BackupJobDetail, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/get-jobs-all", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -7442,7 +7482,7 @@ func (c *CometAPIClient) AdminGetJobsAll() ([]BackupJobDetail, error) {
 //
 // - Params
 // Query: (No description available)
-func (c *CometAPIClient) AdminGetJobsForCustomSearch(Query SearchClause) ([]BackupJobDetail, error) {
+func (c *CometAPIClient) AdminGetJobsForCustomSearch(ctx context.Context, Query SearchClause) ([]BackupJobDetail, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -7453,7 +7493,7 @@ func (c *CometAPIClient) AdminGetJobsForCustomSearch(Query SearchClause) ([]Back
 	}
 	data["Query"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/get-jobs-for-custom-search", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/get-jobs-for-custom-search", data)
 	if err != nil {
 		return nil, err
 	}
@@ -7486,7 +7526,7 @@ func (c *CometAPIClient) AdminGetJobsForCustomSearch(Query SearchClause) ([]Back
 // - Params
 // Start: Timestamp (Unix)
 // End: Timestamp (Unix)
-func (c *CometAPIClient) AdminGetJobsForDateRange(Start int, End int) ([]BackupJobDetail, error) {
+func (c *CometAPIClient) AdminGetJobsForDateRange(ctx context.Context, Start int, End int) ([]BackupJobDetail, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -7503,7 +7543,7 @@ func (c *CometAPIClient) AdminGetJobsForDateRange(Start int, End int) ([]BackupJ
 	}
 	data["End"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/get-jobs-for-date-range", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/get-jobs-for-date-range", data)
 	if err != nil {
 		return nil, err
 	}
@@ -7525,13 +7565,13 @@ func (c *CometAPIClient) AdminGetJobsForDateRange(Start int, End int) ([]BackupJ
 //
 // - Params
 // TargetUser: Selected username
-func (c *CometAPIClient) AdminGetJobsForUser(TargetUser string) ([]BackupJobDetail, error) {
+func (c *CometAPIClient) AdminGetJobsForUser(ctx context.Context, TargetUser string) ([]BackupJobDetail, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["TargetUser"] = []string{TargetUser}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/get-jobs-for-user", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/get-jobs-for-user", data)
 	if err != nil {
 		return nil, err
 	}
@@ -7550,8 +7590,8 @@ func (c *CometAPIClient) AdminGetJobsForUser(TargetUser string) ([]BackupJobDeta
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
-func (c *CometAPIClient) AdminGetJobsRecent() ([]BackupJobDetail, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/get-jobs-recent", nil)
+func (c *CometAPIClient) AdminGetJobsRecent(ctx context.Context) ([]BackupJobDetail, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/get-jobs-recent", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -7572,13 +7612,13 @@ func (c *CometAPIClient) AdminGetJobsRecent() ([]BackupJobDetail, error) {
 //
 // - Params
 // TargetUser: Selected account username
-func (c *CometAPIClient) AdminGetUserProfile(TargetUser string) (*UserProfileConfig, error) {
+func (c *CometAPIClient) AdminGetUserProfile(ctx context.Context, TargetUser string) (*UserProfileConfig, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["TargetUser"] = []string{TargetUser}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/get-user-profile", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/get-user-profile", data)
 	if err != nil {
 		return nil, err
 	}
@@ -7603,13 +7643,13 @@ func (c *CometAPIClient) AdminGetUserProfile(TargetUser string) (*UserProfileCon
 //
 // - Params
 // TargetUser: Selected account username
-func (c *CometAPIClient) AdminGetUserProfileAndHash(TargetUser string) (*GetProfileAndHashResponseMessage, error) {
+func (c *CometAPIClient) AdminGetUserProfileAndHash(ctx context.Context, TargetUser string) (*GetProfileAndHashResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["TargetUser"] = []string{TargetUser}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/get-user-profile-and-hash", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/get-user-profile-and-hash", data)
 	if err != nil {
 		return nil, err
 	}
@@ -7633,13 +7673,13 @@ func (c *CometAPIClient) AdminGetUserProfileAndHash(TargetUser string) (*GetProf
 //
 // - Params
 // TargetUser: Selected account username
-func (c *CometAPIClient) AdminGetUserProfileHash(TargetUser string) (*GetProfileHashResponseMessage, error) {
+func (c *CometAPIClient) AdminGetUserProfileHash(ctx context.Context, TargetUser string) (*GetProfileHashResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["TargetUser"] = []string{TargetUser}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/get-user-profile-hash", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/get-user-profile-hash", data)
 	if err != nil {
 		return nil, err
 	}
@@ -7661,13 +7701,13 @@ func (c *CometAPIClient) AdminGetUserProfileHash(TargetUser string) (*GetProfile
 //
 // - Params
 // DeviceID: The live connection Device GUID
-func (c *CometAPIClient) AdminInstallationDispatchDropConnection(DeviceID string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminInstallationDispatchDropConnection(ctx context.Context, DeviceID string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["DeviceID"] = []string{DeviceID}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/installation/dispatch/drop-connection", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/installation/dispatch/drop-connection", data)
 	if err != nil {
 		return nil, err
 	}
@@ -7692,7 +7732,7 @@ func (c *CometAPIClient) AdminInstallationDispatchDropConnection(DeviceID string
 // TargetUser: Selected account username
 // TargetPassword: Selected account password
 // TargetTOTPCode: (Optional) Selected account TOTP code
-func (c *CometAPIClient) AdminInstallationDispatchRegisterDevice(DeviceID string, TargetUser string, TargetPassword string, TargetTOTPCode *string) ([]byte, error) {
+func (c *CometAPIClient) AdminInstallationDispatchRegisterDevice(ctx context.Context, DeviceID string, TargetUser string, TargetPassword string, TargetTOTPCode *string) ([]byte, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -7706,7 +7746,7 @@ func (c *CometAPIClient) AdminInstallationDispatchRegisterDevice(DeviceID string
 		data["TargetTOTPCode"] = []string{*TargetTOTPCode}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/installation/dispatch/register-device", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/installation/dispatch/register-device", data)
 	if err != nil {
 		return nil, err
 	}
@@ -7718,8 +7758,8 @@ func (c *CometAPIClient) AdminInstallationDispatchRegisterDevice(DeviceID string
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
-func (c *CometAPIClient) AdminInstallationListActive() (RegistrationLobbyConnectionMap, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/installation/list-active", nil)
+func (c *CometAPIClient) AdminInstallationListActive(ctx context.Context) (RegistrationLobbyConnectionMap, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/installation/list-active", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -7745,7 +7785,7 @@ func (c *CometAPIClient) AdminInstallationListActive() (RegistrationLobbyConnect
 // - Params
 // TargetUser: Username
 // JobID: Job ID
-func (c *CometAPIClient) AdminJobAbandon(TargetUser string, JobID string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminJobAbandon(ctx context.Context, TargetUser string, JobID string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -7753,7 +7793,7 @@ func (c *CometAPIClient) AdminJobAbandon(TargetUser string, JobID string) (*Come
 
 	data["JobID"] = []string{JobID}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/job/abandon", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/job/abandon", data)
 	if err != nil {
 		return nil, err
 	}
@@ -7781,7 +7821,7 @@ func (c *CometAPIClient) AdminJobAbandon(TargetUser string, JobID string) (*Come
 // - Params
 // TargetUser: Username
 // JobID: Job ID
-func (c *CometAPIClient) AdminJobCancel(TargetUser string, JobID string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminJobCancel(ctx context.Context, TargetUser string, JobID string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -7789,7 +7829,7 @@ func (c *CometAPIClient) AdminJobCancel(TargetUser string, JobID string) (*Comet
 
 	data["JobID"] = []string{JobID}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/job/cancel", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/job/cancel", data)
 	if err != nil {
 		return nil, err
 	}
@@ -7807,8 +7847,8 @@ func (c *CometAPIClient) AdminJobCancel(TargetUser string, JobID string) (*Comet
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
-func (c *CometAPIClient) AdminListUsers() ([]string, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/list-users", nil)
+func (c *CometAPIClient) AdminListUsers(ctx context.Context) ([]string, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/list-users", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -7826,8 +7866,8 @@ func (c *CometAPIClient) AdminListUsers() ([]string, error) {
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
-func (c *CometAPIClient) AdminListUsersFull() (map[string]UserProfileConfig, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/list-users-full", nil)
+func (c *CometAPIClient) AdminListUsersFull(ctx context.Context) (map[string]UserProfileConfig, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/list-users-full", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -7845,8 +7885,8 @@ func (c *CometAPIClient) AdminListUsersFull() (map[string]UserProfileConfig, err
 //
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
-func (c *CometAPIClient) AdminMetaBrandingConfigGet() (*ServerConfigOptionsBrandingFragment, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/branding-config/get", nil)
+func (c *CometAPIClient) AdminMetaBrandingConfigGet(ctx context.Context) (*ServerConfigOptionsBrandingFragment, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/branding-config/get", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -7870,7 +7910,7 @@ func (c *CometAPIClient) AdminMetaBrandingConfigGet() (*ServerConfigOptionsBrand
 //
 // - Params
 // BrandingConfig: Updated configuration content
-func (c *CometAPIClient) AdminMetaBrandingConfigSet(BrandingConfig BrandingOptions) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminMetaBrandingConfigSet(ctx context.Context, BrandingConfig BrandingOptions) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -7881,7 +7921,7 @@ func (c *CometAPIClient) AdminMetaBrandingConfigSet(BrandingConfig BrandingOptio
 	}
 	data["BrandingConfig"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/branding-config/set", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/branding-config/set", data)
 	if err != nil {
 		return nil, err
 	}
@@ -7899,8 +7939,8 @@ func (c *CometAPIClient) AdminMetaBrandingConfigSet(BrandingConfig BrandingOptio
 //
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
-func (c *CometAPIClient) AdminMetaBuildConfigGet() (*ServerConfigOptionsSoftwareBuildRoleFragment, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/build-config/get", nil)
+func (c *CometAPIClient) AdminMetaBuildConfigGet(ctx context.Context) (*ServerConfigOptionsSoftwareBuildRoleFragment, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/build-config/get", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -7921,7 +7961,7 @@ func (c *CometAPIClient) AdminMetaBuildConfigGet() (*ServerConfigOptionsSoftware
 //
 // - Params
 // SoftwareBuildRoleConfig: Updated configuration content
-func (c *CometAPIClient) AdminMetaBuildConfigSet(SoftwareBuildRoleConfig SoftwareBuildRoleOptions) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminMetaBuildConfigSet(ctx context.Context, SoftwareBuildRoleConfig SoftwareBuildRoleOptions) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -7932,7 +7972,7 @@ func (c *CometAPIClient) AdminMetaBuildConfigSet(SoftwareBuildRoleConfig Softwar
 	}
 	data["SoftwareBuildRoleConfig"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/build-config/set", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/build-config/set", data)
 	if err != nil {
 		return nil, err
 	}
@@ -7950,8 +7990,8 @@ func (c *CometAPIClient) AdminMetaBuildConfigSet(SoftwareBuildRoleConfig Softwar
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Constellation Role to be enabled.
-func (c *CometAPIClient) AdminMetaConstellationConfigGet() (*ConstellationRoleOptions, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/constellation/config/get", nil)
+func (c *CometAPIClient) AdminMetaConstellationConfigGet(ctx context.Context) (*ConstellationRoleOptions, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/constellation/config/get", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -7972,7 +8012,7 @@ func (c *CometAPIClient) AdminMetaConstellationConfigGet() (*ConstellationRoleOp
 //
 // - Params
 // ConstellationRoleOptions: Constellation role options to set
-func (c *CometAPIClient) AdminMetaConstellationConfigSet(ConstellationRoleOptions ConstellationRoleOptions) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminMetaConstellationConfigSet(ctx context.Context, ConstellationRoleOptions ConstellationRoleOptions) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -7983,7 +8023,7 @@ func (c *CometAPIClient) AdminMetaConstellationConfigSet(ConstellationRoleOption
 	}
 	data["ConstellationRoleOptions"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/constellation/config/set", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/constellation/config/set", data)
 	if err != nil {
 		return nil, err
 	}
@@ -8001,8 +8041,8 @@ func (c *CometAPIClient) AdminMetaConstellationConfigSet(ConstellationRoleOption
 //
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
-func (c *CometAPIClient) AdminMetaEmailOptionsGet() (*EmailOptions, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/email-options/get", nil)
+func (c *CometAPIClient) AdminMetaEmailOptionsGet(ctx context.Context) (*EmailOptions, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/email-options/get", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -8023,7 +8063,7 @@ func (c *CometAPIClient) AdminMetaEmailOptionsGet() (*EmailOptions, error) {
 //
 // - Params
 // EmailOptions: The replacement email reporting options.
-func (c *CometAPIClient) AdminMetaEmailOptionsSet(EmailOptions EmailOptions) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminMetaEmailOptionsSet(ctx context.Context, EmailOptions EmailOptions) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -8034,7 +8074,7 @@ func (c *CometAPIClient) AdminMetaEmailOptionsSet(EmailOptions EmailOptions) (*C
 	}
 	data["EmailOptions"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/email-options/set", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/email-options/set", data)
 	if err != nil {
 		return nil, err
 	}
@@ -8053,8 +8093,8 @@ func (c *CometAPIClient) AdminMetaEmailOptionsSet(EmailOptions EmailOptions) (*C
 // You must supply administrator authentication credentials to use this API.
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
-func (c *CometAPIClient) AdminMetaListAvailableLogDays() ([]LogDay, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/list-available-log-days", nil)
+func (c *CometAPIClient) AdminMetaListAvailableLogDays(ctx context.Context) ([]LogDay, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/list-available-log-days", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -8071,8 +8111,8 @@ func (c *CometAPIClient) AdminMetaListAvailableLogDays() ([]LogDay, error) {
 // AdminMetaPsaConfigListGet: Get the server PSA configuration
 //
 // You must supply administrator authentication credentials to use this API.
-func (c *CometAPIClient) AdminMetaPsaConfigListGet() ([]PSAConfig, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/psa-config-list/get", nil)
+func (c *CometAPIClient) AdminMetaPsaConfigListGet(ctx context.Context) ([]PSAConfig, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/psa-config-list/get", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -8092,7 +8132,7 @@ func (c *CometAPIClient) AdminMetaPsaConfigListGet() ([]PSAConfig, error) {
 //
 // - Params
 // PSAConfigList: The replacement PSA configuration list
-func (c *CometAPIClient) AdminMetaPsaConfigListSet(PSAConfigList []PSAConfig) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminMetaPsaConfigListSet(ctx context.Context, PSAConfigList []PSAConfig) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -8103,7 +8143,7 @@ func (c *CometAPIClient) AdminMetaPsaConfigListSet(PSAConfigList []PSAConfig) (*
 	}
 	data["PSAConfigList"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/psa-config-list/set", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/psa-config-list/set", data)
 	if err != nil {
 		return nil, err
 	}
@@ -8122,8 +8162,8 @@ func (c *CometAPIClient) AdminMetaPsaConfigListSet(PSAConfigList []PSAConfig) (*
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
-func (c *CometAPIClient) AdminMetaPsaConfigListSyncNow() (*CometAPIResponseMessage, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/psa-config-list/sync-now", nil)
+func (c *CometAPIClient) AdminMetaPsaConfigListSyncNow(ctx context.Context) (*CometAPIResponseMessage, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/psa-config-list/sync-now", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -8146,8 +8186,8 @@ func (c *CometAPIClient) AdminMetaPsaConfigListSyncNow() (*CometAPIResponseMessa
 // You must supply administrator authentication credentials to use this API.
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
-func (c *CometAPIClient) AdminMetaReadAllLogs() ([]byte, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/read-all-logs", nil)
+func (c *CometAPIClient) AdminMetaReadAllLogs(ctx context.Context) ([]byte, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/read-all-logs", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -8167,7 +8207,7 @@ func (c *CometAPIClient) AdminMetaReadAllLogs() ([]byte, error) {
 //
 // - Params
 // Log: A log day, selected from the options returned by the Get Log Files API
-func (c *CometAPIClient) AdminMetaReadLogs(Log int) ([]byte, error) {
+func (c *CometAPIClient) AdminMetaReadLogs(ctx context.Context, Log int) ([]byte, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -8178,7 +8218,7 @@ func (c *CometAPIClient) AdminMetaReadLogs(Log int) ([]byte, error) {
 	}
 	data["Log"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/read-logs", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/read-logs", data)
 	if err != nil {
 		return nil, err
 	}
@@ -8198,7 +8238,7 @@ func (c *CometAPIClient) AdminMetaReadLogs(Log int) ([]byte, error) {
 //
 // - Params
 // Logs: An array of log days, selected from the options returned by the Get Log Files API
-func (c *CometAPIClient) AdminMetaReadSelectLogs(Logs []int) ([]byte, error) {
+func (c *CometAPIClient) AdminMetaReadSelectLogs(ctx context.Context, Logs []int) ([]byte, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -8209,7 +8249,7 @@ func (c *CometAPIClient) AdminMetaReadSelectLogs(Logs []int) ([]byte, error) {
 	}
 	data["Logs"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/read-select-logs", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/read-select-logs", data)
 	if err != nil {
 		return nil, err
 	}
@@ -8221,8 +8261,8 @@ func (c *CometAPIClient) AdminMetaReadSelectLogs(Logs []int) ([]byte, error) {
 //
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
-func (c *CometAPIClient) AdminMetaRemoteStorageVaultGet() ([]RemoteStorageOption, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/remote-storage-vault/get", nil)
+func (c *CometAPIClient) AdminMetaRemoteStorageVaultGet(ctx context.Context) ([]RemoteStorageOption, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/remote-storage-vault/get", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -8245,7 +8285,7 @@ func (c *CometAPIClient) AdminMetaRemoteStorageVaultGet() ([]RemoteStorageOption
 // RemoteStorageOptions: Updated configuration content
 // ReplacementAutoVaultID: (Optional) Replacement Storage Template ID for auto Storage Vault
 // configurations that use deleted Storage Templates
-func (c *CometAPIClient) AdminMetaRemoteStorageVaultSet(RemoteStorageOptions []RemoteStorageOption, ReplacementAutoVaultID *string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminMetaRemoteStorageVaultSet(ctx context.Context, RemoteStorageOptions []RemoteStorageOption, ReplacementAutoVaultID *string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -8260,7 +8300,7 @@ func (c *CometAPIClient) AdminMetaRemoteStorageVaultSet(RemoteStorageOptions []R
 		data["ReplacementAutoVaultID"] = []string{*ReplacementAutoVaultID}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/remote-storage-vault/set", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/remote-storage-vault/set", data)
 	if err != nil {
 		return nil, err
 	}
@@ -8281,7 +8321,7 @@ func (c *CometAPIClient) AdminMetaRemoteStorageVaultSet(RemoteStorageOptions []R
 //
 // - Params
 // TemplateOptions: Storage Template Vault Options
-func (c *CometAPIClient) AdminMetaRemoteStorageVaultTest(TemplateOptions RemoteStorageOption) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminMetaRemoteStorageVaultTest(ctx context.Context, TemplateOptions RemoteStorageOption) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -8292,7 +8332,7 @@ func (c *CometAPIClient) AdminMetaRemoteStorageVaultTest(TemplateOptions RemoteS
 	}
 	data["TemplateOptions"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/remote-storage-vault/test", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/remote-storage-vault/test", data)
 	if err != nil {
 		return nil, err
 	}
@@ -8313,13 +8353,13 @@ func (c *CometAPIClient) AdminMetaRemoteStorageVaultTest(TemplateOptions RemoteS
 //
 // - Params
 // Hash: The resource identifier
-func (c *CometAPIClient) AdminMetaResourceGet(Hash string) ([]byte, error) {
+func (c *CometAPIClient) AdminMetaResourceGet(ctx context.Context, Hash string) ([]byte, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["Hash"] = []string{Hash}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/resource/get", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/resource/get", data)
 	if err != nil {
 		return nil, err
 	}
@@ -8338,13 +8378,13 @@ func (c *CometAPIClient) AdminMetaResourceGet(Hash string) ([]byte, error) {
 //
 // - Params
 // upload: The uploaded file contents, as a multipart/form-data part.
-func (c *CometAPIClient) AdminMetaResourceNew(upload string) (*AdminResourceResponse, error) {
+func (c *CometAPIClient) AdminMetaResourceNew(ctx context.Context, upload string) (*AdminResourceResponse, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["upload"] = []string{upload}
 
-	body, err := c.Request("multipart/form-data", "POST", "/api/v1/admin/meta/resource/new", data)
+	body, err := c.Request(ctx, "multipart/form-data", "POST", "/api/v1/admin/meta/resource/new", data)
 	if err != nil {
 		return nil, err
 	}
@@ -8368,8 +8408,8 @@ func (c *CometAPIClient) AdminMetaResourceNew(upload string) (*AdminResourceResp
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
 // Access to this API may be prevented on a per-administrator basis.
-func (c *CometAPIClient) AdminMetaRestartService() (*CometAPIResponseMessage, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/restart-service", nil)
+func (c *CometAPIClient) AdminMetaRestartService(ctx context.Context) (*CometAPIResponseMessage, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/restart-service", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -8393,7 +8433,7 @@ func (c *CometAPIClient) AdminMetaRestartService() (*CometAPIResponseMessage, er
 // - Params
 // EmailOptions: Updated configuration content
 // Recipient: Target email address to send test email
-func (c *CometAPIClient) AdminMetaSendTestEmail(EmailOptions EmailOptions, Recipient string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminMetaSendTestEmail(ctx context.Context, EmailOptions EmailOptions, Recipient string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -8406,7 +8446,7 @@ func (c *CometAPIClient) AdminMetaSendTestEmail(EmailOptions EmailOptions, Recip
 
 	data["Recipient"] = []string{Recipient}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/send-test-email", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/send-test-email", data)
 	if err != nil {
 		return nil, err
 	}
@@ -8430,7 +8470,7 @@ func (c *CometAPIClient) AdminMetaSendTestEmail(EmailOptions EmailOptions, Recip
 // EmailReportingOption: Test email reporting option for sending
 // TargetOrganization: (Optional) If present, Testing email with a target organization. Only allowed
 // for top-level admins. (>= 24.3.0)
-func (c *CometAPIClient) AdminMetaSendTestReport(EmailReportingOption EmailReportingOption, TargetOrganization *string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminMetaSendTestReport(ctx context.Context, EmailReportingOption EmailReportingOption, TargetOrganization *string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -8445,7 +8485,7 @@ func (c *CometAPIClient) AdminMetaSendTestReport(EmailReportingOption EmailRepor
 		data["TargetOrganization"] = []string{*TargetOrganization}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/send-test-report", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/send-test-report", data)
 	if err != nil {
 		return nil, err
 	}
@@ -8465,8 +8505,8 @@ func (c *CometAPIClient) AdminMetaSendTestReport(EmailReportingOption EmailRepor
 // Access to this API may be prevented on a per-administrator basis.
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
-func (c *CometAPIClient) AdminMetaServerConfigGet() (*ServerConfigOptions, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/server-config/get", nil)
+func (c *CometAPIClient) AdminMetaServerConfigGet(ctx context.Context) (*ServerConfigOptions, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/server-config/get", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -8488,8 +8528,8 @@ func (c *CometAPIClient) AdminMetaServerConfigGet() (*ServerConfigOptions, error
 // Access to this API may be prevented on a per-administrator basis.
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
-func (c *CometAPIClient) AdminMetaServerConfigNetworkInterfaces() ([]string, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/server-config/network-interfaces", nil)
+func (c *CometAPIClient) AdminMetaServerConfigNetworkInterfaces(ctx context.Context) ([]string, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/server-config/network-interfaces", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -8516,7 +8556,7 @@ func (c *CometAPIClient) AdminMetaServerConfigNetworkInterfaces() ([]string, err
 //
 // - Params
 // Config: Updated configuration content
-func (c *CometAPIClient) AdminMetaServerConfigSet(Config ServerConfigOptions) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminMetaServerConfigSet(ctx context.Context, Config ServerConfigOptions) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -8527,7 +8567,7 @@ func (c *CometAPIClient) AdminMetaServerConfigSet(Config ServerConfigOptions) (*
 	}
 	data["Config"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/server-config/set", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/server-config/set", data)
 	if err != nil {
 		return nil, err
 	}
@@ -8551,8 +8591,8 @@ func (c *CometAPIClient) AdminMetaServerConfigSet(Config ServerConfigOptions) (*
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
 // Access to this API may be prevented on a per-administrator basis.
-func (c *CometAPIClient) AdminMetaShutdownService() (*CometAPIResponseMessage, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/shutdown-service", nil)
+func (c *CometAPIClient) AdminMetaShutdownService(ctx context.Context) (*CometAPIResponseMessage, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/shutdown-service", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -8569,8 +8609,8 @@ func (c *CometAPIClient) AdminMetaShutdownService() (*CometAPIResponseMessage, e
 // AdminMetaSoftwareUpdateNews: Get software update news from the software provider
 //
 // You must supply administrator authentication credentials to use this API.
-func (c *CometAPIClient) AdminMetaSoftwareUpdateNews() (*SoftwareUpdateNewsResponse, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/software-update-news", nil)
+func (c *CometAPIClient) AdminMetaSoftwareUpdateNews(ctx context.Context) (*SoftwareUpdateNewsResponse, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/software-update-news", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -8592,7 +8632,7 @@ func (c *CometAPIClient) AdminMetaSoftwareUpdateNews() (*SoftwareUpdateNewsRespo
 //
 // - Params
 // Simple: Remove redundant statistics
-func (c *CometAPIClient) AdminMetaStats(Simple bool) (map[int64]StatResult, error) {
+func (c *CometAPIClient) AdminMetaStats(ctx context.Context, Simple bool) (map[int64]StatResult, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -8603,7 +8643,7 @@ func (c *CometAPIClient) AdminMetaStats(Simple bool) (map[int64]StatResult, erro
 	}
 	data["Simple"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/stats", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/stats", data)
 	if err != nil {
 		return nil, err
 	}
@@ -8621,8 +8661,8 @@ func (c *CometAPIClient) AdminMetaStats(Simple bool) (map[int64]StatResult, erro
 // Retrieve the version number and basic properties about the server.
 //
 // You must supply administrator authentication credentials to use this API.
-func (c *CometAPIClient) AdminMetaVersion() (*ServerMetaVersionInfo, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/version", nil)
+func (c *CometAPIClient) AdminMetaVersion(ctx context.Context) (*ServerMetaVersionInfo, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/version", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -8640,8 +8680,8 @@ func (c *CometAPIClient) AdminMetaVersion() (*ServerMetaVersionInfo, error) {
 //
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
-func (c *CometAPIClient) AdminMetaWebhookOptionsGet() (map[string]WebhookOption, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/webhook-options/get", nil)
+func (c *CometAPIClient) AdminMetaWebhookOptionsGet(ctx context.Context) (map[string]WebhookOption, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/webhook-options/get", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -8664,7 +8704,7 @@ func (c *CometAPIClient) AdminMetaWebhookOptionsGet() (map[string]WebhookOption,
 //
 // - Params
 // WebhookOptions: The replacement webhook target options.
-func (c *CometAPIClient) AdminMetaWebhookOptionsSet(WebhookOptions map[string]WebhookOption) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminMetaWebhookOptionsSet(ctx context.Context, WebhookOptions map[string]WebhookOption) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -8675,7 +8715,7 @@ func (c *CometAPIClient) AdminMetaWebhookOptionsSet(WebhookOptions map[string]We
 	}
 	data["WebhookOptions"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/webhook-options/set", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/webhook-options/set", data)
 	if err != nil {
 		return nil, err
 	}
@@ -8693,8 +8733,8 @@ func (c *CometAPIClient) AdminMetaWebhookOptionsSet(WebhookOptions map[string]We
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
-func (c *CometAPIClient) AdminNewsGetAll() (NewsEntries, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/news/get-all", nil)
+func (c *CometAPIClient) AdminNewsGetAll(ctx context.Context) (NewsEntries, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/news/get-all", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -8715,13 +8755,13 @@ func (c *CometAPIClient) AdminNewsGetAll() (NewsEntries, error) {
 //
 // - Params
 // NewsItem: Selected news item GUID
-func (c *CometAPIClient) AdminNewsRemove(NewsItem string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminNewsRemove(ctx context.Context, NewsItem string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["NewsItem"] = []string{NewsItem}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/news/remove", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/news/remove", data)
 	if err != nil {
 		return nil, err
 	}
@@ -8742,13 +8782,13 @@ func (c *CometAPIClient) AdminNewsRemove(NewsItem string) (*CometAPIResponseMess
 //
 // - Params
 // NewsContent: Content of news item
-func (c *CometAPIClient) AdminNewsSubmit(NewsContent string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminNewsSubmit(ctx context.Context, NewsContent string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["NewsContent"] = []string{NewsContent}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/news/submit", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/news/submit", data)
 	if err != nil {
 		return nil, err
 	}
@@ -8774,7 +8814,7 @@ func (c *CometAPIClient) AdminNewsSubmit(NewsContent string) (*CometAPIResponseM
 // - Params
 // OrganizationID: (Optional) (No description available)
 // UninstallConfig: (Optional) Uninstall software configuration
-func (c *CometAPIClient) AdminOrganizationDelete(OrganizationID *string, UninstallConfig *UninstallConfig) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminOrganizationDelete(ctx context.Context, OrganizationID *string, UninstallConfig *UninstallConfig) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -8791,7 +8831,7 @@ func (c *CometAPIClient) AdminOrganizationDelete(OrganizationID *string, Uninsta
 		data["UninstallConfig"] = []string{string(b)}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/organization/delete", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/organization/delete", data)
 	if err != nil {
 		return nil, err
 	}
@@ -8813,7 +8853,7 @@ func (c *CometAPIClient) AdminOrganizationDelete(OrganizationID *string, Uninsta
 //
 // - Params
 // Options: The export config options
-func (c *CometAPIClient) AdminOrganizationExport(Options SelfBackupExportOptions) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminOrganizationExport(ctx context.Context, Options SelfBackupExportOptions) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -8824,7 +8864,7 @@ func (c *CometAPIClient) AdminOrganizationExport(Options SelfBackupExportOptions
 	}
 	data["Options"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/organization/export", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/organization/export", data)
 	if err != nil {
 		return nil, err
 	}
@@ -8843,8 +8883,8 @@ func (c *CometAPIClient) AdminOrganizationExport(Options SelfBackupExportOptions
 // You must supply administrator authentication credentials to use this API.
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
-func (c *CometAPIClient) AdminOrganizationList() (map[string]Organization, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/organization/list", nil)
+func (c *CometAPIClient) AdminOrganizationList(ctx context.Context) (map[string]Organization, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/organization/list", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -8869,7 +8909,7 @@ func (c *CometAPIClient) AdminOrganizationList() (map[string]Organization, error
 // - Params
 // OrganizationID: (Optional) (No description available)
 // Organization: (Optional) (No description available)
-func (c *CometAPIClient) AdminOrganizationSet(OrganizationID *string, Organization *Organization) (*OrganizationResponse, error) {
+func (c *CometAPIClient) AdminOrganizationSet(ctx context.Context, OrganizationID *string, Organization *Organization) (*OrganizationResponse, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -8886,7 +8926,7 @@ func (c *CometAPIClient) AdminOrganizationSet(OrganizationID *string, Organizati
 		data["Organization"] = []string{string(b)}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/organization/set", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/organization/set", data)
 	if err != nil {
 		return nil, err
 	}
@@ -8907,13 +8947,13 @@ func (c *CometAPIClient) AdminOrganizationSet(OrganizationID *string, Organizati
 //
 // - Params
 // PolicyID: The policy ID to update or create
-func (c *CometAPIClient) AdminPoliciesDelete(PolicyID string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminPoliciesDelete(ctx context.Context, PolicyID string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["PolicyID"] = []string{PolicyID}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/policies/delete", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/policies/delete", data)
 	if err != nil {
 		return nil, err
 	}
@@ -8935,13 +8975,13 @@ func (c *CometAPIClient) AdminPoliciesDelete(PolicyID string) (*CometAPIResponse
 //
 // - Params
 // PolicyID: The policy ID to retrieve
-func (c *CometAPIClient) AdminPoliciesGet(PolicyID string) (*GetGroupPolicyResponse, error) {
+func (c *CometAPIClient) AdminPoliciesGet(ctx context.Context, PolicyID string) (*GetGroupPolicyResponse, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["PolicyID"] = []string{PolicyID}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/policies/get", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/policies/get", data)
 	if err != nil {
 		return nil, err
 	}
@@ -8965,7 +9005,7 @@ func (c *CometAPIClient) AdminPoliciesGet(PolicyID string) (*GetGroupPolicyRespo
 // - Params
 // TargetOrganization: (Optional) If present, list the policies belonging to another organization.
 // Only allowed for administrator accounts in the top-level organization. (>= 22.3.7)
-func (c *CometAPIClient) AdminPoliciesList(TargetOrganization *string) (map[string]string, error) {
+func (c *CometAPIClient) AdminPoliciesList(ctx context.Context, TargetOrganization *string) (map[string]string, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -8973,7 +9013,7 @@ func (c *CometAPIClient) AdminPoliciesList(TargetOrganization *string) (map[stri
 		data["TargetOrganization"] = []string{*TargetOrganization}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/policies/list", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/policies/list", data)
 	if err != nil {
 		return nil, err
 	}
@@ -8997,7 +9037,7 @@ func (c *CometAPIClient) AdminPoliciesList(TargetOrganization *string) (map[stri
 // - Params
 // TargetOrganization: (Optional) If present, list the policies belonging to another organization.
 // Only allowed for administrator accounts in the top-level organization. (>= 22.3.7)
-func (c *CometAPIClient) AdminPoliciesListFull(TargetOrganization *string) (map[string]GroupPolicy, error) {
+func (c *CometAPIClient) AdminPoliciesListFull(ctx context.Context, TargetOrganization *string) (map[string]GroupPolicy, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -9005,7 +9045,7 @@ func (c *CometAPIClient) AdminPoliciesListFull(TargetOrganization *string) (map[
 		data["TargetOrganization"] = []string{*TargetOrganization}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/policies/list-full", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/policies/list-full", data)
 	if err != nil {
 		return nil, err
 	}
@@ -9026,7 +9066,7 @@ func (c *CometAPIClient) AdminPoliciesListFull(TargetOrganization *string) (map[
 //
 // - Params
 // Policy: The policy data
-func (c *CometAPIClient) AdminPoliciesNew(Policy GroupPolicy) (*CreateGroupPolicyResponse, error) {
+func (c *CometAPIClient) AdminPoliciesNew(ctx context.Context, Policy GroupPolicy) (*CreateGroupPolicyResponse, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -9037,7 +9077,7 @@ func (c *CometAPIClient) AdminPoliciesNew(Policy GroupPolicy) (*CreateGroupPolic
 	}
 	data["Policy"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/policies/new", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/policies/new", data)
 	if err != nil {
 		return nil, err
 	}
@@ -9062,7 +9102,7 @@ func (c *CometAPIClient) AdminPoliciesNew(Policy GroupPolicy) (*CreateGroupPolic
 // PolicyID: The policy ID to update or create
 // Policy: The policy data
 // CheckPolicyHash: (Optional) An atomic verification hash as supplied by the AdminPoliciesGet API
-func (c *CometAPIClient) AdminPoliciesSet(PolicyID string, Policy GroupPolicy, CheckPolicyHash *string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminPoliciesSet(ctx context.Context, PolicyID string, Policy GroupPolicy, CheckPolicyHash *string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -9079,7 +9119,7 @@ func (c *CometAPIClient) AdminPoliciesSet(PolicyID string, Policy GroupPolicy, C
 		data["CheckPolicyHash"] = []string{*CheckPolicyHash}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/policies/set", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/policies/set", data)
 	if err != nil {
 		return nil, err
 	}
@@ -9102,7 +9142,7 @@ func (c *CometAPIClient) AdminPoliciesSet(PolicyID string, Policy GroupPolicy, C
 // TargetUser: Selected account username
 // EmailReportConfig: Email report configuration to preview
 // EmailAddress: (Optional) Email address that may be included in the report body (>= 20.3.3)
-func (c *CometAPIClient) AdminPreviewUserEmailReport(TargetUser string, EmailReportConfig EmailReportConfig, EmailAddress *string) (*EmailReportGeneratedPreview, error) {
+func (c *CometAPIClient) AdminPreviewUserEmailReport(ctx context.Context, TargetUser string, EmailReportConfig EmailReportConfig, EmailAddress *string) (*EmailReportGeneratedPreview, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -9119,7 +9159,7 @@ func (c *CometAPIClient) AdminPreviewUserEmailReport(TargetUser string, EmailRep
 		data["EmailAddress"] = []string{*EmailAddress}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/preview-user-email-report", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/preview-user-email-report", data)
 	if err != nil {
 		return nil, err
 	}
@@ -9138,8 +9178,8 @@ func (c *CometAPIClient) AdminPreviewUserEmailReport(TargetUser string, EmailRep
 // You must supply administrator authentication credentials to use this API.
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
-func (c *CometAPIClient) AdminReplicationState() ([]ReplicatorStateAPIResponse, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/replication/state", nil)
+func (c *CometAPIClient) AdminReplicationState(ctx context.Context) ([]ReplicatorStateAPIResponse, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/replication/state", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -9168,7 +9208,7 @@ func (c *CometAPIClient) AdminReplicationState() ([]ReplicatorStateAPIResponse, 
 // StorageProvider: ID for the storage template destination
 // SelfAddress: (Optional) The external URL for this server. Used to resolve conflicts
 // DeviceID: (Optional) The ID of the device to be added as a associated device of the Storage Vault
-func (c *CometAPIClient) AdminRequestStorageVault(TargetUser string, StorageProvider string, SelfAddress *string, DeviceID *string) (*RequestStorageVaultResponseMessage, error) {
+func (c *CometAPIClient) AdminRequestStorageVault(ctx context.Context, TargetUser string, StorageProvider string, SelfAddress *string, DeviceID *string) (*RequestStorageVaultResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -9186,7 +9226,7 @@ func (c *CometAPIClient) AdminRequestStorageVault(TargetUser string, StorageProv
 		data["DeviceID"] = []string{*DeviceID}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/request-storage-vault", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/request-storage-vault", data)
 	if err != nil {
 		return nil, err
 	}
@@ -9208,7 +9248,7 @@ func (c *CometAPIClient) AdminRequestStorageVault(TargetUser string, StorageProv
 // - Params
 // TargetOrganization: (Optional) If present, list the storage template options belonging to another
 // organization. Only allowed for administrator accounts in the top-level organization. (>= 22.3.7)
-func (c *CometAPIClient) AdminRequestStorageVaultProviders(TargetOrganization *string) (map[string]string, error) {
+func (c *CometAPIClient) AdminRequestStorageVaultProviders(ctx context.Context, TargetOrganization *string) (map[string]string, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -9216,7 +9256,7 @@ func (c *CometAPIClient) AdminRequestStorageVaultProviders(TargetOrganization *s
 		data["TargetOrganization"] = []string{*TargetOrganization}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/request-storage-vault-providers", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/request-storage-vault-providers", data)
 	if err != nil {
 		return nil, err
 	}
@@ -9242,7 +9282,7 @@ func (c *CometAPIClient) AdminRequestStorageVaultProviders(TargetOrganization *s
 // NewPassword: New account password
 // OldPassword: (Optional) Old account password. Required if no recovery code is present for the
 // user account.
-func (c *CometAPIClient) AdminResetUserPassword(TargetUser string, NewPassword string, OldPassword *string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminResetUserPassword(ctx context.Context, TargetUser string, NewPassword string, OldPassword *string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -9254,7 +9294,7 @@ func (c *CometAPIClient) AdminResetUserPassword(TargetUser string, NewPassword s
 		data["OldPassword"] = []string{*OldPassword}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/reset-user-password", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/reset-user-password", data)
 	if err != nil {
 		return nil, err
 	}
@@ -9278,7 +9318,7 @@ func (c *CometAPIClient) AdminResetUserPassword(TargetUser string, NewPassword s
 // - Params
 // TargetUser: Selected account username
 // TargetDevice: Selected Device ID
-func (c *CometAPIClient) AdminRevokeDevice(TargetUser string, TargetDevice string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminRevokeDevice(ctx context.Context, TargetUser string, TargetDevice string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -9286,7 +9326,7 @@ func (c *CometAPIClient) AdminRevokeDevice(TargetUser string, TargetDevice strin
 
 	data["TargetDevice"] = []string{TargetDevice}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/revoke-device", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/revoke-device", data)
 	if err != nil {
 		return nil, err
 	}
@@ -9305,8 +9345,8 @@ func (c *CometAPIClient) AdminRevokeDevice(TargetUser string, TargetDevice strin
 // You must supply administrator authentication credentials to use this API.
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
-func (c *CometAPIClient) AdminSelfBackupStart() (*CometAPIResponseMessage, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/self-backup/start", nil)
+func (c *CometAPIClient) AdminSelfBackupStart(ctx context.Context) (*CometAPIResponseMessage, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/self-backup/start", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -9328,7 +9368,7 @@ func (c *CometAPIClient) AdminSelfBackupStart() (*CometAPIResponseMessage, error
 // - Params
 // TargetUser: Selected account username
 // ProfileData: Modified user profile
-func (c *CometAPIClient) AdminSetUserProfile(TargetUser string, ProfileData UserProfileConfig) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminSetUserProfile(ctx context.Context, TargetUser string, ProfileData UserProfileConfig) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -9341,7 +9381,7 @@ func (c *CometAPIClient) AdminSetUserProfile(TargetUser string, ProfileData User
 	}
 	data["ProfileData"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/set-user-profile", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/set-user-profile", data)
 	if err != nil {
 		return nil, err
 	}
@@ -9368,7 +9408,7 @@ func (c *CometAPIClient) AdminSetUserProfile(TargetUser string, ProfileData User
 // TargetUser: Selected account username
 // ProfileData: Modified user profile
 // RequireHash: Previous hash parameter
-func (c *CometAPIClient) AdminSetUserProfileHash(TargetUser string, ProfileData UserProfileConfig, RequireHash string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminSetUserProfileHash(ctx context.Context, TargetUser string, ProfileData UserProfileConfig, RequireHash string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -9383,7 +9423,7 @@ func (c *CometAPIClient) AdminSetUserProfileHash(TargetUser string, ProfileData 
 
 	data["RequireHash"] = []string{RequireHash}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/set-user-profile-hash", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/set-user-profile-hash", data)
 	if err != nil {
 		return nil, err
 	}
@@ -9409,7 +9449,7 @@ func (c *CometAPIClient) AdminSetUserProfileHash(TargetUser string, ProfileData 
 // AfterTimestamp: (Optional) Allow a stale size measurement if it is at least as new as the
 // supplied Unix timestamp. Timestamps in the future may produce a result clamped down to the Comet
 // Server's current time. If not present, the size measurement may be arbitrarily stale.
-func (c *CometAPIClient) AdminStorageBucketProperties(BucketID string, AfterTimestamp *int) (*BucketProperties, error) {
+func (c *CometAPIClient) AdminStorageBucketProperties(ctx context.Context, BucketID string, AfterTimestamp *int) (*BucketProperties, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -9424,7 +9464,7 @@ func (c *CometAPIClient) AdminStorageBucketProperties(BucketID string, AfterTime
 		data["AfterTimestamp"] = []string{string(b)}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/storage/bucket-properties", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/storage/bucket-properties", data)
 	if err != nil {
 		return nil, err
 	}
@@ -9446,13 +9486,13 @@ func (c *CometAPIClient) AdminStorageBucketProperties(BucketID string, AfterTime
 //
 // - Params
 // BucketID: Selected bucket name
-func (c *CometAPIClient) AdminStorageDeleteBucket(BucketID string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminStorageDeleteBucket(ctx context.Context, BucketID string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["BucketID"] = []string{BucketID}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/storage/delete-bucket", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/storage/delete-bucket", data)
 	if err != nil {
 		return nil, err
 	}
@@ -9476,7 +9516,7 @@ func (c *CometAPIClient) AdminStorageDeleteBucket(BucketID string) (*CometAPIRes
 //
 // - Params
 // BucketID: (Optional) (This parameter is not used)
-func (c *CometAPIClient) AdminStorageFreeSpace(BucketID *string) (*StorageFreeSpaceInfo, error) {
+func (c *CometAPIClient) AdminStorageFreeSpace(ctx context.Context, BucketID *string) (*StorageFreeSpaceInfo, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -9484,7 +9524,7 @@ func (c *CometAPIClient) AdminStorageFreeSpace(BucketID *string) (*StorageFreeSp
 		data["BucketID"] = []string{*BucketID}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/storage/free-space", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/storage/free-space", data)
 	if err != nil {
 		return nil, err
 	}
@@ -9502,8 +9542,8 @@ func (c *CometAPIClient) AdminStorageFreeSpace(BucketID *string) (*StorageFreeSp
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Storage Role to be enabled.
-func (c *CometAPIClient) AdminStorageListBuckets() (BucketPropertyList, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/storage/list-buckets", nil)
+func (c *CometAPIClient) AdminStorageListBuckets(ctx context.Context) (BucketPropertyList, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/storage/list-buckets", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -9526,7 +9566,7 @@ func (c *CometAPIClient) AdminStorageListBuckets() (BucketPropertyList, error) {
 //
 // - Params
 // ExtraData: The destination location settings
-func (c *CometAPIClient) AdminStoragePingDestination(ExtraData DestinationLocation) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminStoragePingDestination(ctx context.Context, ExtraData DestinationLocation) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -9537,7 +9577,7 @@ func (c *CometAPIClient) AdminStoragePingDestination(ExtraData DestinationLocati
 	}
 	data["ExtraData"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/storage/ping-destination", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/storage/ping-destination", data)
 	if err != nil {
 		return nil, err
 	}
@@ -9564,7 +9604,7 @@ func (c *CometAPIClient) AdminStoragePingDestination(ExtraData DestinationLocati
 // SetKeyHashFormat: (Optional) Bucket key hashing format
 // SetKeyHashValue: (Optional) Bucket key hash
 // SetOrganizationID: (Optional) Target organization ID (>= 20.9.0)
-func (c *CometAPIClient) AdminStorageRegisterBucket(SetBucketValue *string, SetKeyHashFormat *string, SetKeyHashValue *string, SetOrganizationID *string) (*AddBucketResponseMessage, error) {
+func (c *CometAPIClient) AdminStorageRegisterBucket(ctx context.Context, SetBucketValue *string, SetKeyHashFormat *string, SetKeyHashValue *string, SetOrganizationID *string) (*AddBucketResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -9584,7 +9624,7 @@ func (c *CometAPIClient) AdminStorageRegisterBucket(SetBucketValue *string, SetK
 		data["SetOrganizationID"] = []string{*SetOrganizationID}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/storage/register-bucket", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/storage/register-bucket", data)
 	if err != nil {
 		return nil, err
 	}
@@ -9608,7 +9648,7 @@ func (c *CometAPIClient) AdminStorageRegisterBucket(SetBucketValue *string, SetK
 //
 // - Params
 // Options: Configure targets for the software update campaign
-func (c *CometAPIClient) AdminUpdateCampaignStart(Options UpdateCampaignOptions) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminUpdateCampaignStart(ctx context.Context, Options UpdateCampaignOptions) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -9619,7 +9659,7 @@ func (c *CometAPIClient) AdminUpdateCampaignStart(Options UpdateCampaignOptions)
 	}
 	data["Options"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/update-campaign/start", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/update-campaign/start", data)
 	if err != nil {
 		return nil, err
 	}
@@ -9640,8 +9680,8 @@ func (c *CometAPIClient) AdminUpdateCampaignStart(Options UpdateCampaignOptions)
 // accounts.
 // This API requires the Software Build Role to be enabled.
 // This API requires the Auth Role to be enabled.
-func (c *CometAPIClient) AdminUpdateCampaignStatus() (*UpdateCampaignStatus, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/update-campaign/status", nil)
+func (c *CometAPIClient) AdminUpdateCampaignStatus(ctx context.Context) (*UpdateCampaignStatus, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/update-campaign/status", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -9662,13 +9702,13 @@ func (c *CometAPIClient) AdminUpdateCampaignStatus() (*UpdateCampaignStatus, err
 //
 // - Params
 // GroupID: The user group ID to delete
-func (c *CometAPIClient) AdminUserGroupsDelete(GroupID string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminUserGroupsDelete(ctx context.Context, GroupID string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["GroupID"] = []string{GroupID}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/user-groups/delete", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/user-groups/delete", data)
 	if err != nil {
 		return nil, err
 	}
@@ -9690,7 +9730,7 @@ func (c *CometAPIClient) AdminUserGroupsDelete(GroupID string) (*CometAPIRespons
 // - Params
 // GroupID: The user group ID to retrieve
 // IncludeUsers: (Optional) If present, includes the users array in the response.
-func (c *CometAPIClient) AdminUserGroupsGet(GroupID string, IncludeUsers *bool) (*GetUserGroupWithUsersResponse, error) {
+func (c *CometAPIClient) AdminUserGroupsGet(ctx context.Context, GroupID string, IncludeUsers *bool) (*GetUserGroupWithUsersResponse, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -9705,7 +9745,7 @@ func (c *CometAPIClient) AdminUserGroupsGet(GroupID string, IncludeUsers *bool) 
 		data["IncludeUsers"] = []string{string(b)}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/user-groups/get", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/user-groups/get", data)
 	if err != nil {
 		return nil, err
 	}
@@ -9729,7 +9769,7 @@ func (c *CometAPIClient) AdminUserGroupsGet(GroupID string, IncludeUsers *bool) 
 // - Params
 // TargetOrganization: (Optional) If present, list the user groups belonging to another
 // organization. Only allowed for administrator accounts in the top-level organization.
-func (c *CometAPIClient) AdminUserGroupsList(TargetOrganization *string) (map[string]string, error) {
+func (c *CometAPIClient) AdminUserGroupsList(ctx context.Context, TargetOrganization *string) (map[string]string, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -9737,7 +9777,7 @@ func (c *CometAPIClient) AdminUserGroupsList(TargetOrganization *string) (map[st
 		data["TargetOrganization"] = []string{*TargetOrganization}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/user-groups/list", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/user-groups/list", data)
 	if err != nil {
 		return nil, err
 	}
@@ -9761,7 +9801,7 @@ func (c *CometAPIClient) AdminUserGroupsList(TargetOrganization *string) (map[st
 // - Params
 // TargetOrganization: (Optional) If present, list the user groups belonging to the specified
 // organization. Only allowed for administrator accounts in the top-level organization.
-func (c *CometAPIClient) AdminUserGroupsListFull(TargetOrganization *string) (map[string]UserGroup, error) {
+func (c *CometAPIClient) AdminUserGroupsListFull(ctx context.Context, TargetOrganization *string) (map[string]UserGroup, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -9769,7 +9809,7 @@ func (c *CometAPIClient) AdminUserGroupsListFull(TargetOrganization *string) (ma
 		data["TargetOrganization"] = []string{*TargetOrganization}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/user-groups/list-full", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/user-groups/list-full", data)
 	if err != nil {
 		return nil, err
 	}
@@ -9792,7 +9832,7 @@ func (c *CometAPIClient) AdminUserGroupsListFull(TargetOrganization *string) (ma
 // Name: this is the name of the group.
 // TargetOrganization: (Optional) If present, list the policies belonging to another organization.
 // Only allowed for administrator accounts in the top-level organization.
-func (c *CometAPIClient) AdminUserGroupsNew(Name string, TargetOrganization *string) (*CreateUserGroupResponse, error) {
+func (c *CometAPIClient) AdminUserGroupsNew(ctx context.Context, Name string, TargetOrganization *string) (*CreateUserGroupResponse, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -9802,7 +9842,7 @@ func (c *CometAPIClient) AdminUserGroupsNew(Name string, TargetOrganization *str
 		data["TargetOrganization"] = []string{*TargetOrganization}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/user-groups/new", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/user-groups/new", data)
 	if err != nil {
 		return nil, err
 	}
@@ -9824,7 +9864,7 @@ func (c *CometAPIClient) AdminUserGroupsNew(Name string, TargetOrganization *str
 // - Params
 // GroupID: The user group ID to update or create
 // Group: The user group data
-func (c *CometAPIClient) AdminUserGroupsSet(GroupID string, Group UserGroup) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminUserGroupsSet(ctx context.Context, GroupID string, Group UserGroup) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -9837,7 +9877,7 @@ func (c *CometAPIClient) AdminUserGroupsSet(GroupID string, Group UserGroup) (*C
 	}
 	data["Group"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/user-groups/set", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/user-groups/set", data)
 	if err != nil {
 		return nil, err
 	}
@@ -9861,7 +9901,7 @@ func (c *CometAPIClient) AdminUserGroupsSet(GroupID string, Group UserGroup) (*C
 // - Params
 // GroupID: The user group ID to update
 // Users: An array of usernames.
-func (c *CometAPIClient) AdminUserGroupsSetUsersForGroup(GroupID string, Users []string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminUserGroupsSetUsersForGroup(ctx context.Context, GroupID string, Users []string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -9874,7 +9914,7 @@ func (c *CometAPIClient) AdminUserGroupsSetUsersForGroup(GroupID string, Users [
 	}
 	data["Users"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/user-groups/set-users-for-group", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/user-groups/set-users-for-group", data)
 	if err != nil {
 		return nil, err
 	}
@@ -9889,8 +9929,8 @@ func (c *CometAPIClient) AdminUserGroupsSetUsersForGroup(GroupID string, Users [
 }
 
 // BrandingProps: Retrieve basic information about this Comet Server
-func (c *CometAPIClient) BrandingProps() (*ServerMetaBrandingProperties, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "GET", "/gen/branding.props", nil)
+func (c *CometAPIClient) BrandingProps(ctx context.Context) (*ServerMetaBrandingProperties, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "GET", "/gen/branding.props", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -9912,8 +9952,8 @@ func (c *CometAPIClient) BrandingProps() (*ServerMetaBrandingProperties, error) 
 //
 // The SessionKey will be set in the client and used for any further api calls using the same client.
 // You can manually clear the SessionKey if you wish to use Username, Password based authentication again.
-func (c *CometAPIClient) HybridSessionStart() (*SessionKeyRegeneratedResponse, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/hybrid/session/start", nil)
+func (c *CometAPIClient) HybridSessionStart(ctx context.Context) (*SessionKeyRegeneratedResponse, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/hybrid/session/start", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -9944,7 +9984,7 @@ func (c *CometAPIClient) HybridSessionStart() (*SessionKeyRegeneratedResponse, e
 // Snapshot: where the email belongs to
 // Destination: The Storage Vault ID
 // Path: of the email to view
-func (c *CometAPIClient) UserDispatcherEmailPreview(TargetID string, Snapshot string, Destination string, Path string) (*EmailReportGeneratedPreview, error) {
+func (c *CometAPIClient) UserDispatcherEmailPreview(ctx context.Context, TargetID string, Snapshot string, Destination string, Path string) (*EmailReportGeneratedPreview, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -9956,7 +9996,7 @@ func (c *CometAPIClient) UserDispatcherEmailPreview(TargetID string, Snapshot st
 
 	data["Path"] = []string{Path}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/dispatcher/email-preview", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/dispatcher/email-preview", data)
 	if err != nil {
 		return nil, err
 	}
@@ -9980,13 +10020,13 @@ func (c *CometAPIClient) UserDispatcherEmailPreview(TargetID string, Snapshot st
 //
 // - Params
 // ProfileHash: Previous account profile hash
-func (c *CometAPIClient) UserWebAccountRegenerateTotp(ProfileHash string) (*TotpRegeneratedResponse, error) {
+func (c *CometAPIClient) UserWebAccountRegenerateTotp(ctx context.Context, ProfileHash string) (*TotpRegeneratedResponse, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["ProfileHash"] = []string{ProfileHash}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/account/regenerate-totp", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/account/regenerate-totp", data)
 	if err != nil {
 		return nil, err
 	}
@@ -10011,7 +10051,7 @@ func (c *CometAPIClient) UserWebAccountRegenerateTotp(ProfileHash string) (*Totp
 // ProfileHash: Previous account profile hash
 // OldPassword: Current account password
 // NewPassword: New account password
-func (c *CometAPIClient) UserWebAccountResetPassword(ProfileHash string, OldPassword string, NewPassword string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) UserWebAccountResetPassword(ctx context.Context, ProfileHash string, OldPassword string, NewPassword string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -10021,7 +10061,7 @@ func (c *CometAPIClient) UserWebAccountResetPassword(ProfileHash string, OldPass
 
 	data["NewPassword"] = []string{NewPassword}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/account/reset-password", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/account/reset-password", data)
 	if err != nil {
 		return nil, err
 	}
@@ -10044,7 +10084,7 @@ func (c *CometAPIClient) UserWebAccountResetPassword(ProfileHash string, OldPass
 // - Params
 // ProfileHash: Previous account profile hash
 // TOTPCode: Six-digit code after scanning barcode image
-func (c *CometAPIClient) UserWebAccountValidateTotp(ProfileHash string, TOTPCode string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) UserWebAccountValidateTotp(ctx context.Context, ProfileHash string, TOTPCode string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -10052,7 +10092,7 @@ func (c *CometAPIClient) UserWebAccountValidateTotp(ProfileHash string, TOTPCode
 
 	data["TOTPCode"] = []string{TOTPCode}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/account/validate-totp", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/account/validate-totp", data)
 	if err != nil {
 		return nil, err
 	}
@@ -10076,7 +10116,7 @@ func (c *CometAPIClient) UserWebAccountValidateTotp(ProfileHash string, TOTPCode
 // TargetID: The live connection GUID
 // DestinationID: The Storage Vault GUID
 // SnapshotID: The backup job snapshot ID to delete
-func (c *CometAPIClient) UserWebDispatcherDeleteSnapshot(TargetID string, DestinationID string, SnapshotID string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) UserWebDispatcherDeleteSnapshot(ctx context.Context, TargetID string, DestinationID string, SnapshotID string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -10086,7 +10126,7 @@ func (c *CometAPIClient) UserWebDispatcherDeleteSnapshot(TargetID string, Destin
 
 	data["SnapshotID"] = []string{SnapshotID}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/delete-snapshot", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/delete-snapshot", data)
 	if err != nil {
 		return nil, err
 	}
@@ -10112,7 +10152,7 @@ func (c *CometAPIClient) UserWebDispatcherDeleteSnapshot(TargetID string, Destin
 // TargetID: The live connection GUID
 // DestinationID: The Storage Vault GUID
 // SnapshotIDs: The backup job snapshot IDs to delete
-func (c *CometAPIClient) UserWebDispatcherDeleteSnapshots(TargetID string, DestinationID string, SnapshotIDs []string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) UserWebDispatcherDeleteSnapshots(ctx context.Context, TargetID string, DestinationID string, SnapshotIDs []string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -10127,7 +10167,7 @@ func (c *CometAPIClient) UserWebDispatcherDeleteSnapshots(TargetID string, Desti
 	}
 	data["SnapshotIDs"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/delete-snapshots", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/delete-snapshots", data)
 	if err != nil {
 		return nil, err
 	}
@@ -10146,8 +10186,8 @@ func (c *CometAPIClient) UserWebDispatcherDeleteSnapshots(TargetID string, Desti
 // You must supply user authentication credentials to use this API, and the user account must be
 // authorized for web access.
 // This API requires the Auth Role to be enabled.
-func (c *CometAPIClient) UserWebDispatcherListActive() (LiveUserConnectionMap, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/list-active", nil)
+func (c *CometAPIClient) UserWebDispatcherListActive(ctx context.Context) (LiveUserConnectionMap, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/list-active", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -10171,7 +10211,7 @@ func (c *CometAPIClient) UserWebDispatcherListActive() (LiveUserConnectionMap, e
 // - Params
 // TargetID: The live connection GUID
 // Credentials: The Office365 account credential
-func (c *CometAPIClient) UserWebDispatcherOffice365ListVirtualAccounts(TargetID string, Credentials Office365Credential) (*BrowseOffice365ListVirtualAccountsResponse, error) {
+func (c *CometAPIClient) UserWebDispatcherOffice365ListVirtualAccounts(ctx context.Context, TargetID string, Credentials Office365Credential) (*BrowseOffice365ListVirtualAccountsResponse, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -10184,7 +10224,7 @@ func (c *CometAPIClient) UserWebDispatcherOffice365ListVirtualAccounts(TargetID 
 	}
 	data["Credentials"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/office365-list-virtual-accounts", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/office365-list-virtual-accounts", data)
 	if err != nil {
 		return nil, err
 	}
@@ -10207,7 +10247,7 @@ func (c *CometAPIClient) UserWebDispatcherOffice365ListVirtualAccounts(TargetID 
 // - Params
 // TargetID: The live connection GUID
 // ExtraData: The destination location settings
-func (c *CometAPIClient) UserWebDispatcherPingDestination(TargetID string, ExtraData DestinationLocation) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) UserWebDispatcherPingDestination(ctx context.Context, TargetID string, ExtraData DestinationLocation) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -10220,7 +10260,7 @@ func (c *CometAPIClient) UserWebDispatcherPingDestination(TargetID string, Extra
 	}
 	data["ExtraData"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/ping-destination", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/ping-destination", data)
 	if err != nil {
 		return nil, err
 	}
@@ -10247,7 +10287,7 @@ func (c *CometAPIClient) UserWebDispatcherPingDestination(TargetID string, Extra
 // - Params
 // TargetID: The live connection GUID
 // EmailAddress: The email address of the Azure AD administrator
-func (c *CometAPIClient) UserWebDispatcherRegisterOfficeApplicationBegin(TargetID string, EmailAddress string) (*RegisterOfficeApplicationBeginResponse, error) {
+func (c *CometAPIClient) UserWebDispatcherRegisterOfficeApplicationBegin(ctx context.Context, TargetID string, EmailAddress string) (*RegisterOfficeApplicationBeginResponse, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -10255,7 +10295,7 @@ func (c *CometAPIClient) UserWebDispatcherRegisterOfficeApplicationBegin(TargetI
 
 	data["EmailAddress"] = []string{EmailAddress}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/register-office-application/begin", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/register-office-application/begin", data)
 	if err != nil {
 		return nil, err
 	}
@@ -10281,7 +10321,7 @@ func (c *CometAPIClient) UserWebDispatcherRegisterOfficeApplicationBegin(TargetI
 // - Params
 // TargetID: The live connection GUID
 // Continuation: The ID returned from the AdminDispatcherRegisterOfficeApplicationBegin endpoint
-func (c *CometAPIClient) UserWebDispatcherRegisterOfficeApplicationCheck(TargetID string, Continuation string) (*RegisterOfficeApplicationCheckResponse, error) {
+func (c *CometAPIClient) UserWebDispatcherRegisterOfficeApplicationCheck(ctx context.Context, TargetID string, Continuation string) (*RegisterOfficeApplicationCheckResponse, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -10289,7 +10329,7 @@ func (c *CometAPIClient) UserWebDispatcherRegisterOfficeApplicationCheck(TargetI
 
 	data["Continuation"] = []string{Continuation}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/register-office-application/check", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/register-office-application/check", data)
 	if err != nil {
 		return nil, err
 	}
@@ -10312,13 +10352,13 @@ func (c *CometAPIClient) UserWebDispatcherRegisterOfficeApplicationCheck(TargetI
 //
 // - Params
 // TargetID: The live connection GUID
-func (c *CometAPIClient) UserWebDispatcherRequestBrowseDiskDrives(TargetID string) (*BrowseDiskDrivesResponse, error) {
+func (c *CometAPIClient) UserWebDispatcherRequestBrowseDiskDrives(ctx context.Context, TargetID string) (*BrowseDiskDrivesResponse, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["TargetID"] = []string{TargetID}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-browse-disk-drives", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-browse-disk-drives", data)
 	if err != nil {
 		return nil, err
 	}
@@ -10341,13 +10381,13 @@ func (c *CometAPIClient) UserWebDispatcherRequestBrowseDiskDrives(TargetID strin
 //
 // - Params
 // TargetID: The live connection GUID
-func (c *CometAPIClient) UserWebDispatcherRequestBrowseExchangeEdb(TargetID string) (*BrowseEDBResponse, error) {
+func (c *CometAPIClient) UserWebDispatcherRequestBrowseExchangeEdb(ctx context.Context, TargetID string) (*BrowseEDBResponse, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["TargetID"] = []string{TargetID}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-browse-exchange-edb", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-browse-exchange-edb", data)
 	if err != nil {
 		return nil, err
 	}
@@ -10370,13 +10410,13 @@ func (c *CometAPIClient) UserWebDispatcherRequestBrowseExchangeEdb(TargetID stri
 //
 // - Params
 // TargetID: The live connection GUID
-func (c *CometAPIClient) UserWebDispatcherRequestBrowseHyperv(TargetID string) (*BrowseHVResponse, error) {
+func (c *CometAPIClient) UserWebDispatcherRequestBrowseHyperv(ctx context.Context, TargetID string) (*BrowseHVResponse, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["TargetID"] = []string{TargetID}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-browse-hyperv", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-browse-hyperv", data)
 	if err != nil {
 		return nil, err
 	}
@@ -10399,7 +10439,7 @@ func (c *CometAPIClient) UserWebDispatcherRequestBrowseHyperv(TargetID string) (
 // - Params
 // TargetID: The live connection GUID
 // Credentials: The MongoDB database authentication settings
-func (c *CometAPIClient) UserWebDispatcherRequestBrowseMongodb(TargetID string, Credentials MongoDBConnection) (*BrowseSQLServerResponse, error) {
+func (c *CometAPIClient) UserWebDispatcherRequestBrowseMongodb(ctx context.Context, TargetID string, Credentials MongoDBConnection) (*BrowseSQLServerResponse, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -10412,7 +10452,7 @@ func (c *CometAPIClient) UserWebDispatcherRequestBrowseMongodb(TargetID string, 
 	}
 	data["Credentials"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-browse-mongodb", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-browse-mongodb", data)
 	if err != nil {
 		return nil, err
 	}
@@ -10435,7 +10475,7 @@ func (c *CometAPIClient) UserWebDispatcherRequestBrowseMongodb(TargetID string, 
 // - Params
 // TargetID: The live connection GUID
 // Credentials: The MSSQL database authentication settings
-func (c *CometAPIClient) UserWebDispatcherRequestBrowseMssql(TargetID string, Credentials MSSQLConnection) (*BrowseSQLServerResponse, error) {
+func (c *CometAPIClient) UserWebDispatcherRequestBrowseMssql(ctx context.Context, TargetID string, Credentials MSSQLConnection) (*BrowseSQLServerResponse, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -10448,7 +10488,7 @@ func (c *CometAPIClient) UserWebDispatcherRequestBrowseMssql(TargetID string, Cr
 	}
 	data["Credentials"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-browse-mssql", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-browse-mssql", data)
 	if err != nil {
 		return nil, err
 	}
@@ -10471,7 +10511,7 @@ func (c *CometAPIClient) UserWebDispatcherRequestBrowseMssql(TargetID string, Cr
 // - Params
 // TargetID: The live connection GUID
 // Credentials: The MySQL database authentication settings
-func (c *CometAPIClient) UserWebDispatcherRequestBrowseMysql(TargetID string, Credentials MySQLConnection) (*BrowseSQLServerResponse, error) {
+func (c *CometAPIClient) UserWebDispatcherRequestBrowseMysql(ctx context.Context, TargetID string, Credentials MySQLConnection) (*BrowseSQLServerResponse, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -10484,7 +10524,7 @@ func (c *CometAPIClient) UserWebDispatcherRequestBrowseMysql(TargetID string, Cr
 	}
 	data["Credentials"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-browse-mysql", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-browse-mysql", data)
 	if err != nil {
 		return nil, err
 	}
@@ -10507,7 +10547,7 @@ func (c *CometAPIClient) UserWebDispatcherRequestBrowseMysql(TargetID string, Cr
 // - Params
 // TargetID: The live connection GUID
 // Credentials: The VMWare ESXi connection settings
-func (c *CometAPIClient) UserWebDispatcherRequestBrowseVmware(TargetID string, Credentials VMwareConnection) (*BrowseVMwareResponse, error) {
+func (c *CometAPIClient) UserWebDispatcherRequestBrowseVmware(ctx context.Context, TargetID string, Credentials VMwareConnection) (*BrowseVMwareResponse, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -10520,7 +10560,7 @@ func (c *CometAPIClient) UserWebDispatcherRequestBrowseVmware(TargetID string, C
 	}
 	data["Credentials"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-browse-vmware", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-browse-vmware", data)
 	if err != nil {
 		return nil, err
 	}
@@ -10543,13 +10583,13 @@ func (c *CometAPIClient) UserWebDispatcherRequestBrowseVmware(TargetID string, C
 //
 // - Params
 // TargetID: The live connection GUID
-func (c *CometAPIClient) UserWebDispatcherRequestBrowseVssAaw(TargetID string) (*BrowseVSSResponse, error) {
+func (c *CometAPIClient) UserWebDispatcherRequestBrowseVssAaw(ctx context.Context, TargetID string) (*BrowseVSSResponse, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["TargetID"] = []string{TargetID}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-browse-vss-aaw", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-browse-vss-aaw", data)
 	if err != nil {
 		return nil, err
 	}
@@ -10572,7 +10612,7 @@ func (c *CometAPIClient) UserWebDispatcherRequestBrowseVssAaw(TargetID string) (
 // - Params
 // TargetID: The live connection GUID
 // Credentials: The Office365 account credential
-func (c *CometAPIClient) UserWebDispatcherRequestOffice365Accounts(TargetID string, Credentials Office365Credential) (*BrowseOffice365ObjectsResponse, error) {
+func (c *CometAPIClient) UserWebDispatcherRequestOffice365Accounts(ctx context.Context, TargetID string, Credentials Office365Credential) (*BrowseOffice365ObjectsResponse, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -10585,7 +10625,7 @@ func (c *CometAPIClient) UserWebDispatcherRequestOffice365Accounts(TargetID stri
 	}
 	data["Credentials"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-office365-accounts", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-office365-accounts", data)
 	if err != nil {
 		return nil, err
 	}
@@ -10608,7 +10648,7 @@ func (c *CometAPIClient) UserWebDispatcherRequestOffice365Accounts(TargetID stri
 // - Params
 // TargetID: The live connection GUID
 // Credentials: The Office365 account credential
-func (c *CometAPIClient) UserWebDispatcherRequestOffice365Sites(TargetID string, Credentials Office365Credential) (*BrowseOffice365ObjectsResponse, error) {
+func (c *CometAPIClient) UserWebDispatcherRequestOffice365Sites(ctx context.Context, TargetID string, Credentials Office365Credential) (*BrowseOffice365ObjectsResponse, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -10621,7 +10661,7 @@ func (c *CometAPIClient) UserWebDispatcherRequestOffice365Sites(TargetID string,
 	}
 	data["Credentials"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-office365-sites", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-office365-sites", data)
 	if err != nil {
 		return nil, err
 	}
@@ -10650,7 +10690,7 @@ func (c *CometAPIClient) UserWebDispatcherRequestOffice365Sites(TargetID string,
 // TreeID: (Optional) Browse objects inside subdirectory of backup snapshot. If it is for VMDK
 // single file restore, it should be the disk image's subtree ID.
 // Options: (Optional) Request a list of stored objects in vmdk file
-func (c *CometAPIClient) UserWebDispatcherRequestStoredObjects(TargetID string, Destination string, SnapshotID string, TreeID *string, Options *VMDKSnapshotViewOptions) (*DispatcherStoredObjectsResponse, error) {
+func (c *CometAPIClient) UserWebDispatcherRequestStoredObjects(ctx context.Context, TargetID string, Destination string, SnapshotID string, TreeID *string, Options *VMDKSnapshotViewOptions) (*DispatcherStoredObjectsResponse, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -10673,7 +10713,7 @@ func (c *CometAPIClient) UserWebDispatcherRequestStoredObjects(TargetID string, 
 		data["Options"] = []string{string(b)}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-stored-objects", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-stored-objects", data)
 	if err != nil {
 		return nil, err
 	}
@@ -10697,7 +10737,7 @@ func (c *CometAPIClient) UserWebDispatcherRequestStoredObjects(TargetID string, 
 // - Params
 // TargetID: The live connection GUID
 // Destination: The Storage Vault ID
-func (c *CometAPIClient) UserWebDispatcherRequestVaultSnapshots(TargetID string, Destination string) (*DispatcherVaultSnapshotsResponse, error) {
+func (c *CometAPIClient) UserWebDispatcherRequestVaultSnapshots(ctx context.Context, TargetID string, Destination string) (*DispatcherVaultSnapshotsResponse, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -10705,7 +10745,7 @@ func (c *CometAPIClient) UserWebDispatcherRequestVaultSnapshots(TargetID string,
 
 	data["Destination"] = []string{Destination}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-vault-snapshots", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-vault-snapshots", data)
 	if err != nil {
 		return nil, err
 	}
@@ -10730,7 +10770,7 @@ func (c *CometAPIClient) UserWebDispatcherRequestVaultSnapshots(TargetID string,
 // TargetID: The live connection GUID
 // Destination: The Storage Vault ID
 // SnapshotID: The Snapshot ID
-func (c *CometAPIClient) UserWebDispatcherRequestWindiskSnapshot(TargetID string, Destination string, SnapshotID string) (*DispatcherWindiskSnapshotResponse, error) {
+func (c *CometAPIClient) UserWebDispatcherRequestWindiskSnapshot(ctx context.Context, TargetID string, Destination string, SnapshotID string) (*DispatcherWindiskSnapshotResponse, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -10740,7 +10780,7 @@ func (c *CometAPIClient) UserWebDispatcherRequestWindiskSnapshot(TargetID string
 
 	data["SnapshotID"] = []string{SnapshotID}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-windisk-snapshot", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-windisk-snapshot", data)
 	if err != nil {
 		return nil, err
 	}
@@ -10764,7 +10804,7 @@ func (c *CometAPIClient) UserWebDispatcherRequestWindiskSnapshot(TargetID string
 // - Params
 // TargetID: The live connection GUID
 // BackupRule: The schedule GUID
-func (c *CometAPIClient) UserWebDispatcherRunBackup(TargetID string, BackupRule string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) UserWebDispatcherRunBackup(ctx context.Context, TargetID string, BackupRule string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -10772,7 +10812,7 @@ func (c *CometAPIClient) UserWebDispatcherRunBackup(TargetID string, BackupRule 
 
 	data["BackupRule"] = []string{BackupRule}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/run-backup", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/run-backup", data)
 	if err != nil {
 		return nil, err
 	}
@@ -10797,7 +10837,7 @@ func (c *CometAPIClient) UserWebDispatcherRunBackup(TargetID string, BackupRule 
 // Source: The Protected Item GUID
 // Destination: The Storage Vault GUID
 // Options: (Optional) Extra job parameters (>= 19.3.6)
-func (c *CometAPIClient) UserWebDispatcherRunBackupCustom(TargetID string, Source string, Destination string, Options *BackupJobAdvancedOptions) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) UserWebDispatcherRunBackupCustom(ctx context.Context, TargetID string, Source string, Destination string, Options *BackupJobAdvancedOptions) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -10816,7 +10856,7 @@ func (c *CometAPIClient) UserWebDispatcherRunBackupCustom(TargetID string, Sourc
 		data["Options"] = []string{string(b)}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/run-backup-custom", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/run-backup-custom", data)
 	if err != nil {
 		return nil, err
 	}
@@ -10845,7 +10885,7 @@ func (c *CometAPIClient) UserWebDispatcherRunBackupCustom(TargetID string, Sourc
 // Snapshot: (Optional) If present, restore a specific snapshot. Otherwise, restore the latest
 // snapshot for the selected Protected Item + Storage Vault pair
 // Paths: (Optional) If present, restore these paths only. Otherwise, restore all data (>= 19.3.0)
-func (c *CometAPIClient) UserWebDispatcherRunRestore(TargetID string, Path string, Source string, Destination string, Snapshot *string, Paths []string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) UserWebDispatcherRunRestore(ctx context.Context, TargetID string, Path string, Source string, Destination string, Snapshot *string, Paths []string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -10870,7 +10910,7 @@ func (c *CometAPIClient) UserWebDispatcherRunRestore(TargetID string, Path strin
 		data["Paths"] = []string{string(b)}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/run-restore", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/run-restore", data)
 	if err != nil {
 		return nil, err
 	}
@@ -10909,7 +10949,7 @@ func (c *CometAPIClient) UserWebDispatcherRunRestore(TargetID string, Path strin
 // KnownDirCount: (Optional) The number of directories to restore, if known. Supplying this means we
 // don't need to walk the entire tree just to find the number of directories and will speed up the
 // restoration process.
-func (c *CometAPIClient) UserWebDispatcherRunRestoreCustom(TargetID string, Source string, Destination string, Options RestoreJobAdvancedOptions, Snapshot *string, Paths []string, KnownFileCount *int, KnownByteCount *int, KnownDirCount *int) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) UserWebDispatcherRunRestoreCustom(ctx context.Context, TargetID string, Source string, Destination string, Options RestoreJobAdvancedOptions, Snapshot *string, Paths []string, KnownFileCount *int, KnownByteCount *int, KnownDirCount *int) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -10962,7 +11002,7 @@ func (c *CometAPIClient) UserWebDispatcherRunRestoreCustom(TargetID string, Sour
 		data["KnownDirCount"] = []string{string(b)}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/run-restore-custom", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/run-restore-custom", data)
 	if err != nil {
 		return nil, err
 	}
@@ -10987,7 +11027,7 @@ func (c *CometAPIClient) UserWebDispatcherRunRestoreCustom(TargetID string, Sour
 // DestinationID: The Storage Vault GUID
 // SnapshotIDs: Snapshots to search
 // Filter: The search filter
-func (c *CometAPIClient) UserWebDispatcherSearchSnapshots(TargetID string, DestinationID string, SnapshotIDs []string, Filter SearchClause) (*SearchSnapshotsResponse, error) {
+func (c *CometAPIClient) UserWebDispatcherSearchSnapshots(ctx context.Context, TargetID string, DestinationID string, SnapshotIDs []string, Filter SearchClause) (*SearchSnapshotsResponse, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -11008,7 +11048,7 @@ func (c *CometAPIClient) UserWebDispatcherSearchSnapshots(TargetID string, Desti
 	}
 	data["Filter"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/search-snapshots", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/search-snapshots", data)
 	if err != nil {
 		return nil, err
 	}
@@ -11031,7 +11071,7 @@ func (c *CometAPIClient) UserWebDispatcherSearchSnapshots(TargetID string, Desti
 // - Params
 // TargetID: The live connection GUID
 // Wsa: The target credentials to test
-func (c *CometAPIClient) UserWebDispatcherTestSmbAuth(TargetID string, Wsa WinSMBAuth) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) UserWebDispatcherTestSmbAuth(ctx context.Context, TargetID string, Wsa WinSMBAuth) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -11044,7 +11084,7 @@ func (c *CometAPIClient) UserWebDispatcherTestSmbAuth(TargetID string, Wsa WinSM
 	}
 	data["Wsa"] = []string{string(b)}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/test-smb-auth", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/test-smb-auth", data)
 	if err != nil {
 		return nil, err
 	}
@@ -11066,13 +11106,13 @@ func (c *CometAPIClient) UserWebDispatcherTestSmbAuth(TargetID string, Wsa WinSM
 //
 // - Params
 // JobID: Selected job GUID
-func (c *CometAPIClient) UserWebGetJobLog(JobID string) ([]byte, error) {
+func (c *CometAPIClient) UserWebGetJobLog(ctx context.Context, JobID string) ([]byte, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["JobID"] = []string{JobID}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/get-job-log", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/get-job-log", data)
 	if err != nil {
 		return nil, err
 	}
@@ -11090,7 +11130,7 @@ func (c *CometAPIClient) UserWebGetJobLog(JobID string) ([]byte, error) {
 // JobID: Selected job GUID
 // MinSeverity: (Optional) Return only job log entries with equal or higher severity
 // MessageContains: (Optional) Return only job log entries that contain exact string
-func (c *CometAPIClient) UserWebGetJobLogEntries(JobID string, MinSeverity *string, MessageContains *string) ([]JobEntry, error) {
+func (c *CometAPIClient) UserWebGetJobLogEntries(ctx context.Context, JobID string, MinSeverity *string, MessageContains *string) ([]JobEntry, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -11104,7 +11144,7 @@ func (c *CometAPIClient) UserWebGetJobLogEntries(JobID string, MinSeverity *stri
 		data["MessageContains"] = []string{*MessageContains}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/get-job-log-entries", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/get-job-log-entries", data)
 	if err != nil {
 		return nil, err
 	}
@@ -11126,13 +11166,13 @@ func (c *CometAPIClient) UserWebGetJobLogEntries(JobID string, MinSeverity *stri
 //
 // - Params
 // JobID: Selected job GUID
-func (c *CometAPIClient) UserWebGetJobProperties(JobID string) (*BackupJobDetail, error) {
+func (c *CometAPIClient) UserWebGetJobProperties(ctx context.Context, JobID string) (*BackupJobDetail, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["JobID"] = []string{JobID}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/get-job-properties", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/get-job-properties", data)
 	if err != nil {
 		return nil, err
 	}
@@ -11151,8 +11191,8 @@ func (c *CometAPIClient) UserWebGetJobProperties(JobID string) (*BackupJobDetail
 // You must supply user authentication credentials to use this API, and the user account must be
 // authorized for web access.
 // This API requires the Auth Role to be enabled.
-func (c *CometAPIClient) UserWebGetJobs() ([]BackupJobDetail, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/get-jobs", nil)
+func (c *CometAPIClient) UserWebGetJobs(ctx context.Context) ([]BackupJobDetail, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/get-jobs", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -11171,8 +11211,8 @@ func (c *CometAPIClient) UserWebGetJobs() ([]BackupJobDetail, error) {
 // You must supply user authentication credentials to use this API, and the user account must be
 // authorized for web access.
 // This API requires the Auth Role to be enabled.
-func (c *CometAPIClient) UserWebGetJobsForCustomSearch() ([]BackupJobDetail, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/get-jobs-for-custom-search", nil)
+func (c *CometAPIClient) UserWebGetJobsForCustomSearch(ctx context.Context) ([]BackupJobDetail, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/get-jobs-for-custom-search", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -11192,8 +11232,8 @@ func (c *CometAPIClient) UserWebGetJobsForCustomSearch() ([]BackupJobDetail, err
 // You must supply user authentication credentials to use this API, and the user account must be
 // authorized for web access.
 // This API requires the Auth Role to be enabled.
-func (c *CometAPIClient) UserWebGetUserProfileAndHash() (*GetProfileAndHashResponseMessage, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/get-user-profile-and-hash", nil)
+func (c *CometAPIClient) UserWebGetUserProfileAndHash(ctx context.Context) (*GetProfileAndHashResponseMessage, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/get-user-profile-and-hash", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -11221,13 +11261,13 @@ func (c *CometAPIClient) UserWebGetUserProfileAndHash() (*GetProfileAndHashRespo
 //
 // - Params
 // JobID: Job ID
-func (c *CometAPIClient) UserWebJobCancel(JobID string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) UserWebJobCancel(ctx context.Context, JobID string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
 	data["JobID"] = []string{JobID}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/job/cancel", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/job/cancel", data)
 	if err != nil {
 		return nil, err
 	}
@@ -11246,8 +11286,8 @@ func (c *CometAPIClient) UserWebJobCancel(JobID string) (*CometAPIResponseMessag
 // You must supply user authentication credentials to use this API, and the user account must be
 // authorized for web access.
 // This API requires the Auth Role to be enabled.
-func (c *CometAPIClient) UserWebNewsGetAll() (NewsEntries, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/news/get-all", nil)
+func (c *CometAPIClient) UserWebNewsGetAll(ctx context.Context) (NewsEntries, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/news/get-all", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -11272,7 +11312,7 @@ func (c *CometAPIClient) UserWebNewsGetAll() (NewsEntries, error) {
 // TargetID: The live connection GUID
 // Path: (Optional) Browse objects inside this path. If empty or not present, returns the top-level
 // device paths
-func (c *CometAPIClient) UserWebRequestFilesystemObjects(TargetID string, Path *string) (*DispatcherStoredObjectsResponse, error) {
+func (c *CometAPIClient) UserWebRequestFilesystemObjects(ctx context.Context, TargetID string, Path *string) (*DispatcherStoredObjectsResponse, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -11282,7 +11322,7 @@ func (c *CometAPIClient) UserWebRequestFilesystemObjects(TargetID string, Path *
 		data["Path"] = []string{*Path}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/request-filesystem-objects", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/request-filesystem-objects", data)
 	if err != nil {
 		return nil, err
 	}
@@ -11310,7 +11350,7 @@ func (c *CometAPIClient) UserWebRequestFilesystemObjects(TargetID string, Path *
 // StorageProvider: ID for the storage template destination
 // SelfAddress: (Optional) The external URL for this server. Used to resolve conflicts
 // DeviceID: (Optional) The ID of the device to be added as a associated device of the Storage Vault
-func (c *CometAPIClient) UserWebRequestStorageVault(StorageProvider string, SelfAddress *string, DeviceID *string) (*RequestStorageVaultResponseMessage, error) {
+func (c *CometAPIClient) UserWebRequestStorageVault(ctx context.Context, StorageProvider string, SelfAddress *string, DeviceID *string) (*RequestStorageVaultResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -11326,7 +11366,7 @@ func (c *CometAPIClient) UserWebRequestStorageVault(StorageProvider string, Self
 		data["DeviceID"] = []string{*DeviceID}
 	}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/request-storage-vault", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/request-storage-vault", data)
 	if err != nil {
 		return nil, err
 	}
@@ -11346,8 +11386,8 @@ func (c *CometAPIClient) UserWebRequestStorageVault(StorageProvider string, Self
 // You must supply user authentication credentials to use this API, and the user account must be
 // authorized for web access.
 // This API requires the Auth Role to be enabled.
-func (c *CometAPIClient) UserWebRequestStorageVaultProviders() (map[string]string, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/request-storage-vault-providers", nil)
+func (c *CometAPIClient) UserWebRequestStorageVaultProviders(ctx context.Context) (map[string]string, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/request-storage-vault-providers", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -11366,8 +11406,8 @@ func (c *CometAPIClient) UserWebRequestStorageVaultProviders() (map[string]strin
 // You must supply user authentication credentials to use this API, and the user account must be
 // authorized for web access.
 // This API requires the Auth Role to be enabled.
-func (c *CometAPIClient) UserWebSessionRevoke() (*CometAPIResponseMessage, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/session/revoke", nil)
+func (c *CometAPIClient) UserWebSessionRevoke(ctx context.Context) (*CometAPIResponseMessage, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/session/revoke", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -11389,8 +11429,8 @@ func (c *CometAPIClient) UserWebSessionRevoke() (*CometAPIResponseMessage, error
 //
 // The SessionKey will be set in the client and used for any further api calls using the same client.
 // You can manually clear the SessionKey if you wish to use Username, Password based authentication again.
-func (c *CometAPIClient) UserWebSessionStart() (*SessionKeyRegeneratedResponse, error) {
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/session/start", nil)
+func (c *CometAPIClient) UserWebSessionStart(ctx context.Context) (*SessionKeyRegeneratedResponse, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/session/start", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -11418,7 +11458,7 @@ func (c *CometAPIClient) UserWebSessionStart() (*SessionKeyRegeneratedResponse, 
 // - Params
 // ProfileData: Updated account profile
 // ProfileHash: Previous account profile hash
-func (c *CometAPIClient) UserWebSetProfileHash(ProfileData UserProfileConfig, ProfileHash string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) UserWebSetProfileHash(ctx context.Context, ProfileData UserProfileConfig, ProfileHash string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -11431,7 +11471,7 @@ func (c *CometAPIClient) UserWebSetProfileHash(ProfileData UserProfileConfig, Pr
 
 	data["ProfileHash"] = []string{ProfileHash}
 
-	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/set-profile-hash", data)
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/set-profile-hash", data)
 	if err != nil {
 		return nil, err
 	}
