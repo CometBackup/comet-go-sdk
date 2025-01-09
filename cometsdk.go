@@ -1251,6 +1251,8 @@ type AdminSecurityOptions struct {
 	// Deprecated: This member has been deprecated since Comet version 21.12.0
 	U2FRegistrations      []AdminU2FRegistration      `json:",omitempty"`
 	WebAuthnRegistrations []AdminWebAuthnRegistration `json:",omitempty"`
+	// This field is available in Comet 24.12.0 and later.
+	RequirePasswordChange bool
 	// One of the ENCRYPTIONMETHOD_ constants
 	TOTPKeyEncryptionFormat int    `json:",omitempty"`
 	TOTPKey                 string `json:",omitempty"`
@@ -1326,6 +1328,8 @@ type AllowedAdminUser struct {
 	// Deprecated: This member has been deprecated since Comet version 21.12.0
 	U2FRegistrations      []AdminU2FRegistration      `json:",omitempty"`
 	WebAuthnRegistrations []AdminWebAuthnRegistration `json:",omitempty"`
+	// This field is available in Comet 24.12.0 and later.
+	RequirePasswordChange bool
 	// One of the ENCRYPTIONMETHOD_ constants
 	TOTPKeyEncryptionFormat int    `json:",omitempty"`
 	TOTPKey                 string `json:",omitempty"`
