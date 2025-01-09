@@ -3,7 +3,7 @@
 [![@CometBackup on Twitter](http://img.shields.io/badge/twitter-%40CometBackup-blue.svg?style=flat)](https://twitter.com/CometBackup)
 ![MIT License](https://img.shields.io/github/license/CometBackup/comet-go-sdk)
 
-This project is a SDK and base client for Comet Server API using Golang.
+This project is a SDK and base client for the Comet Server API using Golang.
 
 ## Getting Started
 
@@ -14,14 +14,6 @@ This project is a SDK and base client for Comet Server API using Golang.
 ## Development environment
 
 Read `go.mod` to see the latest Go version this SDK was built with
-
-## Releasing
-
-- Update the changelog
-- Run `go mod tidy`
-- Run `go test ./...`
-- Tag the release to the new version
-- Push to tag the hosted repo
 
 ## Getting Help
 
