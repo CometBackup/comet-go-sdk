@@ -425,6 +425,17 @@ const MSSQL_RESTORE_NORECOVERY MSSQLRestoreOpt = "NO_RECOVERY"
 // MSSQLRestoreOpt
 const MSSQL_RESTORE_RECOVERY MSSQLRestoreOpt = "RECOVERY"
 
+// No Storage Vault will be created when a new device is added
+const NEW_STORAGE_VAULT_MODE_NONE string = "none"
+
+// When a new device is added, a Storage Vault will be created using the servers default Storage
+// Template
+const NEW_STORAGE_VAULT_MODE_SERVER string = "server_controlled"
+
+// Used in policy to define that the automatic Storage Vaults for new devices is not enforced by the
+// policy
+const NEW_STORAGE_VAULT_MODE_USER string = "user_controlled"
+
 // Enable Object Lock capability if the corresponding Days field is greater than zero.
 // New code should explicitly use OBJECT_LOCK_ON / OBJECT_LOCK_OFF instead.
 // Deprecated: This const has been deprecated since Comet version 23.x.x
@@ -1989,7 +2000,8 @@ type DestinationConfig struct {
 	// The "Prevent users from viewing the actual storage type" option
 	RebrandStorage bool
 	// If not empty, an error occured during a retention pass. Describes the error.
-	RetentionError string
+	RetentionError    string
+	AssociatedDevices []string
 }
 
 // DestinationLocation describes the underlying storage location for a Storage Vault.
@@ -2967,6 +2979,8 @@ type RemoteStorageOption struct {
 	StorageLimitEnabled bool
 	StorageLimitBytes   int64
 	RebrandStorage      bool
+	ID                  string
+	Default             bool
 }
 
 type ReplicaServer struct {
@@ -3873,6 +3887,7 @@ type UserPolicy struct {
 	HideCloudStorageBranding         bool
 	PreventDeleteStorageVault        bool
 	StorageVaultProviders            StorageVaultProviderPolicy
+	DefaultNewStorageVault           string
 	PreventNewProtectedItem          bool
 	PreventEditProtectedItem         bool
 	PreventDeleteProtectedItem       bool
@@ -3934,6 +3949,8 @@ type UserProfileConfig struct {
 	// Storage Vaults
 	// The string keys can be any unique key. Using a GUID is recommended, but optional.
 	Destinations map[string]DestinationConfig
+	// Leave as true
+	SupportsDeviceAssociations bool
 	// Protected Items
 	// The string keys can be any unique key. Using a GUID is recommended, but optional.
 	Sources map[string]SourceConfig
@@ -4001,7 +4018,8 @@ type UserProfileConfig struct {
 	// this to help disambiguate users with the same username across multiple Comet Servers.
 	CreationGUID string
 	// Additional server-wide settings that are enforced for this user profile
-	ServerConfig UserServerConfig `json:",omitempty"`
+	ServerConfig            UserServerConfig `json:",omitempty"`
+	AutoStorageTemplateGUID string
 }
 
 // Deprecated: This struct has been deprecated since Comet version 23.3.5
@@ -8225,7 +8243,9 @@ func (c *CometAPIClient) AdminMetaRemoteStorageVaultGet() ([]RemoteStorageOption
 //
 // - Params
 // RemoteStorageOptions: Updated configuration content
-func (c *CometAPIClient) AdminMetaRemoteStorageVaultSet(RemoteStorageOptions []RemoteStorageOption) (*CometAPIResponseMessage, error) {
+// ReplacementAutoVaultID: (Optional) Replacement Storage Template ID for auto Storage Vault
+// configurations that use deleted Storage Templates
+func (c *CometAPIClient) AdminMetaRemoteStorageVaultSet(RemoteStorageOptions []RemoteStorageOption, ReplacementAutoVaultID *string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -8235,6 +8255,10 @@ func (c *CometAPIClient) AdminMetaRemoteStorageVaultSet(RemoteStorageOptions []R
 		return nil, err
 	}
 	data["RemoteStorageOptions"] = []string{string(b)}
+
+	if ReplacementAutoVaultID != nil {
+		data["ReplacementAutoVaultID"] = []string{*ReplacementAutoVaultID}
+	}
 
 	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/remote-storage-vault/set", data)
 	if err != nil {
@@ -9143,7 +9167,8 @@ func (c *CometAPIClient) AdminReplicationState() ([]ReplicatorStateAPIResponse, 
 // TargetUser: The user to receive the new Storage Vault
 // StorageProvider: ID for the storage template destination
 // SelfAddress: (Optional) The external URL for this server. Used to resolve conflicts
-func (c *CometAPIClient) AdminRequestStorageVault(TargetUser string, StorageProvider string, SelfAddress *string) (*RequestStorageVaultResponseMessage, error) {
+// DeviceID: (Optional) The ID of the device to be added as a associated device of the Storage Vault
+func (c *CometAPIClient) AdminRequestStorageVault(TargetUser string, StorageProvider string, SelfAddress *string, DeviceID *string) (*RequestStorageVaultResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -9155,6 +9180,10 @@ func (c *CometAPIClient) AdminRequestStorageVault(TargetUser string, StorageProv
 		data["SelfAddress"] = []string{c.ServerURL}
 	} else {
 		data["SelfAddress"] = []string{*SelfAddress}
+	}
+
+	if DeviceID != nil {
+		data["DeviceID"] = []string{*DeviceID}
 	}
 
 	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/request-storage-vault", data)
@@ -11280,7 +11309,8 @@ func (c *CometAPIClient) UserWebRequestFilesystemObjects(TargetID string, Path *
 // - Params
 // StorageProvider: ID for the storage template destination
 // SelfAddress: (Optional) The external URL for this server. Used to resolve conflicts
-func (c *CometAPIClient) UserWebRequestStorageVault(StorageProvider string, SelfAddress *string) (*RequestStorageVaultResponseMessage, error) {
+// DeviceID: (Optional) The ID of the device to be added as a associated device of the Storage Vault
+func (c *CometAPIClient) UserWebRequestStorageVault(StorageProvider string, SelfAddress *string, DeviceID *string) (*RequestStorageVaultResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -11290,6 +11320,10 @@ func (c *CometAPIClient) UserWebRequestStorageVault(StorageProvider string, Self
 		data["SelfAddress"] = []string{c.ServerURL}
 	} else {
 		data["SelfAddress"] = []string{*SelfAddress}
+	}
+
+	if DeviceID != nil {
+		data["DeviceID"] = []string{*DeviceID}
 	}
 
 	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/user/web/request-storage-vault", data)
