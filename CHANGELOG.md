@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## 2025-01-10 v2.0.0
+
+This version is a semver-MAJOR upgrade. To use this release, update your Go module import path from `"github.com/CometBackup/comet-go-sdk"` to `"github.com/CometBackup/comet-go-sdk/v2"`.
+
+- Based on Comet 24.12.2
+- **BREAKING:** Update all client methods to take context parameters
+- Add dependency on easyjson to preserve unknown fields from future versions of Comet Server
+- Support new Login Protection feature
+- Support requiring password changes for admin accounts
+- Support new user grouping functionality
+- Supoprt creating a first admin account on empty servers
+- Support vault-device associations and automatic vault creation
+
 ## 2024-10-29 v1.36.0
 
 - Based on Comet 24.9.6
