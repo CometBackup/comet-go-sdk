@@ -934,6 +934,15 @@ const SEVT_TENANT_REMOVED StreamableEventType = 4501
 // StreamableEventType: Tenant updated. Data is the tenant object
 const SEVT_TENANT_UPDATED StreamableEventType = 4502
 
+// StreamableEventType: UserGroup created.
+const SEVT_USERGROUP_NEW StreamableEventType = 4800
+
+// StreamableEventType: UserGroup deleted
+const SEVT_USERGROUP_REMOVED StreamableEventType = 4801
+
+// StreamableEventType: UserGroup updated.
+const SEVT_USERGROUP_UPDATED StreamableEventType = 4802
+
 // StreamableEventType
 const SEVT__MAX StreamableEventType = 4999
 
@@ -1827,6 +1836,13 @@ type CreateGroupPolicyResponse struct {
 	PolicyHash string
 }
 
+type CreateUserGroupResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
+	Status      int
+	Message     string
+	UserGroupID string
+}
+
 type CustomRemoteBucketSettings struct {
 	URL string
 	// This field is available in Comet 23.12.5 and later.
@@ -2331,6 +2347,16 @@ type GetProfileHashResponseMessage struct {
 	Status      int
 	Message     string
 	ProfileHash string
+}
+
+type GetUserGroupResponse struct {
+	UserGroup     UserGroup
+	UserGroupHash string
+}
+
+type GetUserGroupWithUsersResponse struct {
+	UserGroup UserGroup
+	Users     map[string]UserProfileConfig
 }
 
 type GlobalOverrideOptions struct {
@@ -3824,6 +3850,13 @@ type UserCustomEmailSettings struct {
 	Reports []EmailReportConfig
 }
 
+type UserGroup struct {
+	// Unix timestamp in seconds
+	CreatedAt      int64
+	OrganizationID string
+	Name           string
+}
+
 type UserOnServer struct {
 	// The server where this user was found. The 0-based indexes here correspond to the entries inside
 	// ConstellationRoleOptions->Servers.
@@ -3887,6 +3920,7 @@ type UserProfileConfig struct {
 	LanguageCode string
 	// Tenant
 	OrganizationID string `json:",omitempty"`
+	GroupID        string
 	// A list of email addresses to send reports to.
 	Emails []string
 	// By default, all the email addresses in the Emails field will receive the policy-default or
@@ -9555,6 +9589,239 @@ func (c *CometAPIClient) AdminUpdateCampaignStatus() (*UpdateCampaignStatus, err
 	}
 
 	result := &UpdateCampaignStatus{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminUserGroupsDelete: Delete an existing user group object
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// GroupID: The user group ID to delete
+func (c *CometAPIClient) AdminUserGroupsDelete(GroupID string) (*CometAPIResponseMessage, error) {
+	data := map[string][]string{}
+	var err error
+
+	data["GroupID"] = []string{GroupID}
+
+	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/user-groups/delete", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CometAPIResponseMessage{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminUserGroupsGet: Retrieve a single user group object
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// GroupID: The user group ID to retrieve
+// IncludeUsers: (Optional) If present, includes the users array in the response.
+func (c *CometAPIClient) AdminUserGroupsGet(GroupID string, IncludeUsers *bool) (*GetUserGroupWithUsersResponse, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	data["GroupID"] = []string{GroupID}
+
+	if IncludeUsers != nil {
+		b, err = json.Marshal(IncludeUsers)
+		if err != nil {
+			return nil, err
+		}
+		data["IncludeUsers"] = []string{string(b)}
+	}
+
+	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/user-groups/get", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &GetUserGroupWithUsersResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminUserGroupsList: List all user group names
+// For the top-level organization, the API result includes all user groups for all organizations,
+// unless the TargetOrganization parameter is present.
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetOrganization: (Optional) If present, list the user groups belonging to another
+// organization. Only allowed for administrator accounts in the top-level organization.
+func (c *CometAPIClient) AdminUserGroupsList(TargetOrganization *string) (map[string]string, error) {
+	data := map[string][]string{}
+	var err error
+
+	if TargetOrganization != nil {
+		data["TargetOrganization"] = []string{*TargetOrganization}
+	}
+
+	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/user-groups/list", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := map[string]string{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminUserGroupsListFull: Get all user group objects
+// For the top-level organization, the API result includes all user groups for all organizations,
+// unless the TargetOrganization parameter is present.
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetOrganization: (Optional) If present, list the user groups belonging to the specified
+// organization. Only allowed for administrator accounts in the top-level organization.
+func (c *CometAPIClient) AdminUserGroupsListFull(TargetOrganization *string) (map[string]UserGroup, error) {
+	data := map[string][]string{}
+	var err error
+
+	if TargetOrganization != nil {
+		data["TargetOrganization"] = []string{*TargetOrganization}
+	}
+
+	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/user-groups/list-full", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := map[string]UserGroup{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminUserGroupsNew: Create a new user group object
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// Name: this is the name of the group.
+// TargetOrganization: (Optional) If present, list the policies belonging to another organization.
+// Only allowed for administrator accounts in the top-level organization.
+func (c *CometAPIClient) AdminUserGroupsNew(Name string, TargetOrganization *string) (*CreateUserGroupResponse, error) {
+	data := map[string][]string{}
+	var err error
+
+	data["Name"] = []string{Name}
+
+	if TargetOrganization != nil {
+		data["TargetOrganization"] = []string{*TargetOrganization}
+	}
+
+	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/user-groups/new", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CreateUserGroupResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminUserGroupsSet: Update an existing user group or create a new user group
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// GroupID: The user group ID to update or create
+// Group: The user group data
+func (c *CometAPIClient) AdminUserGroupsSet(GroupID string, Group UserGroup) (*CometAPIResponseMessage, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	data["GroupID"] = []string{GroupID}
+
+	b, err = json.Marshal(Group)
+	if err != nil {
+		return nil, err
+	}
+	data["Group"] = []string{string(b)}
+
+	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/user-groups/set", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CometAPIResponseMessage{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminUserGroupsSetUsersForGroup: Update the users in the specified group
+// The provided list of users will be moved into the specified group, and any users
+// already in the group who are not in the list of usernames will be removed.
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// GroupID: The user group ID to update
+// Users: An array of usernames.
+func (c *CometAPIClient) AdminUserGroupsSetUsersForGroup(GroupID string, Users []string) (*CometAPIResponseMessage, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	data["GroupID"] = []string{GroupID}
+
+	b, err = json.Marshal(Users)
+	if err != nil {
+		return nil, err
+	}
+	data["Users"] = []string{string(b)}
+
+	body, err := c.Request("application/x-www-form-urlencoded", "POST", "/api/v1/admin/user-groups/set-users-for-group", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CometAPIResponseMessage{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err
