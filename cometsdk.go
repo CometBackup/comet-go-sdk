@@ -2492,6 +2492,17 @@ type LocalStorageDirectory struct {
 	Path string
 }
 
+type LoginProtectionOptions struct {
+	// Enable this feature to block repeated failed login attempts to the Comet Server.
+	Enabled bool
+	// The number of failed attempts before a cooldown is applied. If the feature is enabled, should be
+	// at least 1.
+	FailureThreshold int64
+	// The duration to block requests, in seconds. If the feature is enabled, should be at least 1
+	// second.
+	CooldownSeconds int64
+}
+
 type MSSQLConnection struct {
 	// One of the MSSQL_AUTH_ constants (e.g. "windows" or "native")
 	Type     string
@@ -3283,7 +3294,9 @@ type ServerConfigOptions struct {
 	ExternalAdminUserSources map[string]ExternalAuthenticationSource
 	// The Comet Server can enforce a bandwidth limit based on the target IP address
 	IPRateLimit RatelimitOptions
-	License     LicenseOptions
+	// This field is available in Comet 24.9.x and later.
+	LoginProtection LoginProtectionOptions
+	License         LicenseOptions
 	// Configure ip, port, and SSL settings for this self-hosted Comet Server.
 	ListenAddresses []HTTPConnectorOptions
 	// Tenants
