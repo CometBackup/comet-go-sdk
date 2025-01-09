@@ -12,6 +12,8 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/mailru/easyjson"
 )
 
 //
@@ -1240,6 +1242,8 @@ type AddBucketResponseMessage struct {
 	Message      string
 	NewBucketID  string
 	NewBucketKey string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type AdminAccountPropertiesResponse struct {
@@ -1247,11 +1251,15 @@ type AdminAccountPropertiesResponse struct {
 	Permissions    AdminUserPermissions
 	// This field is available in Comet 18.9.9 and later.
 	Security AdminSecurityOptions
+
+	easyjson.UnknownFieldsProxy
 }
 
 type AdminEmailOptions struct {
 	FromEmail string
 	FromName  string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type AdminResourceResponse struct {
@@ -1259,6 +1267,8 @@ type AdminResourceResponse struct {
 	Status       int
 	Message      string
 	ResourceHash string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type AdminSecurityOptions struct {
@@ -1281,6 +1291,8 @@ type AdminSecurityOptions struct {
 	// A regular expression in Go regex syntax, for which IP addresses are allowed to authenticate as
 	// this admin account
 	IPWhitelist string `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 // Deprecated: This struct has been deprecated since Comet version 21.12.0
@@ -1290,6 +1302,8 @@ type AdminU2FRegistration struct {
 	RegisterTime int64
 	// When this field is expressed as a Go AdminU2FRegistration struct, this field may contain binary data. When this field is expressed as JSON, the field must be expressed as base64. The encoding/json marshaller will automatically perform base64 conversion as necessary.
 	Registration []byte
+
+	easyjson.UnknownFieldsProxy
 }
 
 type AdminUserPermissions struct {
@@ -1322,6 +1336,8 @@ type AdminUserPermissions struct {
 	AllowedUserPolicies []string `json:",omitempty"`
 	// This field is available in Comet 24.6.1 and later.
 	DenySoftwareBuildRole bool `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type AdminWebAuthnRegistration struct {
@@ -1333,6 +1349,8 @@ type AdminWebAuthnRegistration struct {
 	// When this field is expressed as a Go AdminWebAuthnRegistration struct, this field may contain binary data. When this field is expressed as JSON, the field must be expressed as base64. The encoding/json marshaller will automatically perform base64 conversion as necessary.
 	ID         []byte             `json:",omitempty"`
 	Credential WebAuthnCredential `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type AllowedAdminUser struct {
@@ -1359,6 +1377,8 @@ type AllowedAdminUser struct {
 	// this admin account
 	IPWhitelist string `json:",omitempty"`
 	Permissions AdminUserPermissions
+
+	easyjson.UnknownFieldsProxy
 }
 
 type AmazonAWSVirtualStorageRoleSettings struct {
@@ -1383,6 +1403,8 @@ type AmazonAWSVirtualStorageRoleSettings struct {
 	// When configuring a Storage Template from the Comet Server web interface, this field is set
 	// automatically for Storage Templates using Object Lock.
 	RemoveDeleted bool
+
+	easyjson.UnknownFieldsProxy
 }
 
 type AuthenticationRoleOptions struct {
@@ -1397,12 +1419,16 @@ type AuthenticationRoleOptions struct {
 	RemoteStorage              []RemoteStorageOption
 	ReplicateTo                []ReplicaServer
 	GlobalOverrides            GlobalOverrideOptions `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type AvailableDownload struct {
 	Category    string
 	Description string
 	Recommended bool
+
+	easyjson.UnknownFieldsProxy
 }
 
 // AzureDestinationLocation allows configuring connection settings for storage locations using the
@@ -1414,6 +1440,8 @@ type AzureDestinationLocation struct {
 	// The base URL for the Azure Blob Storage service. Leave blank to use the global default URL.
 	AZBRealm  string
 	AZBPrefix string
+
+	easyjson.UnknownFieldsProxy
 }
 
 // B2DestinationLocation allows configuring connection settings for storage locations using the
@@ -1431,16 +1459,22 @@ type B2DestinationLocation struct {
 	// credentials have the hideFile permission but not the deleteFile permission, and (B) you use the
 	// Backblaze B2 server-side lifecycle policies to clean up old hidden files.
 	HideDeletedFiles bool `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type B2StorageExtraInfo struct {
 	TotalTransactionsInTimeInterval map[int64]B2TransactionTotals
+
+	easyjson.UnknownFieldsProxy
 }
 
 type B2TransactionTotals struct {
 	ClassA int64
 	ClassB int64
 	ClassC int64
+
+	easyjson.UnknownFieldsProxy
 }
 
 type B2VirtualStorageRoleSettings struct {
@@ -1448,6 +1482,8 @@ type B2VirtualStorageRoleSettings struct {
 	KeyID            string
 	AppKey           string
 	HideDeletedFiles bool
+
+	easyjson.UnknownFieldsProxy
 }
 
 // BackupJobAdvancedOptions control additional advanced options for running a backup job. They can
@@ -1471,6 +1507,8 @@ type BackupJobAdvancedOptions struct {
 	ConcurrencyCount int64
 	// Log verbosity level. LOG_DEBUG has the greatest verbosity
 	LogLevel string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type BackupJobDetail struct {
@@ -1524,6 +1562,8 @@ type BackupJobDetail struct {
 	DestinationSizeStart SizeMeasurement `json:",omitempty"`
 	// The size of the Storage Vault, as measured at the end of the job.
 	DestinationSizeEnd SizeMeasurement `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type BackupJobProgress struct {
@@ -1537,6 +1577,8 @@ type BackupJobProgress struct {
 	BytesDone    int64
 	ItemsDone    int64
 	ItemsTotal   int64
+
+	easyjson.UnknownFieldsProxy
 }
 
 // A backup rule connects one source Protected Item and one destination Storage Vault, with multiple
@@ -1578,6 +1620,8 @@ type BackupRuleConfig struct {
 	Schedules []ScheduleConfig
 	// Other events that will cause this scheduled job to start
 	EventTriggers BackupRuleEventTriggers
+
+	easyjson.UnknownFieldsProxy
 }
 
 type BackupRuleEventTriggers struct {
@@ -1595,6 +1639,8 @@ type BackupRuleEventTriggers struct {
 	// The number of minutes before retrying when the backup job fails.
 	// This field is available in Comet 24.6.6 and later.
 	LastJobFailDoRetryTime uint64 `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type BrandingOptions struct {
@@ -1647,6 +1693,8 @@ type BrandingOptions struct {
 	WindowsCodeSignAzureAppSecret       string
 	WindowsCodeSignAzureTenantID        string
 	MacOSCodeSign                       MacOSCodeSignProperties
+
+	easyjson.UnknownFieldsProxy
 }
 
 type BrandingProperties struct {
@@ -1690,6 +1738,8 @@ type BrandingProperties struct {
 	WindowsCodeSignAzureAppSecret       string
 	WindowsCodeSignAzureTenantID        string
 	MacOSCodeSign                       MacOSCodeSignProperties
+
+	easyjson.UnknownFieldsProxy
 }
 
 type BrowseDiskDrivesResponse struct {
@@ -1697,6 +1747,8 @@ type BrowseDiskDrivesResponse struct {
 	Status  int
 	Message string
 	Disks   []DiskDrive
+
+	easyjson.UnknownFieldsProxy
 }
 
 type BrowseEDBResponse struct {
@@ -1704,6 +1756,8 @@ type BrowseEDBResponse struct {
 	Status    int
 	Message   string
 	Databases []EDBFileInfo
+
+	easyjson.UnknownFieldsProxy
 }
 
 type BrowseHVResponse struct {
@@ -1711,6 +1765,8 @@ type BrowseHVResponse struct {
 	Status          int
 	Message         string
 	VirtualMachines []HyperVMachineInfo
+
+	easyjson.UnknownFieldsProxy
 }
 
 type BrowseOffice365ListVirtualAccountsResponse struct {
@@ -1718,6 +1774,8 @@ type BrowseOffice365ListVirtualAccountsResponse struct {
 	Status  int
 	Message string
 	Objects []Office365MixedVirtualAccount
+
+	easyjson.UnknownFieldsProxy
 }
 
 type BrowseOffice365ObjectsResponse struct {
@@ -1725,6 +1783,8 @@ type BrowseOffice365ObjectsResponse struct {
 	Status  int
 	Message string
 	Objects []Office365ObjectInfo
+
+	easyjson.UnknownFieldsProxy
 }
 
 type BrowseSQLServerResponse struct {
@@ -1732,6 +1792,8 @@ type BrowseSQLServerResponse struct {
 	Status  int
 	Message string
 	Objects map[string]string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type BrowseVMwareResponse struct {
@@ -1739,6 +1801,8 @@ type BrowseVMwareResponse struct {
 	Status          int
 	Message         string
 	VirtualMachines []VMwareMachineInfo
+
+	easyjson.UnknownFieldsProxy
 }
 
 type BrowseVSSResponse struct {
@@ -1746,6 +1810,8 @@ type BrowseVSSResponse struct {
 	Status     int
 	Message    string
 	VSSWriters map[string]VSSWriterInfo
+
+	easyjson.UnknownFieldsProxy
 }
 
 type BucketProperties struct {
@@ -1756,6 +1822,8 @@ type BucketProperties struct {
 	ReadWriteKeyFormat int
 	ReadWriteKey       string
 	Size               SizeMeasurement
+
+	easyjson.UnknownFieldsProxy
 }
 
 type BucketUsageInfo struct {
@@ -1764,12 +1832,16 @@ type BucketUsageInfo struct {
 	// inside ConstellationRoleOptions->Servers.
 	ExistsOnServers []int
 	InUseBy         []UserOnServer
+
+	easyjson.UnknownFieldsProxy
 }
 
 type CometAPIResponseMessage struct {
 	// If the operation was successful, the status will be in the 200-299 range.
 	Status  int
 	Message string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type CometDestinationLocation struct {
@@ -1777,6 +1849,8 @@ type CometDestinationLocation struct {
 	CometServer    string
 	CometBucket    string
 	CometBucketKey string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type ConstellationCheckReport struct {
@@ -1785,12 +1859,16 @@ type ConstellationCheckReport struct {
 	// Unix timestamp in seconds
 	CheckCompleted int64
 	Usage          BucketUsageMap
+
+	easyjson.UnknownFieldsProxy
 }
 
 type ConstellationRoleOptions struct {
 	RoleEnabled      bool
 	DeleteUnusedData bool
 	Servers          []RemoteServerAddress
+
+	easyjson.UnknownFieldsProxy
 }
 
 type ConstellationStats struct {
@@ -1803,6 +1881,8 @@ type ConstellationStats struct {
 	// was last restarted
 	TotalBucketsDeleted   int64
 	ChecksCurrentlyActive int64
+
+	easyjson.UnknownFieldsProxy
 }
 
 type ConstellationStatusAPIResponse struct {
@@ -1811,6 +1891,8 @@ type ConstellationStatusAPIResponse struct {
 	// This field is available in Comet 18.6.2 and later.
 	TargetNames []string `json:",omitempty"`
 	Stats       ConstellationStats
+
+	easyjson.UnknownFieldsProxy
 }
 
 type ContentMeasurement struct {
@@ -1819,6 +1901,8 @@ type ContentMeasurement struct {
 	// Unix timestamp in seconds
 	MeasureCompleted int64
 	Components       []ContentMeasurementComponent
+
+	easyjson.UnknownFieldsProxy
 }
 
 type ContentMeasurementComponent struct {
@@ -1836,10 +1920,14 @@ type ContentMeasurementComponent struct {
 	// snapshots. If that remains the case by the next retention pass, this much data will be deleted
 	// to free up space. If present, it will be the only entry in the UsedBy array.
 	UsedBy []string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type CountJobsResponse struct {
 	Count int64
+
+	easyjson.UnknownFieldsProxy
 }
 
 type CreateGroupPolicyResponse struct {
@@ -1847,6 +1935,8 @@ type CreateGroupPolicyResponse struct {
 	Status     int
 	Message    string
 	PolicyHash string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type CreateUserGroupResponse struct {
@@ -1854,6 +1944,8 @@ type CreateUserGroupResponse struct {
 	Status      int
 	Message     string
 	UserGroupID string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type CustomRemoteBucketSettings struct {
@@ -1863,6 +1955,8 @@ type CustomRemoteBucketSettings struct {
 	// This field is available in Comet 24.5.0 and later.
 	CustomBody     string
 	CustomBodyType CustomRemoteBucketCustomBodyType
+
+	easyjson.UnknownFieldsProxy
 }
 
 type DaysOfWeekConfig struct {
@@ -1873,6 +1967,8 @@ type DaysOfWeekConfig struct {
 	Thursday  bool
 	Friday    bool
 	Saturday  bool
+
+	easyjson.UnknownFieldsProxy
 }
 
 type DefaultEmailReportPolicy struct {
@@ -1882,11 +1978,15 @@ type DefaultEmailReportPolicy struct {
 	// from the built-in system default email report configuration.
 	ShouldOverrideDefaultReports bool
 	Reports                      []EmailReportConfig
+
+	easyjson.UnknownFieldsProxy
 }
 
 type DefaultSourceWithOSRestriction struct {
 	SourceConfig SourceConfig
 	RestrictOS   DefaultSourceOSRestriction
+
+	easyjson.UnknownFieldsProxy
 }
 
 type DestinationConfig struct {
@@ -2004,6 +2104,8 @@ type DestinationConfig struct {
 	// If not empty, an error occured during a retention pass. Describes the error.
 	RetentionError    string
 	AssociatedDevices []string
+
+	easyjson.UnknownFieldsProxy
 }
 
 // DestinationLocation describes the underlying storage location for a Storage Vault.
@@ -2093,6 +2195,8 @@ type DestinationLocation struct {
 	// The default option is false.
 	SpanUseStaticSlots bool
 	Tag                string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type DestinationStatistics struct {
@@ -2103,6 +2207,8 @@ type DestinationStatistics struct {
 	LastSuccessfulDeepVerify_StartTime int64 `json:",omitempty"`
 	// Unix timestamp in seconds
 	LastSuccessfulDeepVerify_EndTime int64 `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type DeviceConfig struct {
@@ -2120,6 +2226,8 @@ type DeviceConfig struct {
 	ClientVersion string `json:",omitempty"`
 	// This field is available in Comet 23.9.8 and later.
 	SyncroUUID string `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type DiskDrive struct {
@@ -2144,6 +2252,8 @@ type DiskDrive struct {
 	// Deprecated: This member has been deprecated since Comet version 24.6.x This value is reported from the disk driver if available. Otherwise emulates a value based on modern LBA addressing. The field value is not used.
 	Sectors    int64
 	SectorSize int64
+
+	easyjson.UnknownFieldsProxy
 }
 
 type DispatcherAdminSourcesResponse struct {
@@ -2151,6 +2261,8 @@ type DispatcherAdminSourcesResponse struct {
 	Status        int
 	Message       string
 	ImportSources map[string]string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type DispatcherStoredObjectsResponse struct {
@@ -2158,6 +2270,8 @@ type DispatcherStoredObjectsResponse struct {
 	Status        int
 	Message       string
 	StoredObjects []StoredObject
+
+	easyjson.UnknownFieldsProxy
 }
 
 type DispatcherVaultSnapshotsResponse struct {
@@ -2165,6 +2279,8 @@ type DispatcherVaultSnapshotsResponse struct {
 	Status    int
 	Message   string
 	Snapshots []VaultSnapshot
+
+	easyjson.UnknownFieldsProxy
 }
 
 type DispatcherWindiskSnapshotResponse struct {
@@ -2172,6 +2288,8 @@ type DispatcherWindiskSnapshotResponse struct {
 	Status          int
 	Message         string
 	WindiskSnapshot []DiskDrive
+
+	easyjson.UnknownFieldsProxy
 }
 
 type EDBFileInfo struct {
@@ -2179,6 +2297,8 @@ type EDBFileInfo struct {
 	GUID                   string `json:"Guid"`
 	ServerName             string
 	CircularLoggingEnabled bool
+
+	easyjson.UnknownFieldsProxy
 }
 
 type EmailOptions struct {
@@ -2196,6 +2316,8 @@ type EmailOptions struct {
 	// Override the HELO/EHLO hostname for SMTP or MX Direct modes. If blank, uses system default
 	// HELO/EHLO hostname.
 	SMTPCustomEhlo string `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type EmailReportConfig struct {
@@ -2206,6 +2328,8 @@ type EmailReportConfig struct {
 	// Used to the determine the time bounds of a report
 	TimeSpan TimeSpan `json:",omitempty"`
 	Filter   SearchClause
+
+	easyjson.UnknownFieldsProxy
 }
 
 type EmailReportGeneratedPreview struct {
@@ -2217,6 +2341,8 @@ type EmailReportGeneratedPreview struct {
 	EmailSubject       string
 	EmailBodyHTML      string
 	EmailBodyPlaintext string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type EmailReportingOption struct {
@@ -2226,6 +2352,8 @@ type EmailReportingOption struct {
 	// The timezone in IANA format (e.g. "Pacific/Auckland" or the DEFAULT_TIMEZONE constant)
 	LocalTimezone string
 	Recipients    []string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type ExternalAuthenticationSource struct {
@@ -2256,11 +2384,15 @@ type ExternalAuthenticationSource struct {
 	// Impossible Cloud IAM API (Storage Template / Constellation)
 	ImpUser            ImpossibleCloudIAMTemplateSettings `json:",omitempty"`
 	NewUserPermissions AdminUserPermissions
+
+	easyjson.UnknownFieldsProxy
 }
 
 type ExternalAuthenticationSourceDisplay struct {
 	DisplayName   string
 	LoginStartURL string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type ExternalAuthenticationSourceResponse struct {
@@ -2268,6 +2400,8 @@ type ExternalAuthenticationSourceResponse struct {
 	Message string
 	ID      string
 	Source  ExternalAuthenticationSource
+
+	easyjson.UnknownFieldsProxy
 }
 
 type ExternalLDAPAuthenticationSourceServer struct {
@@ -2276,6 +2410,8 @@ type ExternalLDAPAuthenticationSourceServer struct {
 	// One of the LDAPSECURITYMETHOD_ constants (e.g. "plain" / "ldaps" / "starttls")
 	SecurityMethod   LDAPSecurityMethod
 	AcceptInvalidSSL bool
+
+	easyjson.UnknownFieldsProxy
 }
 
 type ExternalLDAPAuthenticationSourceSettings struct {
@@ -2289,6 +2425,8 @@ type ExternalLDAPAuthenticationSourceSettings struct {
 	BindPassword     string
 	SearchDN         string
 	SearchFilter     string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type ExtraFileExclusion struct {
@@ -2299,6 +2437,8 @@ type ExtraFileExclusion struct {
 	Regex bool
 	// Either OS_ANY or one of the OS_ONLY constants
 	RestrictOS ExtraFileExclusionOSRestriction
+
+	easyjson.UnknownFieldsProxy
 }
 
 type FTPDestinationLocation struct {
@@ -2316,6 +2456,8 @@ type FTPDestinationLocation struct {
 	// If set to zero, uses a system default value that is not unlimited.
 	FTPMaxConnections   int
 	FTPAcceptInvalidSSL bool
+
+	easyjson.UnknownFieldsProxy
 }
 
 // FileOption defines the configuration for Comet Server to log live events to a file. See the SEVT_
@@ -2335,6 +2477,8 @@ type FileOption struct {
 	// Limit in days to keep log files when PruningEnabled is set to true. If not set or 0, uses
 	// server's PruneLogsAfterDays
 	PruningLimit int `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type GetGroupPolicyResponse struct {
@@ -2343,6 +2487,8 @@ type GetGroupPolicyResponse struct {
 	Message    string
 	Policy     GroupPolicy
 	PolicyHash string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type GetProfileAndHashResponseMessage struct {
@@ -2354,6 +2500,8 @@ type GetProfileAndHashResponseMessage struct {
 	// happened concurrently. This allows you to retry the request.
 	ProfileHash string
 	Profile     UserProfileConfig
+
+	easyjson.UnknownFieldsProxy
 }
 
 type GetProfileHashResponseMessage struct {
@@ -2361,20 +2509,28 @@ type GetProfileHashResponseMessage struct {
 	Status      int
 	Message     string
 	ProfileHash string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type GetUserGroupResponse struct {
 	UserGroup     UserGroup
 	UserGroupHash string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type GetUserGroupWithUsersResponse struct {
 	UserGroup UserGroup
 	Users     map[string]UserProfileConfig
+
+	easyjson.UnknownFieldsProxy
 }
 
 type GlobalOverrideOptions struct {
 	RandomDelaySecs uint64 `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type GroupPolicy struct {
@@ -2388,6 +2544,8 @@ type GroupPolicy struct {
 	CreatedDate int64
 	// Unix timestamp in seconds. May be zero for Policies created prior to Comet 23.3.3.
 	ModifiedDate int64
+
+	easyjson.UnknownFieldsProxy
 }
 
 type HTTPConnectorOptions struct {
@@ -2398,16 +2556,22 @@ type HTTPConnectorOptions struct {
 	AutoSSLDomains                  string `json:",omitempty"`
 	SSLPfxPath                      string `json:",omitempty"`
 	SSLPfxPassword                  string `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type HourSchedConfig struct {
 	Hour    uint64
 	Minutes uint64
+
+	easyjson.UnknownFieldsProxy
 }
 
 type HyperVMachineInfo struct {
 	ID          string
 	DisplayName string `json:"Name"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 // This struct is available in Comet 24.3.1 and later.
@@ -2428,6 +2592,8 @@ type ImpossibleCloudIAMTemplateSettings struct {
 	// When configuring a Storage Template from the Comet Server web interface, this field is set
 	// automatically for Storage Templates using Object Lock.
 	RemoveDeleted bool
+
+	easyjson.UnknownFieldsProxy
 }
 
 // This struct is available in Comet 24.3.1 and later.
@@ -2447,6 +2613,8 @@ type ImpossibleCloudPartnerTemplateSettings struct {
 	// When configuring a Storage Template from the Comet Server web interface, this field is set
 	// automatically for Storage Templates using Object Lock.
 	RemoveDeleted bool
+
+	easyjson.UnknownFieldsProxy
 }
 
 type InstallCreds struct {
@@ -2455,6 +2623,8 @@ type InstallCreds struct {
 	TOTPCode  string
 	Server    string
 	AutoLogin bool
+
+	easyjson.UnknownFieldsProxy
 }
 
 type InstallToken struct {
@@ -2469,6 +2639,8 @@ type InstallToken struct {
 	Used bool
 	// Unix timestamp, in seconds.
 	ExpireTime int64
+
+	easyjson.UnknownFieldsProxy
 }
 
 type InstallTokenResponse struct {
@@ -2476,6 +2648,8 @@ type InstallTokenResponse struct {
 	Status       int
 	Message      string
 	InstallToken InstallToken
+
+	easyjson.UnknownFieldsProxy
 }
 
 // JobEntry is a single entry within a job report.
@@ -2485,16 +2659,22 @@ type JobEntry struct {
 	// One of the SEVERITY_ constants.
 	Severity Severity
 	Message  string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type LicenseLimits struct {
 	DeviceCount  int            `json:"deviceCount,omitempty"`
 	BoosterCount map[string]int `json:"boosterCount,omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type LicenseOptions struct {
 	Email        string `json:",omitempty"`
 	SerialNumber string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type LiveUserConnection struct {
@@ -2518,6 +2698,8 @@ type LiveUserConnection struct {
 	// The current state of the "Allow administrator to view my files" client-side option. If this
 	// option is refused, some live-connected actions will be refused by the device.
 	AllowsFilenames bool
+
+	easyjson.UnknownFieldsProxy
 }
 
 type LocalDestinationLocation struct {
@@ -2530,10 +2712,14 @@ type LocalDestinationLocation struct {
 	// One of the PASSWORD_FORMAT_ constants. It controls the hash format of the
 	// LocalcopyWinSMBPassword field.
 	LocalcopyWinSMBPasswordFormat uint64
+
+	easyjson.UnknownFieldsProxy
 }
 
 type LocalStorageDirectory struct {
 	Path string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type LoginProtectionOptions struct {
@@ -2545,6 +2731,8 @@ type LoginProtectionOptions struct {
 	// The duration to block requests, in seconds. If the feature is enabled, should be at least 1
 	// second.
 	CooldownSeconds int64
+
+	easyjson.UnknownFieldsProxy
 }
 
 type MSSQLConnection struct {
@@ -2557,6 +2745,8 @@ type MSSQLConnection struct {
 	InstanceName string
 	// One of the MSSQL_METHOD_ constants, to control using x86_32 or x86_64 OLEDB drivers
 	Method string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type MSSQLLoginArgs struct {
@@ -2568,6 +2758,8 @@ type MSSQLLoginArgs struct {
 	// If this MSSQLLoginArgs structure is used for a restore job (RestoreJobAdvancedOptions) using
 	// RESTORETYPE_MSSQL, then, this field controls the RECOVERY / NO RECOVERY option state.
 	RestoreNoRecovery bool
+
+	easyjson.UnknownFieldsProxy
 }
 
 type MacOSCodeSignProperties struct {
@@ -2593,6 +2785,8 @@ type MacOSCodeSignProperties struct {
 	NotaryAPIIssuerID     string
 	NotaryAPIKeyID        string
 	NotaryAPIKeyFile      string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type MongoDBConnection struct {
@@ -2618,6 +2812,8 @@ type MongoDBConnection struct {
 	AllowInvalidHostname    bool
 	UseSSH                  bool
 	SSHConnection           SSHConnection `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type MySQLConnection struct {
@@ -2632,11 +2828,15 @@ type MySQLConnection struct {
 	TLSCustomServerCAPath  string
 	TLSCustomClientCrtPath string
 	TLSCustomClientKeyPath string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type NewBucketDetail struct {
 	NewBucketID  string
 	NewBucketKey string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type NewsEntry struct {
@@ -2644,6 +2844,8 @@ type NewsEntry struct {
 	// Unix timestamp, in seconds.
 	DateTime    int64
 	TextContent string
+
+	easyjson.UnknownFieldsProxy
 }
 
 // OSInfo represents the common set of version information between all operating systems
@@ -2660,6 +2862,8 @@ type OSInfo struct {
 	// The GOARCH value
 	// This field is available in Comet 23.6.0 and later.
 	Arch string `json:"arch,omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type ObjectLockStorageTemplateSettings struct {
@@ -2674,6 +2878,8 @@ type ObjectLockStorageTemplateSettings struct {
 	// When configuring a Storage Template from the Comet Server web interface, this field is set
 	// automatically for Storage Templates using Object Lock.
 	RemoveDeleted bool
+
+	easyjson.UnknownFieldsProxy
 }
 
 type Office365Connection struct {
@@ -2685,6 +2891,8 @@ type Office365Connection struct {
 	LogLevel             string
 	MailboxUniqueMembers []string
 	SiteUniqueMembers    []string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type Office365Credential struct {
@@ -2693,6 +2901,8 @@ type Office365Credential struct {
 	Secret   string
 	AppCert  string
 	Region   string
+
+	easyjson.UnknownFieldsProxy
 }
 
 // Office365CustomSetting is used in the EngineProps for an Office 365 Protected Item (see
@@ -2705,6 +2915,8 @@ type Office365CustomSetting struct {
 	MailboxUserIDs  []string
 	MailboxGroupIDs []string
 	SiteIDs         []string
+
+	easyjson.UnknownFieldsProxy
 }
 
 // Office365CustomSettingV2 is used in the EngineProps for an Office 365 Protected Item (see
@@ -2722,6 +2934,8 @@ type Office365CustomSettingV2 struct {
 	// Value is a bitset of the SERVICE_ constants, to select which services to back up for this
 	// member.
 	MemberBackupOptions map[string]uint `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type Office365MixedVirtualAccount struct {
@@ -2741,6 +2955,8 @@ type Office365MixedVirtualAccount struct {
 	ServiceOptions       uint     `json:",omitempty"`
 	MemberServiceOptions uint     `json:",omitempty"`
 	HasLicense           bool     `json:"hasLicense,omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type Office365ObjectInfo struct {
@@ -2750,11 +2966,15 @@ type Office365ObjectInfo struct {
 	// May be an email address or a SharePoint site URL
 	Value   string
 	Members []string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type OidcClaim struct {
 	Name  string
 	Value string `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type OidcConfig struct {
@@ -2770,6 +2990,8 @@ type OidcConfig struct {
 	GenericOP_DiscoveryDocumentURL string      `json:"DiscoveryDocumentURL,omitempty"`
 	AzureADV2OP_TenantID           string      `json:"AzureTenantID,omitempty"`
 	GoogleOP_HostedDomain          string      `json:"GoogleHostedDomain,omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type Organization struct {
@@ -2785,10 +3007,14 @@ type Organization struct {
 	RemoteStorage       []RemoteStorageOption
 	SoftwareBuildRole   SoftwareBuildRoleOptions
 	WebhookOptions      map[string]WebhookOption
+
+	easyjson.UnknownFieldsProxy
 }
 
 type OrganizationLoginURLResponse struct {
 	LoginURL string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type OrganizationResponse struct {
@@ -2796,6 +3022,8 @@ type OrganizationResponse struct {
 	Message      string
 	ID           string
 	Organization Organization
+
+	easyjson.UnknownFieldsProxy
 }
 
 type PSAConfig struct {
@@ -2810,12 +3038,16 @@ type PSAConfig struct {
 	// The URL or subdomain for outbound PSA requests
 	URL       string
 	GroupedBy PSAGroupedBy
+
+	easyjson.UnknownFieldsProxy
 }
 
 type PSAGroupedBy struct {
 	Users       bool
 	Tenants     bool
 	AccountName bool
+
+	easyjson.UnknownFieldsProxy
 }
 
 type Partition struct {
@@ -2835,6 +3067,8 @@ type Partition struct {
 	UsedSize                  int64
 	Flags                     int64
 	BytesPerFilesystemCluster int64
+
+	easyjson.UnknownFieldsProxy
 }
 
 type PrivateBrandingProperties struct {
@@ -2870,11 +3104,15 @@ type PrivateBrandingProperties struct {
 	WindowsCodeSignAzureAppSecret       string
 	WindowsCodeSignAzureTenantID        string
 	MacOSCodeSign                       MacOSCodeSignProperties
+
+	easyjson.UnknownFieldsProxy
 }
 
 type ProtectedItemEngineTypePolicy struct {
 	ShouldRestrictEngineTypeList    bool
 	AllowedEngineTypeWhenRestricted []string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type PublicBrandingProperties struct {
@@ -2886,21 +3124,29 @@ type PublicBrandingProperties struct {
 	TileBackgroundColor   string
 	AccountRegisterURL    string
 	HideBackgroundLogo    bool
+
+	easyjson.UnknownFieldsProxy
 }
 
 type RatelimitOptions struct {
 	Rules []RatelimitRule `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type RatelimitRule struct {
 	MatchRegex     string
 	BytesPerSecond uint64
+
+	easyjson.UnknownFieldsProxy
 }
 
 type RegisterOfficeApplicationBeginResponse struct {
 	Continuation    string
 	VerificationURL string
 	UserCode        string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type RegisterOfficeApplicationCheckResponse struct {
@@ -2908,6 +3154,8 @@ type RegisterOfficeApplicationCheckResponse struct {
 	Completed    bool
 	Error        string
 	Result       Office365Credential `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type RegistrationLobbyConnection struct {
@@ -2920,6 +3168,8 @@ type RegistrationLobbyConnection struct {
 	DeviceTimeZone          string `json:",omitempty"`
 	IPAddress               string `json:",omitempty"`
 	ConnectionTime          int64
+
+	easyjson.UnknownFieldsProxy
 }
 
 type RemoteServerAddress struct {
@@ -2949,6 +3199,8 @@ type RemoteServerAddress struct {
 	ImpPartner ImpossibleCloudPartnerTemplateSettings `json:",omitempty"`
 	// Impossible Cloud IAM API (Storage Template / Constellation)
 	ImpUser ImpossibleCloudIAMTemplateSettings `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type RemoteStorageOption struct {
@@ -2983,6 +3235,8 @@ type RemoteStorageOption struct {
 	RebrandStorage      bool
 	ID                  string
 	Default             bool
+
+	easyjson.UnknownFieldsProxy
 }
 
 type ReplicaServer struct {
@@ -3013,6 +3267,8 @@ type ReplicaServer struct {
 	// Impossible Cloud IAM API (Storage Template / Constellation)
 	ImpUser                 ImpossibleCloudIAMTemplateSettings `json:",omitempty"`
 	ReplicaDeletionStrategy ReplicaDeletionStrategy            `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type ReplicatorStateAPIResponse struct {
@@ -3028,6 +3284,8 @@ type ReplicatorStateAPIResponse struct {
 	CurrentTime          int64
 	ItemsReplicated      int64
 	BytesReplicated      int64
+
+	easyjson.UnknownFieldsProxy
 }
 
 type RequestStorageVaultResponseMessage struct {
@@ -3035,6 +3293,8 @@ type RequestStorageVaultResponseMessage struct {
 	Status        int
 	Message       string
 	DestinationID string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type RestoreJobAdvancedOptions struct {
@@ -3089,12 +3349,16 @@ type RestoreJobAdvancedOptions struct {
 	SslKeyFile string
 	// For RESTORETYPE_MSSQL.
 	MsSqlConnection MSSQLLoginArgs `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type RetentionPolicy struct {
 	// One of the RETENTIONMODE_ constants
 	Mode   RetentionMode
 	Ranges []RetentionRange
+
+	easyjson.UnknownFieldsProxy
 }
 
 // The Type field controls which fields of this data type are used. For additional information, see
@@ -3115,6 +3379,8 @@ type RetentionRange struct {
 	// For months that do not have a day equal to the specified offset, no backup will be retained.
 	// For example, if the offset is set to 30, no backup will be kept for February.
 	MonthOffset int64
+
+	easyjson.UnknownFieldsProxy
 }
 
 type S3DestinationLocation struct {
@@ -3130,6 +3396,8 @@ type S3DestinationLocation struct {
 	S3RemoveDeleted  bool
 	S3ObjectLockMode uint8
 	S3ObjectLockDays int
+
+	easyjson.UnknownFieldsProxy
 }
 
 type S3GenericVirtualStorageRole struct {
@@ -3165,6 +3433,8 @@ type S3GenericVirtualStorageRole struct {
 	// Optional. Prefix to use for bucket paths.
 	// This field is available in Comet 24.6.3 and later.
 	Prefix string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type SFTPDestinationLocation struct {
@@ -3184,6 +3454,8 @@ type SFTPDestinationLocation struct {
 	SFTPCustomAuth_UseKnownHostsFile bool
 	// If SFTPCustomAuth_UseKnownHostFile is true, the path to the SSH known_hosts file.
 	SFTPCustomAuth_KnownHostsFile string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type SMBDestinationLocation struct {
@@ -3192,6 +3464,8 @@ type SMBDestinationLocation struct {
 	SMBDirectory string
 	SMBUsername  string
 	SMBPassword  string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type SSHConnection struct {
@@ -3209,6 +3483,8 @@ type SSHConnection struct {
 	SSHCustomAuth_UseKnownHostsFile bool
 	// If SSHCustomAuth_UseKnownHostsFile is true, the path to the SSH known_hosts file.
 	SSHCustomAuth_KnownHostsFile string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type ScheduleConfig struct {
@@ -3221,6 +3497,8 @@ type ScheduleConfig struct {
 	RestrictDays    bool
 	DaysSelect      DaysOfWeekConfig
 	RandomDelaySecs uint64 `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type SearchClause struct {
@@ -3245,6 +3523,8 @@ type SearchClause struct {
 	// If ClauseType is not SEARCHCLAUSE_RULE, the child rules will be applied according to the
 	// ClauseType (e.g. "and"/"or")
 	ClauseChildren []SearchClause `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 // SearchResultFileInfo describes a single result entry when searching for files within a Storage
@@ -3268,6 +3548,8 @@ type SearchResultFileInfo struct {
 	ChangeTime string `json:"ctime,omitempty"`
 	// Bytes
 	Size uint64 `json:"size,omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type SearchSnapshotsResponse struct {
@@ -3275,6 +3557,8 @@ type SearchSnapshotsResponse struct {
 	Status        int
 	Message       string
 	SnapshotFiles map[string][]SearchResultFileInfo
+
+	easyjson.UnknownFieldsProxy
 }
 
 type SelfBackupExportOptions struct {
@@ -3290,10 +3574,14 @@ type SelfBackupExportOptions struct {
 	IncludeServerLogs     bool
 	RestrictToSingleOrgID string `json:",omitempty"`
 	Index                 int
+
+	easyjson.UnknownFieldsProxy
 }
 
 type SelfBackupOptions struct {
 	Targets []SelfBackupTarget
+
+	easyjson.UnknownFieldsProxy
 }
 
 type SelfBackupStatistics struct {
@@ -3302,6 +3590,8 @@ type SelfBackupStatistics struct {
 	LastRunEnd      int64
 	LastRunSuccess  bool
 	LastRunSize     int64
+
+	easyjson.UnknownFieldsProxy
 }
 
 type SelfBackupTarget struct {
@@ -3321,6 +3611,8 @@ type SelfBackupTarget struct {
 	IncludeServerLogs     bool
 	RestrictToSingleOrgID string `json:",omitempty"`
 	Index                 int
+
+	easyjson.UnknownFieldsProxy
 }
 
 type ServerConfigOptions struct {
@@ -3360,14 +3652,20 @@ type ServerConfigOptions struct {
 	TrustXForwardedFor bool
 	WebhookOptions     map[string]WebhookOption
 	AuditFileOptions   map[string]FileOption
+
+	easyjson.UnknownFieldsProxy
 }
 
 type ServerConfigOptionsBrandingFragment struct {
 	Branding BrandingOptions
+
+	easyjson.UnknownFieldsProxy
 }
 
 type ServerConfigOptionsSoftwareBuildRoleFragment struct {
 	SoftwareBuildRole SoftwareBuildRoleOptions
+
+	easyjson.UnknownFieldsProxy
 }
 
 type ServerMetaBrandingProperties struct {
@@ -3391,6 +3689,8 @@ type ServerMetaBrandingProperties struct {
 	ExternalAuthenticationSources []ExternalAuthenticationSourceDisplay `json:",omitempty"`
 	// If true, this Comet Server currently has no admins or users.
 	ServerIsEmpty bool
+
+	easyjson.UnknownFieldsProxy
 }
 
 type ServerMetaVersionInfo struct {
@@ -3440,6 +3740,8 @@ type ServerMetaVersionInfo struct {
 	ScheduledEmailThreadLastWakeSentEmails         bool
 	// This field is available in Comet 21.3.2 and later.
 	SelfBackup []SelfBackupStatistics
+
+	easyjson.UnknownFieldsProxy
 }
 
 type SessionKeyRegeneratedResponse struct {
@@ -3450,12 +3752,16 @@ type SessionKeyRegeneratedResponse struct {
 	// e.g. "admin" or "user"
 	// This field is available in Comet 18.12.3 and later.
 	SessionType string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type SessionOptions struct {
 	// The number of seconds, after which an administrator should be automatically logged out of the
 	// Comet Server web interface. If zero, will be replaced with DEFAULT_SESSIONTIMEOUT.
 	ExpiredInSeconds uint64
+
+	easyjson.UnknownFieldsProxy
 }
 
 type SingleFieldSource struct {
@@ -3465,6 +3771,8 @@ type SingleFieldSource struct {
 	BoolVal   bool
 	IntVal    int64
 	StrVal    string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type SizeMeasurement struct {
@@ -3474,6 +3782,8 @@ type SizeMeasurement struct {
 	MeasureStarted int64
 	// Unix timestamp in seconds
 	MeasureCompleted int64
+
+	easyjson.UnknownFieldsProxy
 }
 
 type SoftwareBuildRoleOptions struct {
@@ -3482,6 +3792,8 @@ type SoftwareBuildRoleOptions struct {
 	// 0 will default to CPU core count - 2
 	// This field is available in Comet 24.3.8 and later.
 	MaxBuilders int
+
+	easyjson.UnknownFieldsProxy
 }
 
 type SoftwareUpdateNewsResponse struct {
@@ -3493,6 +3805,8 @@ type SoftwareUpdateNewsResponse struct {
 	DownloadsURL string `json:"downloads_url"`
 	// An array of recent news items written by Comet Backup staff. Entries are english plaintext.
 	WhatsNew []string `json:"updates_info"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 // SourceBasicInfo is the minimal amount of information one device knows about another device's
@@ -3505,6 +3819,8 @@ type SourceBasicInfo struct {
 	// Bytes
 	Size                         int64
 	OverrideDestinationRetention map[string]RetentionPolicy `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type SourceConfig struct {
@@ -3581,6 +3897,8 @@ type SourceConfig struct {
 	// for specific Storage Vaults by putting their destination ID as a key here.
 	OverrideDestinationRetention map[string]RetentionPolicy `json:",omitempty"`
 	Statistics                   SourceStatistics           `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 // SourceIncludePattern is used for pattern inclusions for File and Folder Protected Items
@@ -3591,12 +3909,16 @@ type SourceIncludePattern struct {
 	TopDirectory string
 	// The pattern (glob or regex format) to match
 	Value string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type SourceStatistics struct {
 	LastStartTime           int64
 	LastBackupJob           BackupJobDetail
 	LastSuccessfulBackupJob BackupJobDetail
+
+	easyjson.UnknownFieldsProxy
 }
 
 type SpannedDestinationLocation struct {
@@ -3613,10 +3935,14 @@ type SpannedDestinationLocation struct {
 	//
 	// The default option is false.
 	SpanUseStaticSlots bool
+
+	easyjson.UnknownFieldsProxy
 }
 
 type SpannedStorageExtraInfo struct {
 	Targets []StorageFreeSpaceInfo
+
+	easyjson.UnknownFieldsProxy
 }
 
 type StatResult struct {
@@ -3625,6 +3951,8 @@ type StatResult struct {
 	Devices        int64
 	Boosters       int64
 	NetworkDevices int64
+
+	easyjson.UnknownFieldsProxy
 }
 
 type StorageFreeSpaceInfo struct {
@@ -3633,6 +3961,8 @@ type StorageFreeSpaceInfo struct {
 	AvailableBytes uint64
 	Spanned        SpannedStorageExtraInfo `json:",omitempty"`
 	B2             B2StorageExtraInfo      `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type StorageRoleOptions struct {
@@ -3641,11 +3971,15 @@ type StorageRoleOptions struct {
 	// Deprecated: This member has been deprecated since Comet version 17.3.5
 	LocalStorage_Legacy []LocalStorageDirectory `json:"LocalStorage,omitempty"`
 	ReplicateTo         []ReplicaServer
+
+	easyjson.UnknownFieldsProxy
 }
 
 type StorageVaultProviderPolicy struct {
 	ShouldRestrictProviderList     bool
 	AllowedProvidersWhenRestricted []uint64
+
+	easyjson.UnknownFieldsProxy
 }
 
 type StoredObject struct {
@@ -3674,6 +4008,8 @@ type StoredObject struct {
 	RecursiveFiles      uint64 `json:"f,omitempty"`
 	RecursiveBytes      uint64 `json:"b,omitempty"`
 	RecursiveFolders    uint64 `json:"d,omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type StorjDestinationLocation struct {
@@ -3682,6 +4018,8 @@ type StorjDestinationLocation struct {
 	Passphrase        string
 	StorjBucket       string
 	StorjBucketPrefix string `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type StorjVirtualStorageRoleSetting struct {
@@ -3689,6 +4027,8 @@ type StorjVirtualStorageRoleSetting struct {
 	APIKey           string
 	Passphrase       string
 	Bucket           string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type StreamableEvent struct {
@@ -3699,6 +4039,8 @@ type StreamableEvent struct {
 	Timestamp           int64       `json:",omitempty"`
 	TypeString          string      `json:",omitempty"`
 	Data                interface{} `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type SwiftDestinationLocation struct {
@@ -3722,6 +4064,8 @@ type SwiftDestinationLocation struct {
 	Prefix                 string `json:",omitempty"`
 	Container              string `json:",omitempty"`
 	DefaultContainerPolicy string `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type TestResponse struct {
@@ -3729,6 +4073,8 @@ type TestResponse struct {
 	Status  int
 	Message string
 	Exists  bool
+
+	easyjson.UnknownFieldsProxy
 }
 
 type TimeSpan struct {
@@ -3736,6 +4082,8 @@ type TimeSpan struct {
 	FrequencyType uint64
 	// Used for Periodic and Once Only
 	Seconds int64
+
+	easyjson.UnknownFieldsProxy
 }
 
 type TotpRegeneratedResponse struct {
@@ -3748,12 +4096,16 @@ type TotpRegeneratedResponse struct {
 	URL string
 	// This field is available in Comet 20.3.2 and later.
 	ProfileHash string
+
+	easyjson.UnknownFieldsProxy
 }
 
 // Deprecated: This struct has been deprecated since Comet version 21.12.0
 type U2FRegisterRequest struct {
 	Challenge string
 	Version   string
+
+	easyjson.UnknownFieldsProxy
 }
 
 // Deprecated: This struct has been deprecated since Comet version 21.12.0
@@ -3761,6 +4113,8 @@ type U2FRegisteredKey struct {
 	AppID     string
 	KeyHandle string
 	Version   string
+
+	easyjson.UnknownFieldsProxy
 }
 
 // Deprecated: This struct has been deprecated since Comet version 21.12.0
@@ -3772,6 +4126,8 @@ type U2FRegistrationChallengeResponse struct {
 	AppID            string
 	RegisteredKeys   []U2FRegisteredKey
 	RegisterRequests []U2FRegisterRequest
+
+	easyjson.UnknownFieldsProxy
 }
 
 // Deprecated: This struct has been deprecated since Comet version 21.12.0
@@ -3780,6 +4136,8 @@ type U2FSignRequest struct {
 	ChallengeData  string
 	AppID          string
 	RegisteredKeys []U2FRegisteredKey
+
+	easyjson.UnknownFieldsProxy
 }
 
 // Deprecated: This struct has been deprecated since Comet version 21.12.0
@@ -3788,6 +4146,8 @@ type U2FSignResponse struct {
 	KeyHandle   string
 	Signature   string
 	ClientData  string
+
+	easyjson.UnknownFieldsProxy
 }
 
 // UninstallConfig allows configuring whether the target device will be uninstalled or not.
@@ -3797,11 +4157,15 @@ type UninstallConfig struct {
 	UninstallFlag bool
 	// This controls the "Remove all user settings from this device" option.
 	RemoveConfigFile bool
+
+	easyjson.UnknownFieldsProxy
 }
 
 type UpdateCampaignDeviceStatus struct {
 	// One of the UPDATESTATUS_ constants
 	Status UpdateStatus
+
+	easyjson.UnknownFieldsProxy
 }
 
 // This data structure describes which devices should receive a remote software upgrade. Both the
@@ -3820,6 +4184,8 @@ type UpdateCampaignOptions struct {
 	// software update.
 	ApplyDeviceFilter bool
 	DeviceFilter      SearchClause
+
+	easyjson.UnknownFieldsProxy
 }
 
 type UpdateCampaignProperties struct {
@@ -3837,6 +4203,8 @@ type UpdateCampaignProperties struct {
 	// Unix timestamp, in seconds
 	StartTime     int64
 	TargetVersion string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type UpdateCampaignStatus struct {
@@ -3855,6 +4223,8 @@ type UpdateCampaignStatus struct {
 	StartTime     int64
 	TargetVersion string
 	Devices       []UpdateCampaignStatusDeviceEntry
+
+	easyjson.UnknownFieldsProxy
 }
 
 type UpdateCampaignStatusDeviceEntry struct {
@@ -3862,10 +4232,14 @@ type UpdateCampaignStatusDeviceEntry struct {
 	DeviceID string
 	// One of the UPDATESTATUS_ constants
 	Status UpdateStatus
+
+	easyjson.UnknownFieldsProxy
 }
 
 type UserCustomEmailSettings struct {
 	Reports []EmailReportConfig
+
+	easyjson.UnknownFieldsProxy
 }
 
 type UserGroup struct {
@@ -3873,6 +4247,8 @@ type UserGroup struct {
 	CreatedAt      int64
 	OrganizationID string
 	Name           string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type UserOnServer struct {
@@ -3880,6 +4256,8 @@ type UserOnServer struct {
 	// ConstellationRoleOptions->Servers.
 	ServerID int
 	Username string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type UserPolicy struct {
@@ -3922,6 +4300,8 @@ type UserPolicy struct {
 	DefaultSourcesWithOSRestriction  map[string]DefaultSourceWithOSRestriction
 	DefaultBackupRules               map[string]BackupRuleConfig
 	RandomDelaySecs                  uint64 `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 // This is the main data structure for a user's profile.
@@ -4022,15 +4402,21 @@ type UserProfileConfig struct {
 	// Additional server-wide settings that are enforced for this user profile
 	ServerConfig            UserServerConfig `json:",omitempty"`
 	AutoStorageTemplateGUID string
+
+	easyjson.UnknownFieldsProxy
 }
 
 // Deprecated: This struct has been deprecated since Comet version 23.3.5
 type UserProfileFragment struct {
 	Username string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type UserServerConfig struct {
 	RandomDelaySecs uint64 `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type VMDKSnapshotViewOptions struct {
@@ -4042,6 +4428,8 @@ type VMDKSnapshotViewOptions struct {
 	// Browse objects' paths inside vmdk file
 	ListPath      string
 	PartitionName string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type VMwareConnection struct {
@@ -4050,10 +4438,14 @@ type VMwareConnection struct {
 	// Deprecated: This member has been deprecated since Comet version 23.9.11
 	SSH     SSHConnection
 	VSphere VSphereConnection
+
+	easyjson.UnknownFieldsProxy
 }
 
 type VMwareMachineInfo struct {
 	Name string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type VSSComponent struct {
@@ -4062,11 +4454,15 @@ type VSSComponent struct {
 	// "VSS_CT_DATABASE" or "VSS_CT_FILEGROUP"
 	CType      string
 	Selectable bool
+
+	easyjson.UnknownFieldsProxy
 }
 
 type VSSWriterInfo struct {
 	DisplayName string
 	Components  []VSSComponent
+
+	easyjson.UnknownFieldsProxy
 }
 
 type VSphereConnection struct {
@@ -4076,6 +4472,8 @@ type VSphereConnection struct {
 	Username                string
 	Password                string
 	ThumbPrint              string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type VaultSnapshot struct {
@@ -4086,6 +4484,8 @@ type VaultSnapshot struct {
 	CreateTime int64
 	// This field is available in Comet 20.12.4 and later.
 	HasOriginalPathInfo bool
+
+	easyjson.UnknownFieldsProxy
 }
 
 // This is an alias type for AmazonAWSVirtualStorageRoleSettings.
@@ -4111,6 +4511,8 @@ type WasabiVirtualStorageRoleSettings struct {
 	// When configuring a Storage Template from the Comet Server web interface, this field is set
 	// automatically for Storage Templates using Object Lock.
 	RemoveDeleted bool
+
+	easyjson.UnknownFieldsProxy
 }
 
 type WebAuthnAuthenticatorSelection struct {
@@ -4118,6 +4520,8 @@ type WebAuthnAuthenticatorSelection struct {
 	RequireResidentKey      bool   `json:"requireResidentKey,omitempty"`
 	ResidentKey             string `json:"residentKey,omitempty"`
 	UserVerification        string `json:"userVerification,omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type WebAuthnCredential struct {
@@ -4128,10 +4532,14 @@ type WebAuthnCredential struct {
 	AAGUID       []byte
 	SignCount    uint32
 	CloneWarning bool
+
+	easyjson.UnknownFieldsProxy
 }
 
 type WebAuthnCredentialAssertion struct {
 	Response WebAuthnPublicKeyCredentialRequestOptions `json:"publicKey"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type WebAuthnCredentialDescriptor struct {
@@ -4139,16 +4547,22 @@ type WebAuthnCredentialDescriptor struct {
 	// When this field is expressed as a Go WebAuthnCredentialDescriptor struct, this field may contain binary data. When this field is expressed as JSON, the field must be expressed as base64. The encoding/json marshaller will automatically perform base64 conversion as necessary.
 	CredentialID []byte   `json:"id"`
 	Transport    []string `json:"transports,omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type WebAuthnCredentialEntity struct {
 	Name string `json:"name"`
 	Icon string `json:"icon,omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type WebAuthnCredentialParameter struct {
 	Type      string `json:"type"`
 	Algorithm int    `json:"alg"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type WebAuthnPublicKeyCredentialCreationOptions struct {
@@ -4162,6 +4576,8 @@ type WebAuthnPublicKeyCredentialCreationOptions struct {
 	CredentialExcludeList  []WebAuthnCredentialDescriptor   `json:"excludeCredentials,omitempty"`
 	Extensions             WebAuthnAuthenticationExtensions `json:"extensions,omitempty"`
 	Attestation            string                           `json:"attestation,omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type WebAuthnPublicKeyCredentialRequestOptions struct {
@@ -4172,6 +4588,8 @@ type WebAuthnPublicKeyCredentialRequestOptions struct {
 	AllowedCredentials []WebAuthnCredentialDescriptor   `json:"allowCredentials,omitempty"`
 	UserVerification   string                           `json:"userVerification,omitempty"`
 	Extensions         WebAuthnAuthenticationExtensions `json:"extensions,omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type WebAuthnRegistrationChallengeResponse struct {
@@ -4180,22 +4598,30 @@ type WebAuthnRegistrationChallengeResponse struct {
 	Message                   string
 	ChallengeID               string
 	CredentialCreationOptions WebAuthnPublicKeyCredentialCreationOptions
+
+	easyjson.UnknownFieldsProxy
 }
 
 type WebAuthnRelyingPartyEntity struct {
 	Name string `json:"name"`
 	Icon string `json:"icon,omitempty"`
 	ID   string `json:"id"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type WebAuthnSignRequest struct {
 	ChallengeID string
 	Assertion   WebAuthnCredentialAssertion
+
+	easyjson.UnknownFieldsProxy
 }
 
 type WebAuthnSignResponse struct {
 	ChallengeID    string
 	CredentialJSON string
+
+	easyjson.UnknownFieldsProxy
 }
 
 type WebAuthnUserEntity struct {
@@ -4204,6 +4630,8 @@ type WebAuthnUserEntity struct {
 	DisplayName string `json:"displayName,omitempty"`
 	// When this field is expressed as a Go WebAuthnUserEntity struct, this field may contain binary data. When this field is expressed as JSON, the field must be expressed as base64. The encoding/json marshaller will automatically perform base64 conversion as necessary.
 	ID []byte `json:"id"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 // This struct is available in Comet 23.6.9 and later.
@@ -4216,6 +4644,8 @@ type WebDavDestinationLocation struct {
 	AccessKey string `json:",omitempty"`
 	// The target directory path within the WebDAV server
 	Path string `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
 }
 
 type WebInterfaceBrandingProperties struct {
@@ -4228,6 +4658,8 @@ type WebInterfaceBrandingProperties struct {
 	AccentColor       string
 	Favicon           string
 	HideNewsArea      bool
+
+	easyjson.UnknownFieldsProxy
 }
 
 // WebhookOption defines the configuration of a webhook target. The Comet Server will send a live
@@ -4245,6 +4677,8 @@ type WebhookOption struct {
 	// Configure a subset of allowed event types (see SEVT_ constants). If the array is empty, all
 	// events will be sent
 	WhiteListedEventTypes []StreamableEventType
+
+	easyjson.UnknownFieldsProxy
 }
 
 type WinSMBAuth struct {
@@ -4258,6 +4692,8 @@ type WinSMBAuth struct {
 	// The hash algorithm that is used for the Password field. It is one of the PASSWORD_FORMAT_
 	// constants.
 	PasswordFormat uint64
+
+	easyjson.UnknownFieldsProxy
 }
 
 type WindowsCodeSignProperties struct {
@@ -4282,6 +4718,8 @@ type WindowsCodeSignProperties struct {
 	WindowsCodeSignAzureAppSecretFormat uint64
 	WindowsCodeSignAzureAppSecret       string
 	WindowsCodeSignAzureTenantID        string
+
+	easyjson.UnknownFieldsProxy
 }
 
 //
@@ -4289,6 +4727,8 @@ type WindowsCodeSignProperties struct {
 //
 
 // CometAPIClient is the base struct for all request methods
+//
+//easyjson:skip
 type CometAPIClient struct {
 	// ServerURL is used to specify server which api calls will be made to.
 	ServerURL string
@@ -4334,6 +4774,7 @@ func NewCometAPIClient(serverURL, username, password string) (*CometAPIClient, e
 	}, nil
 }
 
+//easyjson:skip
 type ErrCometAPIResponseMessage struct {
 	Carm CometAPIResponseMessage
 }
@@ -4344,6 +4785,7 @@ func (ecarm ErrCometAPIResponseMessage) Error() string {
 
 var _ error = ErrCometAPIResponseMessage{} // interface assertion
 
+//easyjson:skip
 type ErrHttpCode struct {
 	Status     string
 	StatusCode int
