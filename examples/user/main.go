@@ -7,13 +7,14 @@ package main
 */
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
 
-	cometsdk "github.com/CometBackup/comet-go-sdk"
+	cometsdk "github.com/CometBackup/comet-go-sdk/v2"
 )
 
 type Client struct {
@@ -31,12 +32,12 @@ func NewClient(url, username, password string) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) GetUserProfile() (*cometsdk.GetProfileAndHashResponseMessage, error) {
-	return c.client.UserWebGetUserProfileAndHash()
+func (c *Client) GetUserProfile(ctx context.Context) (*cometsdk.GetProfileAndHashResponseMessage, error) {
+	return c.client.UserWebGetUserProfileAndHash(ctx)
 }
 
-func (c *Client) SetUserProfile(config cometsdk.UserProfileConfig, hash string) error {
-	_, err := c.client.UserWebSetProfileHash(config, hash)
+func (c *Client) SetUserProfile(ctx context.Context, config cometsdk.UserProfileConfig, hash string) error {
+	_, err := c.client.UserWebSetProfileHash(ctx, config, hash)
 	return err
 }
 
@@ -59,13 +60,15 @@ func main() {
 		log.Fatal("Error: '--set' requires '--json' or '--file' to be set as well")
 	}
 
+	ctx := context.Background()
+
 	client, err := NewClient(*url, *username, *password)
 	if err != nil {
 		log.Fatal("Error creating client: ", err)
 	}
 
 	if *get {
-		message, err := client.GetUserProfile()
+		message, err := client.GetUserProfile(ctx)
 		if err != nil {
 			log.Fatal("Error calling UserWebGetUserProfileAndHash: ", err)
 		}
@@ -97,7 +100,7 @@ func main() {
 			log.Fatal("Error marshaling passed JSON to UserProfileConfig: ", err)
 		}
 
-		err = client.SetUserProfile(config, *hash)
+		err = client.SetUserProfile(ctx, config, *hash)
 		if err != nil {
 			log.Fatal("Error calling UserWebSetProfileHash: ", err)
 		}

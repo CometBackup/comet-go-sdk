@@ -8,6 +8,7 @@ package main
 */
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -15,8 +16,8 @@ import (
 	"sort"
 	"strings"
 
-	sdk "github.com/CometBackup/comet-go-sdk"
-	"github.com/CometBackup/comet-go-sdk/examples/util"
+	sdk "github.com/CometBackup/comet-go-sdk/v2"
+	"github.com/CometBackup/comet-go-sdk/v2/examples/util"
 )
 
 type Client struct {
@@ -34,12 +35,12 @@ func NewClient(url, username, password string) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) DownloadBrandedClient(platform int) ([]byte, error) {
-	return c.client.AdminBrandingGenerateClientByPlatform(platform, nil)
+func (c *Client) DownloadBrandedClient(ctx context.Context, platform int) ([]byte, error) {
+	return c.client.AdminBrandingGenerateClientByPlatform(ctx, platform, nil)
 }
 
-func (c *Client) FindPlatform(platform int) (*sdk.AvailableDownload, error) {
-	platforms, err := c.client.AdminBrandingAvailablePlatforms()
+func (c *Client) FindPlatform(ctx context.Context, platform int) (*sdk.AvailableDownload, error) {
+	platforms, err := c.client.AdminBrandingAvailablePlatforms(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -48,8 +49,8 @@ func (c *Client) FindPlatform(platform int) (*sdk.AvailableDownload, error) {
 	return &p, nil
 }
 
-func (c *Client) ListAndPrintPlatforms() error {
-	platforms, err := c.client.AdminBrandingAvailablePlatforms()
+func (c *Client) ListAndPrintPlatforms(ctx context.Context) error {
+	platforms, err := c.client.AdminBrandingAvailablePlatforms(ctx)
 	if err != nil {
 		return err
 	}
@@ -87,6 +88,9 @@ func main() {
 			log.Fatal("Error getting username and password: ", err)
 		}
 	}
+
+	ctx := context.Background()
+
 	client, err := NewClient(*url, *username, *password)
 	if err != nil {
 		log.Fatal("Error creating client: ", err)
@@ -101,19 +105,19 @@ func main() {
 	client.client.ReuseSessionKey = true
 
 	if *list {
-		err = client.ListAndPrintPlatforms()
+		err = client.ListAndPrintPlatforms(ctx)
 		if err != nil {
 			log.Fatal("Error listing branded platforms: ", err)
 		}
 	}
 
 	if *download != 0 {
-		data, err := client.DownloadBrandedClient(*download)
+		data, err := client.DownloadBrandedClient(ctx, *download)
 		if err != nil {
 			log.Fatal("Error downloading branded client (platform ", *download, ")")
 		}
 
-		platform, err := client.FindPlatform(*download)
+		platform, err := client.FindPlatform(ctx, *download)
 		if err != nil {
 			log.Fatal("Failed to find details about platform ", *download)
 		}
