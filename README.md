@@ -7,7 +7,7 @@ This project is a SDK and base client for the Comet Server API using Golang.
 
 ## Getting Started
 
-1. Import `"github.com/comet/comet-go-sdk/v2"` into your Go program
+1. Import `"github.com/CometBackup/comet-go-sdk/v2"` into your Go program
 2. Run `go mod tidy` to download it (or let your IDE do it for you)
 3. You're ready to go!
 
