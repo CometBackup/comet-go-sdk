@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 2025-01-22 v2.1.0
+
+- Based on Comet 24.12.3
+- Additional properties for BrandingOptions, BrandingProperties and ServerMetaBrandingProperties
+
 ## 2025-01-10 v2.0.0
 
 This version is a semver-MAJOR upgrade. To use this release, update your Go module import path from `"github.com/CometBackup/comet-go-sdk"` to `"github.com/CometBackup/comet-go-sdk/v2"`.
