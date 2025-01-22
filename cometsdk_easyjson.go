@@ -8383,6 +8383,12 @@ func easyjsonB7f3de24Decode69(in *jlexer.Lexer, out *ServerMetaBrandingPropertie
 			}
 		case "ServerIsEmpty":
 			out.ServerIsEmpty = bool(in.Bool())
+		case "CloudStorageName":
+			out.CloudStorageName = string(in.String())
+		case "AdminHidePreBuiltClientOption":
+			out.AdminHidePreBuiltClientOption = bool(in.Bool())
+		case "AdminHideBrandedCloudStorage":
+			out.AdminHideBrandedCloudStorage = bool(in.Bool())
 		default:
 			out.UnmarshalUnknown(in, key)
 		}
@@ -8470,6 +8476,21 @@ func easyjsonB7f3de24Encode69(out *jwriter.Writer, in ServerMetaBrandingProperti
 		const prefix string = ",\"ServerIsEmpty\":"
 		out.RawString(prefix)
 		out.Bool(bool(in.ServerIsEmpty))
+	}
+	{
+		const prefix string = ",\"CloudStorageName\":"
+		out.RawString(prefix)
+		out.String(string(in.CloudStorageName))
+	}
+	{
+		const prefix string = ",\"AdminHidePreBuiltClientOption\":"
+		out.RawString(prefix)
+		out.Bool(bool(in.AdminHidePreBuiltClientOption))
+	}
+	{
+		const prefix string = ",\"AdminHideBrandedCloudStorage\":"
+		out.RawString(prefix)
+		out.Bool(bool(in.AdminHideBrandedCloudStorage))
 	}
 	in.MarshalUnknowns(out, false)
 	out.RawByte('}')
@@ -12465,6 +12486,12 @@ func easyjsonB7f3de24Decode100(in *jlexer.Lexer, out *PublicBrandingProperties) 
 			out.AccountRegisterURL = string(in.String())
 		case "HideBackgroundLogo":
 			out.HideBackgroundLogo = bool(in.Bool())
+		case "CloudStorageName":
+			out.CloudStorageName = string(in.String())
+		case "AdminHidePreBuiltClientOption":
+			out.AdminHidePreBuiltClientOption = bool(in.Bool())
+		case "AdminHideBrandedCloudStorage":
+			out.AdminHideBrandedCloudStorage = bool(in.Bool())
 		default:
 			out.UnmarshalUnknown(in, key)
 		}
@@ -12518,6 +12545,21 @@ func easyjsonB7f3de24Encode100(out *jwriter.Writer, in PublicBrandingProperties)
 		const prefix string = ",\"HideBackgroundLogo\":"
 		out.RawString(prefix)
 		out.Bool(bool(in.HideBackgroundLogo))
+	}
+	{
+		const prefix string = ",\"CloudStorageName\":"
+		out.RawString(prefix)
+		out.String(string(in.CloudStorageName))
+	}
+	{
+		const prefix string = ",\"AdminHidePreBuiltClientOption\":"
+		out.RawString(prefix)
+		out.Bool(bool(in.AdminHidePreBuiltClientOption))
+	}
+	{
+		const prefix string = ",\"AdminHideBrandedCloudStorage\":"
+		out.RawString(prefix)
+		out.Bool(bool(in.AdminHideBrandedCloudStorage))
 	}
 	in.MarshalUnknowns(out, false)
 	out.RawByte('}')
@@ -24291,6 +24333,12 @@ func easyjsonB7f3de24Decode195(in *jlexer.Lexer, out *BrandingProperties) {
 			out.AccountRegisterURL = string(in.String())
 		case "HideBackgroundLogo":
 			out.HideBackgroundLogo = bool(in.Bool())
+		case "CloudStorageName":
+			out.CloudStorageName = string(in.String())
+		case "AdminHidePreBuiltClientOption":
+			out.AdminHidePreBuiltClientOption = bool(in.Bool())
+		case "AdminHideBrandedCloudStorage":
+			out.AdminHideBrandedCloudStorage = bool(in.Bool())
 		case "BuildMode":
 			out.BuildMode = ClientBrandingBuildMode(in.Int())
 		case "PathIcoFile":
@@ -24396,6 +24444,21 @@ func easyjsonB7f3de24Encode195(out *jwriter.Writer, in BrandingProperties) {
 		const prefix string = ",\"HideBackgroundLogo\":"
 		out.RawString(prefix)
 		out.Bool(bool(in.HideBackgroundLogo))
+	}
+	{
+		const prefix string = ",\"CloudStorageName\":"
+		out.RawString(prefix)
+		out.String(string(in.CloudStorageName))
+	}
+	{
+		const prefix string = ",\"AdminHidePreBuiltClientOption\":"
+		out.RawString(prefix)
+		out.Bool(bool(in.AdminHidePreBuiltClientOption))
+	}
+	{
+		const prefix string = ",\"AdminHideBrandedCloudStorage\":"
+		out.RawString(prefix)
+		out.Bool(bool(in.AdminHideBrandedCloudStorage))
 	}
 	{
 		const prefix string = ",\"BuildMode\":"
@@ -24603,6 +24666,12 @@ func easyjsonB7f3de24Decode196(in *jlexer.Lexer, out *BrandingOptions) {
 			out.AccountRegisterURL = string(in.String())
 		case "HideBackgroundLogo":
 			out.HideBackgroundLogo = bool(in.Bool())
+		case "CloudStorageName":
+			out.CloudStorageName = string(in.String())
+		case "AdminHidePreBuiltClientOption":
+			out.AdminHidePreBuiltClientOption = bool(in.Bool())
+		case "AdminHideBrandedCloudStorage":
+			out.AdminHideBrandedCloudStorage = bool(in.Bool())
 		case "BuildMode":
 			out.BuildMode = ClientBrandingBuildMode(in.Int())
 		case "PathIcoFile":
@@ -24743,6 +24812,21 @@ func easyjsonB7f3de24Encode196(out *jwriter.Writer, in BrandingOptions) {
 		const prefix string = ",\"HideBackgroundLogo\":"
 		out.RawString(prefix)
 		out.Bool(bool(in.HideBackgroundLogo))
+	}
+	{
+		const prefix string = ",\"CloudStorageName\":"
+		out.RawString(prefix)
+		out.String(string(in.CloudStorageName))
+	}
+	{
+		const prefix string = ",\"AdminHidePreBuiltClientOption\":"
+		out.RawString(prefix)
+		out.Bool(bool(in.AdminHidePreBuiltClientOption))
+	}
+	{
+		const prefix string = ",\"AdminHideBrandedCloudStorage\":"
+		out.RawString(prefix)
+		out.Bool(bool(in.AdminHideBrandedCloudStorage))
 	}
 	{
 		const prefix string = ",\"BuildMode\":"

@@ -20,10 +20,10 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "24.12.2"
+const APPLICATION_VERSION string = "24.12.3"
 const APPLICATION_VERSION_MAJOR int = 24
 const APPLICATION_VERSION_MINOR int = 12
-const APPLICATION_VERSION_REVISION int = 2
+const APPLICATION_VERSION_REVISION int = 3
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
@@ -266,17 +266,19 @@ const FTPS_MODE_IMPLICIT FtpsModeType = 1
 // FtpsModeType: Use plain FTP, do not use FTPS.
 const FTPS_MODE_PLAINTEXT FtpsModeType = 0
 
-// Back up Hyper-V virtual machines using VSS mode. This includes all previous snapshots.
-const HYPERV_METHOD_VSS string = "vss"
+// HypervMethod: Back up Hyper-V virtual machines using VSS mode. This includes all previous
+// snapshots.
+const HYPERV_METHOD_VSS HypervMethod = "vss"
 
-// Back up Hyper-V virtual machines using WMI mode with RCT acceleration. This includes the latest
-// snapshot data only.
+// HypervMethod: Back up Hyper-V virtual machines using WMI mode with RCT acceleration. This
+// includes the latest snapshot data only.
 // This const is available in Comet 23.9.8 and later.
-const HYPERV_METHOD_WMI_CBT string = "wmi"
+const HYPERV_METHOD_WMI_CBT HypervMethod = "wmi"
 
-// Back up Hyper-V virtual machines using WMI mode. This includes the latest snapshot data only.
+// HypervMethod: Back up Hyper-V virtual machines using WMI mode. This includes the latest snapshot
+// data only.
 // This const is available in Comet 23.9.8 and later.
-const HYPERV_METHOD_WMI_COPY string = "copy"
+const HYPERV_METHOD_WMI_COPY HypervMethod = "copy"
 
 // JobClassification: This is a backup job.
 const JOB_CLASSIFICATION_BACKUP JobClassification = 4001
@@ -1194,6 +1196,7 @@ type EmailDeliveryType string
 type EmailReportType int
 type ExtraFileExclusionOSRestriction int
 type FtpsModeType int
+type HypervMethod string
 type JobClassification uint64
 type JobStatus uint64
 type LDAPSecurityMethod string
@@ -1646,21 +1649,24 @@ type BackupRuleEventTriggers struct {
 type BrandingOptions struct {
 	// One of the BRANDINGSTYLETYPE_ constants
 	// This field is available in Comet 23.3.3 and later.
-	BrandingStyleType     int
-	BrandName             string
-	LogoImage             string
-	TopColor              string
-	AccentColor           string
-	Favicon               string
-	HideNewsArea          bool
-	ProductName           string
-	CompanyName           string
-	HelpURL               string
-	HelpIsPopup           bool
-	DefaultLoginServerURL string
-	TileBackgroundColor   string
-	AccountRegisterURL    string
-	HideBackgroundLogo    bool
+	BrandingStyleType             int
+	BrandName                     string
+	LogoImage                     string
+	TopColor                      string
+	AccentColor                   string
+	Favicon                       string
+	HideNewsArea                  bool
+	ProductName                   string
+	CompanyName                   string
+	HelpURL                       string
+	HelpIsPopup                   bool
+	DefaultLoginServerURL         string
+	TileBackgroundColor           string
+	AccountRegisterURL            string
+	HideBackgroundLogo            bool
+	CloudStorageName              string
+	AdminHidePreBuiltClientOption bool
+	AdminHideBrandedCloudStorage  bool
 	// One of the CLIENTBRANDINGBUILD_ constants
 	BuildMode           ClientBrandingBuildMode
 	PathIcoFile         string
@@ -1698,14 +1704,17 @@ type BrandingOptions struct {
 }
 
 type BrandingProperties struct {
-	ProductName           string
-	CompanyName           string
-	HelpURL               string
-	HelpIsPopup           bool
-	DefaultLoginServerURL string
-	TileBackgroundColor   string
-	AccountRegisterURL    string
-	HideBackgroundLogo    bool
+	ProductName                   string
+	CompanyName                   string
+	HelpURL                       string
+	HelpIsPopup                   bool
+	DefaultLoginServerURL         string
+	TileBackgroundColor           string
+	AccountRegisterURL            string
+	HideBackgroundLogo            bool
+	CloudStorageName              string
+	AdminHidePreBuiltClientOption bool
+	AdminHideBrandedCloudStorage  bool
 	// One of the CLIENTBRANDINGBUILD_ constants
 	BuildMode           ClientBrandingBuildMode
 	PathIcoFile         string
@@ -3116,14 +3125,17 @@ type ProtectedItemEngineTypePolicy struct {
 }
 
 type PublicBrandingProperties struct {
-	ProductName           string
-	CompanyName           string
-	HelpURL               string
-	HelpIsPopup           bool
-	DefaultLoginServerURL string
-	TileBackgroundColor   string
-	AccountRegisterURL    string
-	HideBackgroundLogo    bool
+	ProductName                   string
+	CompanyName                   string
+	HelpURL                       string
+	HelpIsPopup                   bool
+	DefaultLoginServerURL         string
+	TileBackgroundColor           string
+	AccountRegisterURL            string
+	HideBackgroundLogo            bool
+	CloudStorageName              string
+	AdminHidePreBuiltClientOption bool
+	AdminHideBrandedCloudStorage  bool
 
 	easyjson.UnknownFieldsProxy
 }
@@ -3688,7 +3700,14 @@ type ServerMetaBrandingProperties struct {
 	ExpiredInSeconds              int64
 	ExternalAuthenticationSources []ExternalAuthenticationSourceDisplay `json:",omitempty"`
 	// If true, this Comet Server currently has no admins or users.
-	ServerIsEmpty bool
+	ServerIsEmpty    bool
+	CloudStorageName string
+	// Will hide the "Pre-built software client" option from the server settings. Only properly
+	// enforced when custom branding is enforced via the license.
+	AdminHidePreBuiltClientOption bool
+	// Will hide Comet Storage from everywhere, including the admin view. Only properly enforced when
+	// custom branding is enforced via the license.
+	AdminHideBrandedCloudStorage bool
 
 	easyjson.UnknownFieldsProxy
 }
