@@ -20,10 +20,10 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "24.12.4"
+const APPLICATION_VERSION string = "24.12.5"
 const APPLICATION_VERSION_MAJOR int = 24
 const APPLICATION_VERSION_MINOR int = 12
-const APPLICATION_VERSION_REVISION int = 4
+const APPLICATION_VERSION_REVISION int = 5
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
@@ -618,6 +618,10 @@ const RESTORETYPE_VMDK_FILE_ARCHIVE RestoreType = 9
 // RestoreType: Granular restore of single files from within a Disk Image or Hyper-V backup,
 // downloading and reconstructing files, but without saving them (for test purposes)
 const RESTORETYPE_VMDK_FILE_NULL RestoreType = 8
+
+// RestoreType: Restore virtual machines directly to hypervisor
+// This const is available in Comet 24.12.x and later.
+const RESTORETYPE_VMHOST RestoreType = 14
 
 // RestoreType: Restore partitions back to the physical disk
 const RESTORETYPE_WINDISK RestoreType = 4
@@ -1265,6 +1269,12 @@ type AdminEmailOptions struct {
 	easyjson.UnknownFieldsProxy
 }
 
+type AdminOptions struct {
+	Policy PolicyOptions
+
+	easyjson.UnknownFieldsProxy
+}
+
 type AdminResourceResponse struct {
 	// If the operation was successful, the status will be in the 200-299 range.
 	Status       int
@@ -1805,6 +1815,52 @@ type BrowseSQLServerResponse struct {
 	easyjson.UnknownFieldsProxy
 }
 
+// BrowseVMwareDatacentersResponse contains a list of VMware Datacenters when remotely browsing a
+// VMware vSphere connection.
+type BrowseVMwareDatacentersResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
+	Status      int
+	Message     string
+	Datacenters []VMwareDatacenterInfo
+
+	easyjson.UnknownFieldsProxy
+}
+
+// BrowseVMwareHostsResponse contains a list of VMware Datastores for a specific VMware Datacenter,
+// when remotely browsing a VMware vSphere connection.
+type BrowseVMwareDatastoresResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
+	Status     int
+	Message    string
+	Datastores []VMwareDatastoreInfo
+
+	easyjson.UnknownFieldsProxy
+}
+
+// BrowseVMwareHostsResponse contains a list of VMware Hosts for a specific VMware Datacenter, when
+// remotely browsing a VMware vSphere connection.
+type BrowseVMwareHostsResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
+	Status  int
+	Message string
+	Hosts   []VMwareHostInfo
+
+	easyjson.UnknownFieldsProxy
+}
+
+// BrowseVMwareHostsResponse contains a list of VMware Networks for a specific VMware Datacenter,
+// when remotely browsing a VMware vSphere connection.
+type BrowseVMwareNetworksResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
+	Status   int
+	Message  string
+	Networks []VMwareNetworkInfo
+
+	easyjson.UnknownFieldsProxy
+}
+
+// BrowseVMwareResponse contains a list of Virtual Machines when remotely browsing a VMware vSphere
+// connection.
 type BrowseVMwareResponse struct {
 	// If the operation was successful, the status will be in the 200-299 range.
 	Status          int
@@ -2261,6 +2317,8 @@ type DiskDrive struct {
 	// Deprecated: This member has been deprecated since Comet version 24.6.x This value is reported from the disk driver if available. Otherwise emulates a value based on modern LBA addressing. The field value is not used.
 	Sectors    int64
 	SectorSize int64
+	// Used to indicate the partition conflicts on the disk.
+	PartitionConflicts []PartitionConflict
 
 	easyjson.UnknownFieldsProxy
 }
@@ -2270,6 +2328,16 @@ type DispatcherAdminSourcesResponse struct {
 	Status        int
 	Message       string
 	ImportSources map[string]string
+
+	easyjson.UnknownFieldsProxy
+}
+
+// This struct is available in Comet 24.12.x and later.
+type DispatcherListSnapshotVirtualMachinesResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
+	Status  int
+	Message string
+	VMs     []VMInfo
 
 	easyjson.UnknownFieldsProxy
 }
@@ -2579,6 +2647,22 @@ type HourSchedConfig struct {
 type HyperVMachineInfo struct {
 	ID          string
 	DisplayName string `json:"Name"`
+	// This field is available in Comet 24.12.x and later.
+	MemoryLimitMB int64
+	// This field is available in Comet 24.12.x and later.
+	CPUCores int64
+	// This field is available in Comet 24.12.x and later.
+	HardDrives []string
+	// This field is available in Comet 24.12.x and later.
+	Generation int
+	// This field is available in Comet 24.12.x and later.
+	ConfigFilePath string
+
+	easyjson.UnknownFieldsProxy
+}
+
+type HyperVRestoreTargetOptions struct {
+	DiskStoragePath string
 
 	easyjson.UnknownFieldsProxy
 }
@@ -2932,17 +3016,23 @@ type Office365CustomSetting struct {
 // ENGINE_BUILTIN_MSOFFICE).
 // This struct is available in Comet 21.9.xx and later.
 type Office365CustomSettingV2 struct {
-	// If true, then backup the entire Office 365 Tenant except the selected members. If false, backup
-	// the selected members only.
+	// If true, then backup everything except the selected users (group members are still included)
+	// Deprecated: This member has been deprecated since Comet version 24.12.2
 	Organization bool
-	// Key can be the ID of user, group or SharePoint
-	// Value is a bitset of the SERVICE_ constants, to select which services to back up for this
-	// member.
+	// If true, exclude all filtered IDs and Members. Backup everything else
+	FilterMode bool
+	// Key is the ID of User, Group, or Site
+	// Value is a bitset of the SERVICE_ constants, to select which services to back up for members
 	BackupOptions map[string]uint `json:",omitempty"`
-	// Key must be a group ID
-	// Value is a bitset of the SERVICE_ constants, to select which services to back up for this
-	// member.
+	// Key is the ID of a Group or Team Site
+	// Value is a bitset of the SERVICE_ constants, to select which services to back up for members
 	MemberBackupOptions map[string]uint `json:",omitempty"`
+	// Key is the ID of a User, Group, or Site
+	// Value is a bitset of the SERVICE_ constants, to select which services to back up for members
+	FilterOptions map[string]uint `json:",omitempty"`
+	// Key is the ID of a Group or Team Site
+	// Value is a bitset of the SERVICE_ constants, to select which services to back up for members
+	FilterMemberOptions map[string]uint `json:",omitempty"`
 
 	easyjson.UnknownFieldsProxy
 }
@@ -2952,6 +3042,7 @@ type Office365MixedVirtualAccount struct {
 	Disabled             bool     `json:",omitempty"`
 	DisplayName          string   `json:",omitempty"`
 	EnabledServiceOption uint     `json:",omitempty"`
+	HasLicense           bool     `json:"hasLicense,omitempty"`
 	ID                   string   `json:"id"`
 	JobTitle             string   `json:",omitempty"`
 	Mail                 string   `json:",omitempty"`
@@ -2963,7 +3054,6 @@ type Office365MixedVirtualAccount struct {
 	Members              []string `json:",omitempty"`
 	ServiceOptions       uint     `json:",omitempty"`
 	MemberServiceOptions uint     `json:",omitempty"`
-	HasLicense           bool     `json:"hasLicense,omitempty"`
 
 	easyjson.UnknownFieldsProxy
 }
@@ -3076,6 +3166,20 @@ type Partition struct {
 	UsedSize                  int64
 	Flags                     int64
 	BytesPerFilesystemCluster int64
+
+	easyjson.UnknownFieldsProxy
+}
+
+type PartitionConflict struct {
+	PartitionA string
+	PartitionB string
+	Size       uint64
+
+	easyjson.UnknownFieldsProxy
+}
+
+type PolicyOptions struct {
+	DeleteSources []string
 
 	easyjson.UnknownFieldsProxy
 }
@@ -3361,6 +3465,12 @@ type RestoreJobAdvancedOptions struct {
 	SslKeyFile string
 	// For RESTORETYPE_MSSQL.
 	MsSqlConnection MSSQLLoginArgs `json:",omitempty"`
+	// For RESTORETYPE_VMHOST
+	// This field is available in Comet 24.12.x and later.
+	VMwareConnection VMwareRestoreTargetOptions `json:",omitempty"`
+	// For RESTORETYPE_VMHOST
+	// This field is available in Comet 24.12.x and later.
+	HyperVConnection HyperVRestoreTargetOptions `json:",omitempty"`
 
 	easyjson.UnknownFieldsProxy
 }
@@ -4451,6 +4561,43 @@ type VMDKSnapshotViewOptions struct {
 	easyjson.UnknownFieldsProxy
 }
 
+// This struct is available in Comet 24.12.x and later.
+type VMDiskInfo struct {
+	// Relative path within this backup job snapshot to root disk files
+	Path string
+	// The virtual size of the virtual disk
+	Size int64
+	// Controller number where the disk is associated to
+	Controller int64
+	// Device number within the controller
+	DeviceNum int64
+
+	easyjson.UnknownFieldsProxy
+}
+
+// This struct is available in Comet 24.12.x and later.
+type VMInfo struct {
+	ID       string
+	Name     string
+	CPUCores int
+	// Bytes
+	RamBytes int64
+	// The BIOS mode of this machine e.g. "Legacy"|"UEFI"
+	FirmwareType string
+	// Relative path to config file or directory, if supported by this Protected Item type
+	ConfigPath string
+	Disks      []VMDiskInfo
+
+	easyjson.UnknownFieldsProxy
+}
+
+// This struct is available in Comet 24.12.x and later.
+type VMInfoList struct {
+	VMs []VMInfo
+
+	easyjson.UnknownFieldsProxy
+}
+
 type VMwareConnection struct {
 	// One of the VMWARE_CONNECTION_ constants
 	ConnectionType VMwareConnectionType
@@ -4461,8 +4608,58 @@ type VMwareConnection struct {
 	easyjson.UnknownFieldsProxy
 }
 
+// VMwareDatacenterInfo describes a single VMware datacenter.
+type VMwareDatacenterInfo struct {
+	Name string
+
+	easyjson.UnknownFieldsProxy
+}
+
+// VMwareDatastoreInfo describes a single VMware datastore within a VMware datacenter.
+type VMwareDatastoreInfo struct {
+	Name string
+
+	easyjson.UnknownFieldsProxy
+}
+
+// VMwareHostInfo describes a single VMware host within a VMware datacenter.
+type VMwareHostInfo struct {
+	Name string
+
+	easyjson.UnknownFieldsProxy
+}
+
+// VMwareMachineInfo describes a single VMware virtual machine.
 type VMwareMachineInfo struct {
 	Name string
+
+	easyjson.UnknownFieldsProxy
+}
+
+// VMwareNetworkInfo describes a single VMware network within a VMware datacenter.
+type VMwareNetworkInfo struct {
+	Name string
+
+	easyjson.UnknownFieldsProxy
+}
+
+// VMwareRestoreTargetOptions is used when restoring a virtual machine backup job into VMware, using
+// the RESTORETYPE_VMHOST option.
+// This struct is available in Comet 24.12.x and later.
+type VMwareRestoreTargetOptions struct {
+	// The name of the VMware Datacenter to restore into. If blank and there is only one Datacenter in
+	// the vSphere connection, it is chosen.
+	Datacenter string
+	// The name of the VMware Host within the VMware Datacenter to restore into. If blank and there is
+	// only one Datacenter in the vSphere connection, it is chosen.
+	Host string
+	// The name of the VMware Datastore on the VMware Host to restore into. If blank and there is only
+	// one Datacenter in the vSphere connection, it is chosen.
+	DatastorePath string
+	// The name of the VMware Network on the VMware Host to restore into. If blank and there is only
+	// one network on the target vSphere connection, it is chosen.
+	Network    string
+	Connection VMwareConnection
 
 	easyjson.UnknownFieldsProxy
 }
@@ -6275,6 +6472,39 @@ func (c *CometAPIClient) AdminDispatcherApplyRetentionRules(ctx context.Context,
 	return result, nil
 }
 
+// AdminDispatcherBrowseVirtualMachines: Browse virtual machines in target snapshot
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetID: The live connection GUID
+// DestinationID: The Storage Vault GUID
+// SnapshotID: Snapshot to search
+func (c *CometAPIClient) AdminDispatcherBrowseVirtualMachines(ctx context.Context, TargetID string, DestinationID string, SnapshotID string) (*DispatcherListSnapshotVirtualMachinesResponse, error) {
+	data := map[string][]string{}
+	var err error
+
+	data["TargetID"] = []string{TargetID}
+
+	data["DestinationID"] = []string{DestinationID}
+
+	data["SnapshotID"] = []string{SnapshotID}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/browse-virtual-machines", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &DispatcherListSnapshotVirtualMachinesResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // AdminDispatcherDeepverifyStorageVault: Instruct a live connected device to deeply verify Storage
 // Vault content
 // This command is understood by Comet Backup 18.8.2 and newer.
@@ -6983,6 +7213,163 @@ func (c *CometAPIClient) AdminDispatcherRequestBrowseVmware(ctx context.Context,
 	}
 
 	result := &BrowseVMwareResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminDispatcherRequestBrowseVmwareDatacenters: Request a list of VMware vSphere Datacenters on a
+// VMware vSphere connection
+// The remote device must have given consent for an MSP to browse their files.
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetID: The live connection GUID
+// Credentials: The VMware vSphere connection settings
+func (c *CometAPIClient) AdminDispatcherRequestBrowseVmwareDatacenters(ctx context.Context, TargetID string, Credentials VMwareConnection) (*BrowseVMwareDatacentersResponse, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	data["TargetID"] = []string{TargetID}
+
+	b, err = json.Marshal(Credentials)
+	if err != nil {
+		return nil, err
+	}
+	data["Credentials"] = []string{string(b)}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-browse-vmware/datacenters", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &BrowseVMwareDatacentersResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminDispatcherRequestBrowseVmwareDatastores: Request a list of VMware vSphere Datastores on a
+// VMware vSphere connection, for a specified VMware Datacenter
+// The remote device must have given consent for an MSP to browse their files.
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetID: The live connection GUID
+// Credentials: The VMware vSphere connection settings
+// Filter: The name of the target VMware Datacenter
+func (c *CometAPIClient) AdminDispatcherRequestBrowseVmwareDatastores(ctx context.Context, TargetID string, Credentials VMwareConnection, Filter string) (*BrowseVMwareDatastoresResponse, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	data["TargetID"] = []string{TargetID}
+
+	b, err = json.Marshal(Credentials)
+	if err != nil {
+		return nil, err
+	}
+	data["Credentials"] = []string{string(b)}
+
+	data["Filter"] = []string{Filter}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-browse-vmware/datastores", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &BrowseVMwareDatastoresResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminDispatcherRequestBrowseVmwareHosts: Request a list of VMware vSphere Hosts on a VMware
+// vSphere connection, for a specified VMware Datacenter
+// The remote device must have given consent for an MSP to browse their files.
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetID: The live connection GUID
+// Credentials: The VMware vSphere connection settings
+// Filter: The name of the target VMware Datacenter
+func (c *CometAPIClient) AdminDispatcherRequestBrowseVmwareHosts(ctx context.Context, TargetID string, Credentials VMwareConnection, Filter string) (*BrowseVMwareHostsResponse, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	data["TargetID"] = []string{TargetID}
+
+	b, err = json.Marshal(Credentials)
+	if err != nil {
+		return nil, err
+	}
+	data["Credentials"] = []string{string(b)}
+
+	data["Filter"] = []string{Filter}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-browse-vmware/hosts", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &BrowseVMwareHostsResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminDispatcherRequestBrowseVmwareNetworks: Request a list of VMware vSphere Networks on a VMware
+// vSphere connection, for a specified VMware Datacenter
+// The remote device must have given consent for an MSP to browse their files.
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetID: The live connection GUID
+// Credentials: The VMware vSphere connection settings
+// Filter: The name of the target VMware Datacenter
+func (c *CometAPIClient) AdminDispatcherRequestBrowseVmwareNetworks(ctx context.Context, TargetID string, Credentials VMwareConnection, Filter string) (*BrowseVMwareNetworksResponse, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	data["TargetID"] = []string{TargetID}
+
+	b, err = json.Marshal(Credentials)
+	if err != nil {
+		return nil, err
+	}
+	data["Credentials"] = []string{string(b)}
+
+	data["Filter"] = []string{Filter}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-browse-vmware/networks", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &BrowseVMwareNetworksResponse{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err
@@ -9563,7 +9950,8 @@ func (c *CometAPIClient) AdminPoliciesNew(ctx context.Context, Policy GroupPolic
 // PolicyID: The policy ID to update or create
 // Policy: The policy data
 // CheckPolicyHash: (Optional) An atomic verification hash as supplied by the AdminPoliciesGet API
-func (c *CometAPIClient) AdminPoliciesSet(ctx context.Context, PolicyID string, Policy GroupPolicy, CheckPolicyHash *string) (*CometAPIResponseMessage, error) {
+// Options: (Optional) An array of PolicySourceID that will be explicitly deleted.
+func (c *CometAPIClient) AdminPoliciesSet(ctx context.Context, PolicyID string, Policy GroupPolicy, CheckPolicyHash *string, Options *PolicyOptions) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -9578,6 +9966,14 @@ func (c *CometAPIClient) AdminPoliciesSet(ctx context.Context, PolicyID string, 
 
 	if CheckPolicyHash != nil {
 		data["CheckPolicyHash"] = []string{*CheckPolicyHash}
+	}
+
+	if Options != nil {
+		b, err = json.Marshal(Options)
+		if err != nil {
+			return nil, err
+		}
+		data["Options"] = []string{string(b)}
 	}
 
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/policies/set", data)
@@ -9869,7 +10265,8 @@ func (c *CometAPIClient) AdminSetUserProfile(ctx context.Context, TargetUser str
 // TargetUser: Selected account username
 // ProfileData: Modified user profile
 // RequireHash: Previous hash parameter
-func (c *CometAPIClient) AdminSetUserProfileHash(ctx context.Context, TargetUser string, ProfileData UserProfileConfig, RequireHash string) (*CometAPIResponseMessage, error) {
+// AdminOptions: (Optional) Instructions for modifying user profile
+func (c *CometAPIClient) AdminSetUserProfileHash(ctx context.Context, TargetUser string, ProfileData UserProfileConfig, RequireHash string, AdminOptions *AdminOptions) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -9883,6 +10280,14 @@ func (c *CometAPIClient) AdminSetUserProfileHash(ctx context.Context, TargetUser
 	data["ProfileData"] = []string{string(b)}
 
 	data["RequireHash"] = []string{RequireHash}
+
+	if AdminOptions != nil {
+		b, err = json.Marshal(AdminOptions)
+		if err != nil {
+			return nil, err
+		}
+		data["AdminOptions"] = []string{string(b)}
+	}
 
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/set-user-profile-hash", data)
 	if err != nil {
@@ -10567,6 +10972,40 @@ func (c *CometAPIClient) UserWebAccountValidateTotp(ctx context.Context, Profile
 	return result, nil
 }
 
+// UserWebDispatcherBrowseVirtualMachines: Browse virtual machines in target snapshot
+//
+// You must supply user authentication credentials to use this API, and the user account must be
+// authorized for web access.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetID: The live connection GUID
+// DestinationID: The Storage Vault GUID
+// SnapshotID: Snapshot to search
+func (c *CometAPIClient) UserWebDispatcherBrowseVirtualMachines(ctx context.Context, TargetID string, DestinationID string, SnapshotID string) (*DispatcherListSnapshotVirtualMachinesResponse, error) {
+	data := map[string][]string{}
+	var err error
+
+	data["TargetID"] = []string{TargetID}
+
+	data["DestinationID"] = []string{DestinationID}
+
+	data["SnapshotID"] = []string{SnapshotID}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/browse-virtual-machines", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &DispatcherListSnapshotVirtualMachinesResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // UserWebDispatcherDeleteSnapshot: Instruct a live connected device to delete a stored snapshot
 //
 // You must supply user authentication credentials to use this API, and the user account must be
@@ -11027,6 +11466,167 @@ func (c *CometAPIClient) UserWebDispatcherRequestBrowseVmware(ctx context.Contex
 	}
 
 	result := &BrowseVMwareResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// UserWebDispatcherRequestBrowseVmwareDatacenters: Request a list of VMware vSphere Datacenters on
+// a VMware vSphere connection
+// The remote device must have given consent for an MSP to browse their files.
+//
+// You must supply user authentication credentials to use this API, and the user account must be
+// authorized for web access.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetID: The live connection GUID
+// Credentials: The VMware vSphere connection settings
+func (c *CometAPIClient) UserWebDispatcherRequestBrowseVmwareDatacenters(ctx context.Context, TargetID string, Credentials VMwareConnection) (*BrowseVMwareDatacentersResponse, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	data["TargetID"] = []string{TargetID}
+
+	b, err = json.Marshal(Credentials)
+	if err != nil {
+		return nil, err
+	}
+	data["Credentials"] = []string{string(b)}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-browse-vmware/datacenters", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &BrowseVMwareDatacentersResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// UserWebDispatcherRequestBrowseVmwareDatastores: Request a list of VMware vSphere Datastores on a
+// VMware vSphere connection, for a specified VMware Datacenter
+// The remote device must have given consent for an MSP to browse their files.
+//
+// You must supply user authentication credentials to use this API, and the user account must be
+// authorized for web access.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetID: The live connection GUID
+// Credentials: The VMware vSphere connection settings
+// Filter: The name of the target VMware Datacenter
+func (c *CometAPIClient) UserWebDispatcherRequestBrowseVmwareDatastores(ctx context.Context, TargetID string, Credentials VMwareConnection, Filter string) (*BrowseVMwareDatastoresResponse, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	data["TargetID"] = []string{TargetID}
+
+	b, err = json.Marshal(Credentials)
+	if err != nil {
+		return nil, err
+	}
+	data["Credentials"] = []string{string(b)}
+
+	data["Filter"] = []string{Filter}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-browse-vmware/datastores", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &BrowseVMwareDatastoresResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// UserWebDispatcherRequestBrowseVmwareHosts: Request a list of VMware vSphere Hosts on a VMware
+// vSphere connection, for a specified VMware Datacenter
+// The remote device must have given consent for an MSP to browse their files.
+//
+// You must supply user authentication credentials to use this API, and the user account must be
+// authorized for web access.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetID: The live connection GUID
+// Credentials: The VMware vSphere connection settings
+// Filter: The name of the target VMware Datacenter
+func (c *CometAPIClient) UserWebDispatcherRequestBrowseVmwareHosts(ctx context.Context, TargetID string, Credentials VMwareConnection, Filter string) (*BrowseVMwareHostsResponse, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	data["TargetID"] = []string{TargetID}
+
+	b, err = json.Marshal(Credentials)
+	if err != nil {
+		return nil, err
+	}
+	data["Credentials"] = []string{string(b)}
+
+	data["Filter"] = []string{Filter}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-browse-vmware/hosts", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &BrowseVMwareHostsResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// UserWebDispatcherRequestBrowseVmwareNetworks: Request a list of VMware vSphere Networks on a
+// VMware vSphere connection, for a specified VMware Datacenter
+// The remote device must have given consent for an MSP to browse their files.
+//
+// You must supply user authentication credentials to use this API, and the user account must be
+// authorized for web access.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetID: The live connection GUID
+// Credentials: The VMware vSphere connection settings
+// Filter: The name of the target VMware Datacenter
+func (c *CometAPIClient) UserWebDispatcherRequestBrowseVmwareNetworks(ctx context.Context, TargetID string, Credentials VMwareConnection, Filter string) (*BrowseVMwareNetworksResponse, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	data["TargetID"] = []string{TargetID}
+
+	b, err = json.Marshal(Credentials)
+	if err != nil {
+		return nil, err
+	}
+	data["Credentials"] = []string{string(b)}
+
+	data["Filter"] = []string{Filter}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-browse-vmware/networks", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &BrowseVMwareNetworksResponse{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err
