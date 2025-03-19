@@ -20,10 +20,10 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "24.12.5"
-const APPLICATION_VERSION_MAJOR int = 24
-const APPLICATION_VERSION_MINOR int = 12
-const APPLICATION_VERSION_REVISION int = 5
+const APPLICATION_VERSION string = "25.3.1"
+const APPLICATION_VERSION_MAJOR int = 25
+const APPLICATION_VERSION_MINOR int = 3
+const APPLICATION_VERSION_REVISION int = 1
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
@@ -648,7 +648,10 @@ const RETENTIONRANGE_FIRST_JOB_FOR_LAST_X_MONTHS RetentionRangeType = 905
 // RetentionRangeType: Uses Weeks, WeekOffset
 const RETENTIONRANGE_FIRST_JOB_FOR_LAST_X_WEEKS RetentionRangeType = 906
 
-// RetentionRangeType: Uses Days, Weeks, Months
+// RetentionRangeType: Uses Years, YearOffset
+const RETENTIONRANGE_FIRST_JOB_FOR_LAST_X_YEARS RetentionRangeType = 911
+
+// RetentionRangeType: Uses Days, Weeks, Months, Years
 const RETENTIONRANGE_JOBS_SINCE RetentionRangeType = 902
 
 // RetentionRangeType: Uses Jobs
@@ -659,6 +662,9 @@ const RETENTIONRANGE_LAST_X_BACKUPS_ONE_FOR_EACH_MONTH RetentionRangeType = 909
 
 // RetentionRangeType: Uses Jobs
 const RETENTIONRANGE_LAST_X_BACKUPS_ONE_FOR_EACH_WEEK RetentionRangeType = 908
+
+// RetentionRangeType: Uses Jobs
+const RETENTIONRANGE_LAST_X_BACKUPS_ONE_FOR_EACH_YEAR RetentionRangeType = 910
 const RETENTIONRANGE_MAXINT int = 1125899906842624
 
 // RetentionRangeType: Uses Jobs
@@ -668,7 +674,7 @@ const RETENTIONRANGE_MOST_RECENT_X_JOBS RetentionRangeType = 900
 const RETENTIONRANGE_NEWER_THAN_X RetentionRangeType = 901
 
 // RetentionRangeType
-const RETENTIONRANGE__HIGHEST RetentionRangeType = 909
+const RETENTIONRANGE__HIGHEST RetentionRangeType = 911
 
 // RetentionRangeType
 const RETENTIONRANGE__LOWEST RetentionRangeType = 900
@@ -676,10 +682,11 @@ const RETENTIONRANGE__LOWEST RetentionRangeType = 900
 // RetentionRangeType
 // Deprecated: This const has been deprecated since Comet version 17.2.0
 const RETENTIONRANGE__RESERVED904 RetentionRangeType = 904
+const ROTATE_STORAGE_VAULT_KEYS_DEFAULT int = 48
 
 // SecondsPast is the number of seconds past 00:00, in the device's local timezone.
 const SCHEDULE_FREQUENCY_DAILY uint64 = 8011
-const SCHEDULE_FREQUENCY_HIGHEST uint64 = 8015
+const SCHEDULE_FREQUENCY_HIGHEST uint64 = 8016
 
 // SecondsPast is the number of seconds past *:00, in the device's local timezone.
 const SCHEDULE_FREQUENCY_HOURLY uint64 = 8012
@@ -696,6 +703,9 @@ const SCHEDULE_FREQUENCY_PERIODIC uint64 = 8015
 
 // SecondsPast is the number of seconds past 00:00 Sunday, in the device's local timezone.
 const SCHEDULE_FREQUENCY_WEEKLY uint64 = 8013
+
+// SecondsPast is the number of seconds past 00:00 1st, in the device's local timezone.
+const SCHEDULE_FREQUENCY_YEARLY uint64 = 8016
 const SCHEDULE_MAXINT int = 1125899906842624
 
 // Maximum random delay (5 hours)
@@ -1050,6 +1060,9 @@ const STOREDOBJECTTYPE_VMDK_FILE StoredObjectType = "vmdkfile"
 
 // StoredObjectType
 const STOREDOBJECTTYPE_VMDK_SYMLINK StoredObjectType = "vmdksymlink"
+
+// StoredObjectType
+const STOREDOBJECTTYPE_VMDK_WINDEDUP StoredObjectType = "vmdkwindedup"
 
 // StoredObjectType
 const STOREDOBJECTTYPE_VMDK_WINEFS StoredObjectType = "vmdkwinefs"
@@ -2436,11 +2449,11 @@ type EmailReportingOption struct {
 type ExternalAuthenticationSource struct {
 	Type        RemoteServerType
 	Description string
-	// For use with Comet Server (Storage Role / Auth Role)
+	// For use with Comet Server (Storage Gateway / Management Console)
 	RemoteAddress string `json:",omitempty"`
-	// For use with Comet Server (Storage Role / Auth Role)
+	// For use with Comet Server (Storage Gateway / Management Console)
 	Username string `json:",omitempty"`
-	// For use with Comet Server (Storage Role / Auth Role)
+	// For use with Comet Server (Storage Gateway / Management Console)
 	Password string                                   `json:",omitempty"`
 	LDAP     ExternalLDAPAuthenticationSourceSettings `json:",omitempty"`
 	OIDC     OidcConfig                               `json:",omitempty"`
@@ -3291,11 +3304,11 @@ type RegistrationLobbyConnection struct {
 type RemoteServerAddress struct {
 	Type        RemoteServerType
 	Description string
-	// For use with Comet Server (Storage Role / Auth Role)
+	// For use with Comet Server (Storage Gateway / Management Console)
 	RemoteAddress string `json:",omitempty"`
-	// For use with Comet Server (Storage Role / Auth Role)
+	// For use with Comet Server (Storage Gateway / Management Console)
 	Username string `json:",omitempty"`
-	// For use with Comet Server (Storage Role / Auth Role)
+	// For use with Comet Server (Storage Gateway / Management Console)
 	Password string                                   `json:",omitempty"`
 	LDAP     ExternalLDAPAuthenticationSourceSettings `json:",omitempty"`
 	OIDC     OidcConfig                               `json:",omitempty"`
@@ -3322,11 +3335,11 @@ type RemoteServerAddress struct {
 type RemoteStorageOption struct {
 	Type        RemoteServerType
 	Description string
-	// For use with Comet Server (Storage Role / Auth Role)
+	// For use with Comet Server (Storage Gateway / Management Console)
 	RemoteAddress string `json:",omitempty"`
-	// For use with Comet Server (Storage Role / Auth Role)
+	// For use with Comet Server (Storage Gateway / Management Console)
 	Username string `json:",omitempty"`
-	// For use with Comet Server (Storage Role / Auth Role)
+	// For use with Comet Server (Storage Gateway / Management Console)
 	Password string                                   `json:",omitempty"`
 	LDAP     ExternalLDAPAuthenticationSourceSettings `json:",omitempty"`
 	OIDC     OidcConfig                               `json:",omitempty"`
@@ -3358,11 +3371,11 @@ type RemoteStorageOption struct {
 type ReplicaServer struct {
 	Type        RemoteServerType
 	Description string
-	// For use with Comet Server (Storage Role / Auth Role)
+	// For use with Comet Server (Storage Gateway / Management Console)
 	RemoteAddress string `json:",omitempty"`
-	// For use with Comet Server (Storage Role / Auth Role)
+	// For use with Comet Server (Storage Gateway / Management Console)
 	Username string `json:",omitempty"`
-	// For use with Comet Server (Storage Role / Auth Role)
+	// For use with Comet Server (Storage Gateway / Management Console)
 	Password string                                   `json:",omitempty"`
 	LDAP     ExternalLDAPAuthenticationSourceSettings `json:",omitempty"`
 	OIDC     OidcConfig                               `json:",omitempty"`
@@ -3494,6 +3507,7 @@ type RetentionRange struct {
 	Days      int64
 	Weeks     int64
 	Months    int64
+	Years     int64
 	// 0: Sunday, 6: Saturday
 	WeekOffset int64
 	// 1: 1st, 31: 31st
@@ -3501,6 +3515,7 @@ type RetentionRange struct {
 	// For months that do not have a day equal to the specified offset, no backup will be retained.
 	// For example, if the offset is set to 30, no backup will be kept for February.
 	MonthOffset int64
+	YearOffset  int64
 
 	easyjson.UnknownFieldsProxy
 }
@@ -3619,6 +3634,8 @@ type ScheduleConfig struct {
 	RestrictDays    bool
 	DaysSelect      DaysOfWeekConfig
 	RandomDelaySecs uint64 `json:",omitempty"`
+	SelectedMonth   uint64
+	SelectedDay     uint64
 
 	easyjson.UnknownFieldsProxy
 }
@@ -3690,8 +3707,8 @@ type SelfBackupExportOptions struct {
 	EncryptionKeyFormat uint64
 	// One of the COMPRESS_LVL_ constants
 	Compression CompressMode
-	// The jobs database is often the largest component of the Server Self-Backup archive. By excluding
-	// it, you could run the Server Self-Backup more often.
+	// The jobs database is often the largest component of the System Self-Backup archive. By excluding
+	// it, you could run the System Self-Backup more often.
 	ExcludeJobsDB         bool
 	IncludeServerLogs     bool
 	RestrictToSingleOrgID string `json:",omitempty"`
@@ -3727,8 +3744,8 @@ type SelfBackupTarget struct {
 	EncryptionKeyFormat uint64
 	// One of the COMPRESS_LVL_ constants
 	Compression CompressMode
-	// The jobs database is often the largest component of the Server Self-Backup archive. By excluding
-	// it, you could run the Server Self-Backup more often.
+	// The jobs database is often the largest component of the System Self-Backup archive. By excluding
+	// it, you could run the System Self-Backup more often.
 	ExcludeJobsDB         bool
 	IncludeServerLogs     bool
 	RestrictToSingleOrgID string `json:",omitempty"`
@@ -4429,6 +4446,9 @@ type UserPolicy struct {
 	DefaultSourcesWithOSRestriction  map[string]DefaultSourceWithOSRestriction
 	DefaultBackupRules               map[string]BackupRuleConfig
 	RandomDelaySecs                  uint64 `json:",omitempty"`
+	// Rotate access keys of a conflicting jobs Storage Vault, if no update from the conflicting job
+	// for X hours. If value is 0, ROTATE_STORAGE_VAULT_KEYS_DEFAULT is used.
+	RotateStorageVaultKeysHours int
 
 	easyjson.UnknownFieldsProxy
 }
@@ -8003,13 +8023,23 @@ func (c *CometAPIClient) AdminDispatcherUninstallSoftware(ctx context.Context, T
 // - Params
 // TargetID: The live connection GUID
 // Destination: The Storage Vault GUID
-func (c *CometAPIClient) AdminDispatcherUnlock(ctx context.Context, TargetID string, Destination string) (*CometAPIResponseMessage, error) {
+// AllowUnsafe: (Optional) Allow legacy Storage Vault unlocking, which is unsafe in some cases.
+func (c *CometAPIClient) AdminDispatcherUnlock(ctx context.Context, TargetID string, Destination string, AllowUnsafe *bool) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
+	var b []byte
 	var err error
 
 	data["TargetID"] = []string{TargetID}
 
 	data["Destination"] = []string{Destination}
+
+	if AllowUnsafe != nil {
+		b, err = json.Marshal(AllowUnsafe)
+		if err != nil {
+			return nil, err
+		}
+		data["AllowUnsafe"] = []string{string(b)}
+	}
 
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/unlock", data)
 	if err != nil {

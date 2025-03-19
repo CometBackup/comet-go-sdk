@@ -4233,6 +4233,8 @@ func easyjsonB7f3de24Decode37(in *jlexer.Lexer, out *UserPolicy) {
 			}
 		case "RandomDelaySecs":
 			out.RandomDelaySecs = uint64(in.Uint64())
+		case "RotateStorageVaultKeysHours":
+			out.RotateStorageVaultKeysHours = int(in.Int())
 		default:
 			out.UnmarshalUnknown(in, key)
 		}
@@ -4514,6 +4516,11 @@ func easyjsonB7f3de24Encode37(out *jwriter.Writer, in UserPolicy) {
 		const prefix string = ",\"RandomDelaySecs\":"
 		out.RawString(prefix)
 		out.Uint64(uint64(in.RandomDelaySecs))
+	}
+	{
+		const prefix string = ",\"RotateStorageVaultKeysHours\":"
+		out.RawString(prefix)
+		out.Int(int(in.RotateStorageVaultKeysHours))
 	}
 	in.MarshalUnknowns(out, false)
 	out.RawByte('}')
@@ -10697,6 +10704,10 @@ func easyjsonB7f3de24Decode88(in *jlexer.Lexer, out *ScheduleConfig) {
 			(out.DaysSelect).UnmarshalEasyJSON(in)
 		case "RandomDelaySecs":
 			out.RandomDelaySecs = uint64(in.Uint64())
+		case "SelectedMonth":
+			out.SelectedMonth = uint64(in.Uint64())
+		case "SelectedDay":
+			out.SelectedDay = uint64(in.Uint64())
 		default:
 			out.UnmarshalUnknown(in, key)
 		}
@@ -10755,6 +10766,16 @@ func easyjsonB7f3de24Encode88(out *jwriter.Writer, in ScheduleConfig) {
 		const prefix string = ",\"RandomDelaySecs\":"
 		out.RawString(prefix)
 		out.Uint64(uint64(in.RandomDelaySecs))
+	}
+	{
+		const prefix string = ",\"SelectedMonth\":"
+		out.RawString(prefix)
+		out.Uint64(uint64(in.SelectedMonth))
+	}
+	{
+		const prefix string = ",\"SelectedDay\":"
+		out.RawString(prefix)
+		out.Uint64(uint64(in.SelectedDay))
 	}
 	in.MarshalUnknowns(out, false)
 	out.RawByte('}')
@@ -11408,10 +11429,14 @@ func easyjsonB7f3de24Decode94(in *jlexer.Lexer, out *RetentionRange) {
 			out.Weeks = int64(in.Int64())
 		case "Months":
 			out.Months = int64(in.Int64())
+		case "Years":
+			out.Years = int64(in.Int64())
 		case "WeekOffset":
 			out.WeekOffset = int64(in.Int64())
 		case "MonthOffset":
 			out.MonthOffset = int64(in.Int64())
+		case "YearOffset":
+			out.YearOffset = int64(in.Int64())
 		default:
 			out.UnmarshalUnknown(in, key)
 		}
@@ -11457,6 +11482,11 @@ func easyjsonB7f3de24Encode94(out *jwriter.Writer, in RetentionRange) {
 		out.Int64(int64(in.Months))
 	}
 	{
+		const prefix string = ",\"Years\":"
+		out.RawString(prefix)
+		out.Int64(int64(in.Years))
+	}
+	{
 		const prefix string = ",\"WeekOffset\":"
 		out.RawString(prefix)
 		out.Int64(int64(in.WeekOffset))
@@ -11465,6 +11495,11 @@ func easyjsonB7f3de24Encode94(out *jwriter.Writer, in RetentionRange) {
 		const prefix string = ",\"MonthOffset\":"
 		out.RawString(prefix)
 		out.Int64(int64(in.MonthOffset))
+	}
+	{
+		const prefix string = ",\"YearOffset\":"
+		out.RawString(prefix)
+		out.Int64(int64(in.YearOffset))
 	}
 	in.MarshalUnknowns(out, false)
 	out.RawByte('}')
