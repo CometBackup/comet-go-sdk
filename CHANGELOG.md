@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 2025-03-20 v2.4.0
+
+- Based on Comet 25.3.1
+- Support yearly retention rules
+- Support yearly schedule rules
+- Support storage vault key rotation
+
 ## 2025-02-17 v2.3.0
 Update to 24.12.5
 
