@@ -20,10 +20,10 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "25.3.1"
+const APPLICATION_VERSION string = "25.6.8"
 const APPLICATION_VERSION_MAJOR int = 25
-const APPLICATION_VERSION_MINOR int = 3
-const APPLICATION_VERSION_REVISION int = 1
+const APPLICATION_VERSION_MINOR int = 6
+const APPLICATION_VERSION_REVISION int = 8
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
@@ -120,6 +120,9 @@ const DESTINATIONTYPE_B2 uint64 = 1008
 
 // The Comet Server Storage Role protocol
 const DESTINATIONTYPE_COMET uint64 = 1003
+
+// Storage type that is applied when Storage Gateway fails to launch correctly
+const DESTINATIONTYPE_ERROR uint64 = 1
 
 // FTP protocol
 const DESTINATIONTYPE_FTP uint64 = 1004
@@ -235,6 +238,9 @@ const ENGINE_BUILTIN_MSSQL string = "engine1/mssql"
 
 // MySQL
 const ENGINE_BUILTIN_MYSQL string = "engine1/mysql"
+
+// Proxmox (PVE)
+const ENGINE_BUILTIN_PROXMOX string = "engine1/proxmox"
 
 // Program Output
 const ENGINE_BUILTIN_STDOUT string = "engine1/stdout"
@@ -451,6 +457,7 @@ const OBJECT_LOCK_ON uint8 = 1
 const OFFICE365_REGION_CHINA string = "ChinaCloud"
 const OFFICE365_REGION_GERMANY string = "GermanCloud"
 const OFFICE365_REGION_PUBLIC string = "GlobalPublicCloud"
+const OFFICE365_REGION_PUBLIC_TEST string = "GlobalPublicCloudTest"
 const OFFICE365_REGION_US_DOD string = "USGovtGccDoDCloud"
 const OFFICE365_REGION_US_GOVT string = "USGovtGccCloud"
 
@@ -488,6 +495,8 @@ const PROVIDER_GENERIC OidcProvider = "oidc"
 
 // OidcProvider
 const PROVIDER_GOOGLE OidcProvider = "google"
+const PROXMOX_TYPE_CONTAINER string = "lxc"
+const PROXMOX_TYPE_VM string = "qemu"
 
 // PSAType
 const PSA_TYPE_GENERIC PSAType = 0
@@ -497,6 +506,10 @@ const PSA_TYPE_GRADIENT PSAType = 1
 
 // PSAType
 const PSA_TYPE_SYNCRO PSAType = 2
+const PVE_BACKUP_METHOD_DEFAULT string = PVE_BACKUP_METHOD_SNAPSHOT
+const PVE_BACKUP_METHOD_SNAPSHOT string = "snapshot"
+const PVE_BACKUP_METHOD_STOP string = "stop"
+const PVE_BACKUP_METHOD_SUSPEND string = "suspend"
 const RELEASE_CODENAME string = "Voyager"
 
 // RemoteServerType: Amazon Web Services
@@ -1575,6 +1588,8 @@ type BackupJobDetail struct {
 	TotalLicensedMailsCount int64 `json:",omitempty"`
 	// For Office 365 backup jobs, the number of unlicensed mailboxes.
 	TotalUnlicensedMailsCount int64 `json:",omitempty"`
+	// The CRC32 of the billing data for this job.
+	BillingCrc32 uint32 `json:",omitempty"`
 	// If this field is present, this job did not perform some work because the Storage Vault is
 	// currently busy.
 	// This field is available in Comet 24.9.2 and later.
@@ -1665,6 +1680,13 @@ type BackupRuleEventTriggers struct {
 	// The number of minutes before retrying when the backup job fails.
 	// This field is available in Comet 24.6.6 and later.
 	LastJobFailDoRetryTime uint64 `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
+}
+
+type BlockInfo struct {
+	DeviceID     string
+	DiskNodeName string
 
 	easyjson.UnknownFieldsProxy
 }
@@ -1815,6 +1837,33 @@ type BrowseOffice365ObjectsResponse struct {
 	Status  int
 	Message string
 	Objects []Office365ObjectInfo
+
+	easyjson.UnknownFieldsProxy
+}
+
+type BrowseProxmoxNodesResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
+	Status  int
+	Message string
+	Nodes   []string
+
+	easyjson.UnknownFieldsProxy
+}
+
+type BrowseProxmoxResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
+	Status  int
+	Message string
+	VMs     []PVEVM
+
+	easyjson.UnknownFieldsProxy
+}
+
+type BrowseProxmoxStorageResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
+	Status  int
+	Message string
+	Storage []PVEStorageName
 
 	easyjson.UnknownFieldsProxy
 }
@@ -3033,18 +3082,20 @@ type Office365CustomSettingV2 struct {
 	// Deprecated: This member has been deprecated since Comet version 24.12.2
 	Organization bool
 	// If true, exclude all filtered IDs and Members. Backup everything else
-	FilterMode bool
+	FilterMode bool `json:",omitempty"`
+	// If true, backup everything, ignoring selection and filter options
+	WholeOrg bool `json:",omitempty"`
 	// Key is the ID of User, Group, or Site
-	// Value is a bitset of the SERVICE_ constants, to select which services to back up for members
+	// Value is a bitset of the SERVICE_ constants, to select which services to backup for accounts
 	BackupOptions map[string]uint `json:",omitempty"`
 	// Key is the ID of a Group or Team Site
-	// Value is a bitset of the SERVICE_ constants, to select which services to back up for members
+	// Value is a bitset of the SERVICE_ constants, to select which services to backup for members
 	MemberBackupOptions map[string]uint `json:",omitempty"`
 	// Key is the ID of a User, Group, or Site
-	// Value is a bitset of the SERVICE_ constants, to select which services to back up for members
+	// Value is a bitset of the SERVICE_ constants, to select which services to not backup for accounts
 	FilterOptions map[string]uint `json:",omitempty"`
 	// Key is the ID of a Group or Team Site
-	// Value is a bitset of the SERVICE_ constants, to select which services to back up for members
+	// Value is a bitset of the SERVICE_ constants, to select which services to not backup for members
 	FilterMemberOptions map[string]uint `json:",omitempty"`
 
 	easyjson.UnknownFieldsProxy
@@ -3162,8 +3213,90 @@ type PSAGroupedBy struct {
 	easyjson.UnknownFieldsProxy
 }
 
+type PVEBackupDisk struct {
+	Device    string `json:",omitempty"`
+	DeviceNum int    `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
+}
+
+type PVEBackupNode struct {
+	IncludedVMs []PVEBackupVM `json:",omitempty"`
+	Name        string        `json:",omitempty"`
+	Selected    bool          `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
+}
+
+type PVEBackupVM struct {
+	IncludedDisks []PVEBackupDisk `json:",omitempty"`
+	Name          string          `json:",omitempty"`
+	Selected      bool            `json:",omitempty"`
+	Type          string          `json:",omitempty"`
+	VMID          string          `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
+}
+
+type PVEDisk struct {
+	Device    string
+	DeviceNum int
+	StorageID string `json:",omitempty"`
+	Volume    string `json:",omitempty"`
+	Size      string `json:",omitempty"`
+	Format    string `json:",omitempty"`
+	Options   string `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
+}
+
+type PVEParams struct {
+	Everything    bool            `json:",omitempty"`
+	Exclusions    []PVEBackupNode `json:",omitempty"`
+	Method        string          `json:",omitempty"`
+	Quota         int64           `json:",omitempty"`
+	SSHConnection SSHConnection   `json:",omitempty"`
+	Selections    []PVEBackupNode `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
+}
+
+type PVERestoreSelection struct {
+	ID       string `json:",omitempty"`
+	Name     string `json:",omitempty"`
+	TargetVM PVEVM
+
+	easyjson.UnknownFieldsProxy
+}
+
+// PVEStorageName contains the name and type of storage configured on a Proxmox Cluster
+type PVEStorageName struct {
+	Name string
+	Type string
+
+	easyjson.UnknownFieldsProxy
+}
+
+type PVEVM struct {
+	CPU     string
+	Disks   []PVEDisk
+	Memory  string
+	Name    string
+	Node    string
+	OSType  string
+	Running bool
+	Type    string
+	VMID    string
+
+	easyjson.UnknownFieldsProxy
+}
+
 type Partition struct {
 	DeviceName string
+	// The partition's MBR or GPT id, if any
+	PartitionGuid string
+	// The partition's offset within the physical disk
+	PartitionOffset int64
 	// The name of the filesystem used on this partition (e.g. "NTFS")
 	Filesystem   string
 	VolumeName   string
@@ -3241,6 +3374,22 @@ type ProtectedItemEngineTypePolicy struct {
 	easyjson.UnknownFieldsProxy
 }
 
+type ProxmoxConnection struct {
+	SSH SSHConnection
+
+	easyjson.UnknownFieldsProxy
+}
+
+type ProxmoxRestoreTargetOptions struct {
+	// The name of the node to restore to in the Proxmox Cluster
+	Node string
+	SSH  SSHConnection
+	// the name of the storage location to restore to
+	Storage string
+
+	easyjson.UnknownFieldsProxy
+}
+
 type PublicBrandingProperties struct {
 	ProductName                   string
 	CompanyName                   string
@@ -3296,6 +3445,7 @@ type RegistrationLobbyConnection struct {
 	ReportedPlatformVersion OSInfo `json:",omitempty"`
 	DeviceTimeZone          string `json:",omitempty"`
 	IPAddress               string `json:",omitempty"`
+	Host                    string `json:",omitempty"`
 	ConnectionTime          int64
 
 	easyjson.UnknownFieldsProxy
@@ -3422,6 +3572,8 @@ type RequestStorageVaultResponseMessage struct {
 	Status        int
 	Message       string
 	DestinationID string
+	ProfileHash   string
+	Profile       UserProfileConfig
 
 	easyjson.UnknownFieldsProxy
 }
@@ -3484,6 +3636,8 @@ type RestoreJobAdvancedOptions struct {
 	// For RESTORETYPE_VMHOST
 	// This field is available in Comet 24.12.x and later.
 	HyperVConnection HyperVRestoreTargetOptions `json:",omitempty"`
+	// For RESTORETYPE_VMHOST
+	ProxmoxConnection ProxmoxRestoreTargetOptions `json:",omitempty"`
 
 	easyjson.UnknownFieldsProxy
 }
@@ -7205,6 +7359,111 @@ func (c *CometAPIClient) AdminDispatcherRequestBrowseMysql(ctx context.Context, 
 	return result, nil
 }
 
+// AdminDispatcherRequestBrowseProxmox: Request a list of Proxmox virtual machines and containers
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetID: The live connection GUID
+// Credentials: The Proxmox connection settings
+func (c *CometAPIClient) AdminDispatcherRequestBrowseProxmox(ctx context.Context, TargetID string, Credentials ProxmoxConnection) (*BrowseProxmoxResponse, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	data["TargetID"] = []string{TargetID}
+
+	b, err = json.Marshal(Credentials)
+	if err != nil {
+		return nil, err
+	}
+	data["Credentials"] = []string{string(b)}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-browse-proxmox", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &BrowseProxmoxResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminDispatcherRequestBrowseProxmoxNodes: Request a list of Proxmox nodes
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetID: The live connection GUID
+// Credentials: The SSH connection settings
+func (c *CometAPIClient) AdminDispatcherRequestBrowseProxmoxNodes(ctx context.Context, TargetID string, Credentials SSHConnection) (*BrowseProxmoxNodesResponse, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	data["TargetID"] = []string{TargetID}
+
+	b, err = json.Marshal(Credentials)
+	if err != nil {
+		return nil, err
+	}
+	data["Credentials"] = []string{string(b)}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-browse-proxmox/nodes", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &BrowseProxmoxNodesResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminDispatcherRequestBrowseProxmoxStorage: Request a list of configured Proxmox storage
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetID: The live connection GUID
+// Credentials: The SSH connection settings
+func (c *CometAPIClient) AdminDispatcherRequestBrowseProxmoxStorage(ctx context.Context, TargetID string, Credentials SSHConnection) (*BrowseProxmoxStorageResponse, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	data["TargetID"] = []string{TargetID}
+
+	b, err = json.Marshal(Credentials)
+	if err != nil {
+		return nil, err
+	}
+	data["Credentials"] = []string{string(b)}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-browse-proxmox/storage", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &BrowseProxmoxStorageResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // AdminDispatcherRequestBrowseVmware: Request a list of VMware vSphere virtual machines
 // The remote device must have given consent for an MSP to browse their files.
 //
@@ -10095,7 +10354,8 @@ func (c *CometAPIClient) AdminReplicationState(ctx context.Context) ([]Replicato
 // StorageProvider: ID for the storage template destination
 // SelfAddress: (Optional) The external URL for this server. Used to resolve conflicts
 // DeviceID: (Optional) The ID of the device to be added as a associated device of the Storage Vault
-func (c *CometAPIClient) AdminRequestStorageVault(ctx context.Context, TargetUser string, StorageProvider string, SelfAddress *string, DeviceID *string) (*RequestStorageVaultResponseMessage, error) {
+// ProfileHash: (Optional) The profile hash of the user profile
+func (c *CometAPIClient) AdminRequestStorageVault(ctx context.Context, TargetUser string, StorageProvider string, SelfAddress *string, DeviceID *string, ProfileHash *string) (*RequestStorageVaultResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -10111,6 +10371,10 @@ func (c *CometAPIClient) AdminRequestStorageVault(ctx context.Context, TargetUse
 
 	if DeviceID != nil {
 		data["DeviceID"] = []string{*DeviceID}
+	}
+
+	if ProfileHash != nil {
+		data["ProfileHash"] = []string{*ProfileHash}
 	}
 
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/request-storage-vault", data)
@@ -10296,7 +10560,7 @@ func (c *CometAPIClient) AdminSetUserProfile(ctx context.Context, TargetUser str
 // ProfileData: Modified user profile
 // RequireHash: Previous hash parameter
 // AdminOptions: (Optional) Instructions for modifying user profile
-func (c *CometAPIClient) AdminSetUserProfileHash(ctx context.Context, TargetUser string, ProfileData UserProfileConfig, RequireHash string, AdminOptions *AdminOptions) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminSetUserProfileHash(ctx context.Context, TargetUser string, ProfileData UserProfileConfig, RequireHash string, AdminOptions *AdminOptions) (*GetProfileAndHashResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -10324,7 +10588,7 @@ func (c *CometAPIClient) AdminSetUserProfileHash(ctx context.Context, TargetUser
 		return nil, err
 	}
 
-	result := &CometAPIResponseMessage{}
+	result := &GetProfileAndHashResponseMessage{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err
@@ -11468,6 +11732,116 @@ func (c *CometAPIClient) UserWebDispatcherRequestBrowseMysql(ctx context.Context
 	return result, nil
 }
 
+// UserWebDispatcherRequestBrowseProxmox: Request a list of Proxmox virtual machines and containers
+//
+// You must supply user authentication credentials to use this API, and the user account must be
+// authorized for web access.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetID: The live connection GUID
+// Credentials: The Proxmox connection settings
+func (c *CometAPIClient) UserWebDispatcherRequestBrowseProxmox(ctx context.Context, TargetID string, Credentials ProxmoxConnection) (*BrowseProxmoxResponse, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	data["TargetID"] = []string{TargetID}
+
+	b, err = json.Marshal(Credentials)
+	if err != nil {
+		return nil, err
+	}
+	data["Credentials"] = []string{string(b)}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-browse-proxmox", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &BrowseProxmoxResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// UserWebDispatcherRequestBrowseProxmoxNodes: Request a list of Proxmox nodes from a Proxmox
+// cluster
+//
+// You must supply user authentication credentials to use this API, and the user account must be
+// authorized for web access.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetID: The live connection GUID
+// Credentials: SSH connection settings
+func (c *CometAPIClient) UserWebDispatcherRequestBrowseProxmoxNodes(ctx context.Context, TargetID string, Credentials SSHConnection) (*BrowseProxmoxNodesResponse, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	data["TargetID"] = []string{TargetID}
+
+	b, err = json.Marshal(Credentials)
+	if err != nil {
+		return nil, err
+	}
+	data["Credentials"] = []string{string(b)}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-browse-proxmox/nodes", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &BrowseProxmoxNodesResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// UserWebDispatcherRequestBrowseProxmoxStorage: Request a list of configured Proxmox storage from a
+// Proxmox cluster
+//
+// You must supply user authentication credentials to use this API, and the user account must be
+// authorized for web access.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetID: The live connection GUID
+// Credentials: SSH connection settings
+func (c *CometAPIClient) UserWebDispatcherRequestBrowseProxmoxStorage(ctx context.Context, TargetID string, Credentials SSHConnection) (*BrowseProxmoxStorageResponse, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	data["TargetID"] = []string{TargetID}
+
+	b, err = json.Marshal(Credentials)
+	if err != nil {
+		return nil, err
+	}
+	data["Credentials"] = []string{string(b)}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-browse-proxmox/storage", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &BrowseProxmoxStorageResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // UserWebDispatcherRequestBrowseVmware: Request a list of VMware vSphere virtual machines
 //
 // You must supply user authentication credentials to use this API, and the user account must be
@@ -12297,13 +12671,27 @@ func (c *CometAPIClient) UserWebGetJobs(ctx context.Context) ([]BackupJobDetail,
 	return result, nil
 }
 
-// UserWebGetJobsForCustomSearch: List all backup jobs (Web)
+// UserWebGetJobsForCustomSearch: Get jobs (for custom search)
+// The jobs are returned in an unspecified order.
 //
 // You must supply user authentication credentials to use this API, and the user account must be
 // authorized for web access.
 // This API requires the Auth Role to be enabled.
-func (c *CometAPIClient) UserWebGetJobsForCustomSearch(ctx context.Context) ([]BackupJobDetail, error) {
-	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/get-jobs-for-custom-search", nil)
+//
+// - Params
+// Query: (No description available)
+func (c *CometAPIClient) UserWebGetJobsForCustomSearch(ctx context.Context, Query SearchClause) ([]BackupJobDetail, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	b, err = json.Marshal(Query)
+	if err != nil {
+		return nil, err
+	}
+	data["Query"] = []string{string(b)}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/get-jobs-for-custom-search", data)
 	if err != nil {
 		return nil, err
 	}
@@ -12441,7 +12829,8 @@ func (c *CometAPIClient) UserWebRequestFilesystemObjects(ctx context.Context, Ta
 // StorageProvider: ID for the storage template destination
 // SelfAddress: (Optional) The external URL for this server. Used to resolve conflicts
 // DeviceID: (Optional) The ID of the device to be added as a associated device of the Storage Vault
-func (c *CometAPIClient) UserWebRequestStorageVault(ctx context.Context, StorageProvider string, SelfAddress *string, DeviceID *string) (*RequestStorageVaultResponseMessage, error) {
+// ProfileHash: (Optional) The profile hash of the user profile
+func (c *CometAPIClient) UserWebRequestStorageVault(ctx context.Context, StorageProvider string, SelfAddress *string, DeviceID *string, ProfileHash *string) (*RequestStorageVaultResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -12455,6 +12844,10 @@ func (c *CometAPIClient) UserWebRequestStorageVault(ctx context.Context, Storage
 
 	if DeviceID != nil {
 		data["DeviceID"] = []string{*DeviceID}
+	}
+
+	if ProfileHash != nil {
+		data["ProfileHash"] = []string{*ProfileHash}
 	}
 
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/request-storage-vault", data)
@@ -12549,7 +12942,7 @@ func (c *CometAPIClient) UserWebSessionStart(ctx context.Context) (*SessionKeyRe
 // - Params
 // ProfileData: Updated account profile
 // ProfileHash: Previous account profile hash
-func (c *CometAPIClient) UserWebSetProfileHash(ctx context.Context, ProfileData UserProfileConfig, ProfileHash string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) UserWebSetProfileHash(ctx context.Context, ProfileData UserProfileConfig, ProfileHash string) (*GetProfileAndHashResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -12567,7 +12960,7 @@ func (c *CometAPIClient) UserWebSetProfileHash(ctx context.Context, ProfileData 
 		return nil, err
 	}
 
-	result := &CometAPIResponseMessage{}
+	result := &GetProfileAndHashResponseMessage{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err
