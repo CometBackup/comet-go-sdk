@@ -20,10 +20,10 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "25.6.8"
+const APPLICATION_VERSION string = "25.9.6"
 const APPLICATION_VERSION_MAJOR int = 25
-const APPLICATION_VERSION_MINOR int = 6
-const APPLICATION_VERSION_REVISION int = 8
+const APPLICATION_VERSION_MINOR int = 9
+const APPLICATION_VERSION_REVISION int = 6
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
@@ -364,6 +364,9 @@ const JOB_STATUS_FAILED__MAX JobStatus = 7999
 // unsuccessful reason.
 const JOB_STATUS_FAILED__MIN JobStatus = 7000
 
+// JobStatus: The job has been created by the server but has not yet been initialized by the client.
+const JOB_STATUS_NOT_YET_STARTED JobStatus = 6004
+
 // JobStatus: The last information the server received from the device is that the job is currently
 // running.
 const JOB_STATUS_RUNNING_ACTIVE JobStatus = 6001
@@ -506,10 +509,18 @@ const PSA_TYPE_GRADIENT PSAType = 1
 
 // PSAType
 const PSA_TYPE_SYNCRO PSAType = 2
-const PVE_BACKUP_METHOD_DEFAULT string = PVE_BACKUP_METHOD_SNAPSHOT
-const PVE_BACKUP_METHOD_SNAPSHOT string = "snapshot"
-const PVE_BACKUP_METHOD_STOP string = "stop"
-const PVE_BACKUP_METHOD_SUSPEND string = "suspend"
+
+// PveBackupMethod
+const PVE_BACKUP_METHOD_DEFAULT PveBackupMethod = PVE_BACKUP_METHOD_SNAPSHOT
+
+// PveBackupMethod
+const PVE_BACKUP_METHOD_SNAPSHOT PveBackupMethod = "snapshot"
+
+// PveBackupMethod
+const PVE_BACKUP_METHOD_STOP PveBackupMethod = "stop"
+
+// PveBackupMethod
+const PVE_BACKUP_METHOD_SUSPEND PveBackupMethod = "suspend"
 const RELEASE_CODENAME string = "Voyager"
 
 // RemoteServerType: Amazon Web Services
@@ -1207,6 +1218,9 @@ const WINDOWSCODESIGN_METHOD_PKCS11HSM WindowsCodesignMethod = 3
 
 // WindowsCodesignMethod: Use a configured PKCS#12 key file for Authenticode codesigning
 const WINDOWSCODESIGN_METHOD_PKCS12FILE WindowsCodesignMethod = 2
+
+// WindowsCodesignMethod: Use a configured SAS Relic server for Authenticode codesigning
+const WINDOWSCODESIGN_METHOD_RELICSERVER WindowsCodesignMethod = 5
 const USER_AGENT_HEADER string = "User-Agent"
 const DEFAULT_USER_AGENT string = "comet-go-sdk/" + APPLICATION_VERSION
 
@@ -1241,6 +1255,7 @@ type MacOSCodesignLevel int
 type NewsEntries map[string]NewsEntry
 type OidcProvider string
 type PSAType int
+type PveBackupMethod string
 type RegistrationLobbyConnectionID string
 type RegistrationLobbyConnectionMap map[RegistrationLobbyConnectionID]RegistrationLobbyConnection
 type RemoteServerType string
@@ -1546,6 +1561,8 @@ type BackupJobAdvancedOptions struct {
 	ConcurrencyCount int64
 	// Log verbosity level. LOG_DEBUG has the greatest verbosity
 	LogLevel string
+	// Default disabled
+	Tags string
 
 	easyjson.UnknownFieldsProxy
 }
@@ -1588,8 +1605,6 @@ type BackupJobDetail struct {
 	TotalLicensedMailsCount int64 `json:",omitempty"`
 	// For Office 365 backup jobs, the number of unlicensed mailboxes.
 	TotalUnlicensedMailsCount int64 `json:",omitempty"`
-	// The CRC32 of the billing data for this job.
-	BillingCrc32 uint32 `json:",omitempty"`
 	// If this field is present, this job did not perform some work because the Storage Vault is
 	// currently busy.
 	// This field is available in Comet 24.9.2 and later.
@@ -1603,6 +1618,8 @@ type BackupJobDetail struct {
 	DestinationSizeStart SizeMeasurement `json:",omitempty"`
 	// The size of the Storage Vault, as measured at the end of the job.
 	DestinationSizeEnd SizeMeasurement `json:",omitempty"`
+	// The tags sent as BackupJobOptions, Useful for Groupings
+	Tags string `json:",omitempty"`
 
 	easyjson.UnknownFieldsProxy
 }
@@ -1657,6 +1674,8 @@ type BackupRuleConfig struct {
 	ConcurrencyCount int64
 	// Log verbosity level. LOG_DEBUG has the greatest verbosity
 	LogLevel string
+	// Default disabled
+	Tags string
 	// Scheduled start times
 	Schedules []ScheduleConfig
 	// Other events that will cause this scheduled job to start
@@ -1680,13 +1699,6 @@ type BackupRuleEventTriggers struct {
 	// The number of minutes before retrying when the backup job fails.
 	// This field is available in Comet 24.6.6 and later.
 	LastJobFailDoRetryTime uint64 `json:",omitempty"`
-
-	easyjson.UnknownFieldsProxy
-}
-
-type BlockInfo struct {
-	DeviceID     string
-	DiskNodeName string
 
 	easyjson.UnknownFieldsProxy
 }
@@ -1743,7 +1755,13 @@ type BrandingOptions struct {
 	WindowsCodeSignAzureAppSecretFormat uint64
 	WindowsCodeSignAzureAppSecret       string
 	WindowsCodeSignAzureTenantID        string
-	MacOSCodeSign                       MacOSCodeSignProperties
+	// URL of the SAS Relic server, with protocol (https://) and trailing slash
+	WindowsCodeSignRelicServerURL string
+	// The SAS Relic client keypair in PEM format
+	WindowsCodeSignRelicKeypairFile string
+	// The name of the key to select on the remote SAS Relic server
+	WindowsCodeSignRelicKeyName string
+	MacOSCodeSign               MacOSCodeSignProperties
 
 	easyjson.UnknownFieldsProxy
 }
@@ -1791,7 +1809,13 @@ type BrandingProperties struct {
 	WindowsCodeSignAzureAppSecretFormat uint64
 	WindowsCodeSignAzureAppSecret       string
 	WindowsCodeSignAzureTenantID        string
-	MacOSCodeSign                       MacOSCodeSignProperties
+	// URL of the SAS Relic server, with protocol (https://) and trailing slash
+	WindowsCodeSignRelicServerURL string
+	// The SAS Relic client keypair in PEM format
+	WindowsCodeSignRelicKeypairFile string
+	// The name of the key to select on the remote SAS Relic server
+	WindowsCodeSignRelicKeyName string
+	MacOSCodeSign               MacOSCodeSignProperties
 
 	easyjson.UnknownFieldsProxy
 }
@@ -2381,6 +2405,15 @@ type DiskDrive struct {
 	SectorSize int64
 	// Used to indicate the partition conflicts on the disk.
 	PartitionConflicts []PartitionConflict
+
+	easyjson.UnknownFieldsProxy
+}
+
+type DispatchWithJobIDResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
+	Status  int
+	Message string
+	JobID   string `json:",omitempty"`
 
 	easyjson.UnknownFieldsProxy
 }
@@ -3213,27 +3246,44 @@ type PSAGroupedBy struct {
 	easyjson.UnknownFieldsProxy
 }
 
+// This type is used in the EngineProps for an "engine1/proxmox" Protected Item. It represents the
+// selection state for a single disk attached to a single Proxmox VM or LXC Container. It is
+// expected to be user-configurable.
+// This struct is available in Comet 25.8.0 and later.
 type PVEBackupDisk struct {
-	Device    string `json:",omitempty"`
-	DeviceNum int    `json:",omitempty"`
+	// For a disk "scsi0", this field should contain: "scsi"
+	Device string `json:",omitempty"`
+	// For a disk "scsi0", this field should contain: 0
+	DeviceNum int `json:",omitempty"`
 
 	easyjson.UnknownFieldsProxy
 }
 
+// This type is used in the EngineProps for an "engine1/proxmox" Protected Item. It represents the
+// selection state for a single Proxmox VE node. It is expected to be user-configurable.
+// This struct is available in Comet 25.8.0 and later.
 type PVEBackupNode struct {
 	IncludedVMs []PVEBackupVM `json:",omitempty"`
-	Name        string        `json:",omitempty"`
-	Selected    bool          `json:",omitempty"`
+	// Used as a cache if the device is offline when editing the Protected Item; not considered as part
+	// of the selection
+	Name     string `json:",omitempty"`
+	Selected bool   `json:",omitempty"`
 
 	easyjson.UnknownFieldsProxy
 }
 
+// This type is used in the EngineProps for an "engine1/proxmox" Protected Item. It represents the
+// selection state for a single Proxmox VM or LXC Container. It is expected to be user-configurable.
+// This struct is available in Comet 25.8.0 and later.
 type PVEBackupVM struct {
 	IncludedDisks []PVEBackupDisk `json:",omitempty"`
-	Name          string          `json:",omitempty"`
-	Selected      bool            `json:",omitempty"`
-	Type          string          `json:",omitempty"`
-	VMID          string          `json:",omitempty"`
+	// Used as a cache if the device is offline when editing the Protected Item; not considered as part
+	// of the selection
+	Name     string `json:",omitempty"`
+	Selected bool   `json:",omitempty"`
+	// One of the PROXMOX_TYPE_ constants
+	Type string `json:",omitempty"`
+	VMID string `json:",omitempty"`
 
 	easyjson.UnknownFieldsProxy
 }
@@ -3243,28 +3293,26 @@ type PVEDisk struct {
 	DeviceNum int
 	StorageID string `json:",omitempty"`
 	Volume    string `json:",omitempty"`
-	Size      string `json:",omitempty"`
-	Format    string `json:",omitempty"`
-	Options   string `json:",omitempty"`
+	// Bytes
+	Size    int64  `json:",omitempty"`
+	Format  string `json:",omitempty"`
+	Options string `json:",omitempty"`
 
 	easyjson.UnknownFieldsProxy
 }
 
+// This type is used in the EngineProps for an "engine1/proxmox" Protected Item. It represents the
+// entire Protected Item configuration. It is expected to be user-configurable.
+// This struct is available in Comet 25.8.0 and later.
 type PVEParams struct {
-	Everything    bool            `json:",omitempty"`
-	Exclusions    []PVEBackupNode `json:",omitempty"`
-	Method        string          `json:",omitempty"`
-	Quota         int64           `json:",omitempty"`
+	Everything bool            `json:",omitempty"`
+	Exclusions []PVEBackupNode `json:",omitempty"`
+	// One of the PVE_BACKUP_METHOD constants
+	Method string `json:",omitempty"`
+	// Primary node URL + SSH credentials
 	SSHConnection SSHConnection   `json:",omitempty"`
 	Selections    []PVEBackupNode `json:",omitempty"`
-
-	easyjson.UnknownFieldsProxy
-}
-
-type PVERestoreSelection struct {
-	ID       string `json:",omitempty"`
-	Name     string `json:",omitempty"`
-	TargetVM PVEVM
+	UseCBT        bool            `json:",omitempty"`
 
 	easyjson.UnknownFieldsProxy
 }
@@ -3277,6 +3325,7 @@ type PVEStorageName struct {
 	easyjson.UnknownFieldsProxy
 }
 
+// PVEVM describes a single Proxmox virtual machine or container.
 type PVEVM struct {
 	CPU     string
 	Disks   []PVEDisk
@@ -3286,7 +3335,8 @@ type PVEVM struct {
 	OSType  string
 	Running bool
 	Type    string
-	VMID    string
+	// String type, but always contains an integer value
+	VMID string
 
 	easyjson.UnknownFieldsProxy
 }
@@ -3362,7 +3412,13 @@ type PrivateBrandingProperties struct {
 	WindowsCodeSignAzureAppSecretFormat uint64
 	WindowsCodeSignAzureAppSecret       string
 	WindowsCodeSignAzureTenantID        string
-	MacOSCodeSign                       MacOSCodeSignProperties
+	// URL of the SAS Relic server, with protocol (https://) and trailing slash
+	WindowsCodeSignRelicServerURL string
+	// The SAS Relic client keypair in PEM format
+	WindowsCodeSignRelicKeypairFile string
+	// The name of the key to select on the remote SAS Relic server
+	WindowsCodeSignRelicKeyName string
+	MacOSCodeSign               MacOSCodeSignProperties
 
 	easyjson.UnknownFieldsProxy
 }
@@ -3370,6 +3426,19 @@ type PrivateBrandingProperties struct {
 type ProtectedItemEngineTypePolicy struct {
 	ShouldRestrictEngineTypeList    bool
 	AllowedEngineTypeWhenRestricted []string
+
+	easyjson.UnknownFieldsProxy
+}
+
+type ProtectedItemWithBackupRulesResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
+	Status  int
+	Message string
+	// The Protected Item configuration
+	Source SourceConfig
+	// All backup rules for the Protected Item
+	BackupRules map[string]BackupRuleConfig `json:",omitempty"`
+	ProfileHash string
 
 	easyjson.UnknownFieldsProxy
 }
@@ -4184,6 +4253,13 @@ type SourceConfig struct {
 	// - LOGNOTRUNC: If present, take a "Log (no truncation)" backup job. Otherwise, take a "Full (copy
 	// only)" backup job.
 	//
+	// For engine1/stdout, Comet understands the following EngineProp keys:
+	//
+	// - COMMAND: The command to run
+	// - WORKDIR: The working directory for the command
+	// - SAVEAS: The virtual filename inside the backup snapshot
+	// - Any key starting with EXTRACOMMAND- : Additional commands to run. Each value should be a JSON
+	// array of 3 strings, equivalent to the COMMAND, WORKDIR, SAVEAS values.
 	EngineProps map[string]string
 	// If set, this SourceConfig was added from a Policy with the specified ID.
 	// This field is available in Comet 23.6.0 and later.
@@ -4705,6 +4781,9 @@ type UserProfileConfig struct {
 	// Additional server-wide settings that are enforced for this user profile
 	ServerConfig            UserServerConfig `json:",omitempty"`
 	AutoStorageTemplateGUID string
+	// If enabled, Linux devices in this user account will sandbox all read/write operations to paths
+	// inside user home directories
+	LinuxHomedirSandbox bool
 
 	easyjson.UnknownFieldsProxy
 }
@@ -4874,6 +4953,8 @@ type VaultSnapshot struct {
 	CreateTime int64
 	// This field is available in Comet 20.12.4 and later.
 	HasOriginalPathInfo bool
+	// This field is available in Comet 25.9.4 and later.
+	Tags []string `json:",omitempty"`
 
 	easyjson.UnknownFieldsProxy
 }
@@ -5108,6 +5189,12 @@ type WindowsCodeSignProperties struct {
 	WindowsCodeSignAzureAppSecretFormat uint64
 	WindowsCodeSignAzureAppSecret       string
 	WindowsCodeSignAzureTenantID        string
+	// URL of the SAS Relic server, with protocol (https://) and trailing slash
+	WindowsCodeSignRelicServerURL string
+	// The SAS Relic client keypair in PEM format
+	WindowsCodeSignRelicKeypairFile string
+	// The name of the key to select on the remote SAS Relic server
+	WindowsCodeSignRelicKeyName string
 
 	easyjson.UnknownFieldsProxy
 }
@@ -6546,6 +6633,36 @@ func (c *CometAPIClient) AdminCreateInstallToken(ctx context.Context, TargetUser
 	return result, nil
 }
 
+// AdminDeleteProtectedItem: Delete a Protected Item
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetUser: Selected account username
+// SourceID: Selected Protected Item GUID
+func (c *CometAPIClient) AdminDeleteProtectedItem(ctx context.Context, TargetUser string, SourceID string) (*CometAPIResponseMessage, error) {
+	data := map[string][]string{}
+	var err error
+
+	data["TargetUser"] = []string{TargetUser}
+
+	data["SourceID"] = []string{SourceID}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/delete-protected-item", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CometAPIResponseMessage{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // AdminDeleteUser: Delete user account
 // This does not remove any storage buckets. Unused storage buckets will be cleaned up by the
 // Constellation Role.
@@ -6841,6 +6958,34 @@ func (c *CometAPIClient) AdminDispatcherEmailPreview(ctx context.Context, Target
 	}
 
 	result := &EmailReportGeneratedPreview{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminDispatcherForceLogin: Instruct a live connected device to re-enter login credentials
+// The device will terminate its live-connection process and will not reconnect.
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetID: The live connection GUID
+func (c *CometAPIClient) AdminDispatcherForceLogin(ctx context.Context, TargetID string) (*CometAPIResponseMessage, error) {
+	data := map[string][]string{}
+	var err error
+
+	data["TargetID"] = []string{TargetID}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/force-login", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CometAPIResponseMessage{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err
@@ -7949,7 +8094,7 @@ func (c *CometAPIClient) AdminDispatcherRequestWindiskSnapshot(ctx context.Conte
 // - Params
 // TargetID: The live connection GUID
 // BackupRule: The schedule GUID
-func (c *CometAPIClient) AdminDispatcherRunBackup(ctx context.Context, TargetID string, BackupRule string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminDispatcherRunBackup(ctx context.Context, TargetID string, BackupRule string) (*DispatchWithJobIDResponse, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -7962,7 +8107,7 @@ func (c *CometAPIClient) AdminDispatcherRunBackup(ctx context.Context, TargetID 
 		return nil, err
 	}
 
-	result := &CometAPIResponseMessage{}
+	result := &DispatchWithJobIDResponse{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err
@@ -7981,7 +8126,7 @@ func (c *CometAPIClient) AdminDispatcherRunBackup(ctx context.Context, TargetID 
 // Source: The Protected Item GUID
 // Destination: The Storage Vault GUID
 // Options: (Optional) Extra job parameters (>= 19.3.6)
-func (c *CometAPIClient) AdminDispatcherRunBackupCustom(ctx context.Context, TargetID string, Source string, Destination string, Options *BackupJobAdvancedOptions) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminDispatcherRunBackupCustom(ctx context.Context, TargetID string, Source string, Destination string, Options *BackupJobAdvancedOptions) (*DispatchWithJobIDResponse, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -8005,7 +8150,7 @@ func (c *CometAPIClient) AdminDispatcherRunBackupCustom(ctx context.Context, Tar
 		return nil, err
 	}
 
-	result := &CometAPIResponseMessage{}
+	result := &DispatchWithJobIDResponse{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err
@@ -8028,7 +8173,7 @@ func (c *CometAPIClient) AdminDispatcherRunBackupCustom(ctx context.Context, Tar
 // Snapshot: (Optional) If present, restore a specific snapshot. Otherwise, restore the latest
 // snapshot for the selected Protected Item + Storage Vault pair
 // Paths: (Optional) If present, restore these paths only. Otherwise, restore all data (>= 19.3.0)
-func (c *CometAPIClient) AdminDispatcherRunRestore(ctx context.Context, TargetID string, Path string, Source string, Destination string, Snapshot *string, Paths []string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminDispatcherRunRestore(ctx context.Context, TargetID string, Path string, Source string, Destination string, Snapshot *string, Paths []string) (*DispatchWithJobIDResponse, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -8058,7 +8203,7 @@ func (c *CometAPIClient) AdminDispatcherRunRestore(ctx context.Context, TargetID
 		return nil, err
 	}
 
-	result := &CometAPIResponseMessage{}
+	result := &DispatchWithJobIDResponse{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err
@@ -8090,7 +8235,7 @@ func (c *CometAPIClient) AdminDispatcherRunRestore(ctx context.Context, TargetID
 // KnownDirCount: (Optional) The number of directories to restore, if known. Supplying this means we
 // don't need to walk the entire tree just to find the number of directories and will speed up the
 // restoration process.
-func (c *CometAPIClient) AdminDispatcherRunRestoreCustom(ctx context.Context, TargetID string, Source string, Destination string, Options RestoreJobAdvancedOptions, Snapshot *string, Paths []string, KnownFileCount *int, KnownByteCount *int, KnownDirCount *int) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) AdminDispatcherRunRestoreCustom(ctx context.Context, TargetID string, Source string, Destination string, Options RestoreJobAdvancedOptions, Snapshot *string, Paths []string, KnownFileCount *int, KnownByteCount *int, KnownDirCount *int) (*DispatchWithJobIDResponse, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -8148,7 +8293,7 @@ func (c *CometAPIClient) AdminDispatcherRunRestoreCustom(ctx context.Context, Ta
 		return nil, err
 	}
 
-	result := &CometAPIResponseMessage{}
+	result := &DispatchWithJobIDResponse{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err
@@ -8301,6 +8446,36 @@ func (c *CometAPIClient) AdminDispatcherUnlock(ctx context.Context, TargetID str
 	}
 
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/unlock", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CometAPIResponseMessage{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminDispatcherUpdateLoginPassword: Instruct a live connected device to update its login password
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetID: The live connection GUID
+// NewPassword: The new password of this user
+func (c *CometAPIClient) AdminDispatcherUpdateLoginPassword(ctx context.Context, TargetID string, NewPassword string) (*CometAPIResponseMessage, error) {
+	data := map[string][]string{}
+	var err error
+
+	data["TargetID"] = []string{TargetID}
+
+	data["NewPassword"] = []string{NewPassword}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/update-login-password", data)
 	if err != nil {
 		return nil, err
 	}
@@ -8734,6 +8909,36 @@ func (c *CometAPIClient) AdminGetJobsRecent(ctx context.Context) ([]BackupJobDet
 	}
 
 	result := []BackupJobDetail{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminGetProtectedItemWithBackupRules: Get a Protected Item with its backup rules
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetUser: Selected account username
+// SourceID: Selected Protected Item GUID
+func (c *CometAPIClient) AdminGetProtectedItemWithBackupRules(ctx context.Context, TargetUser string, SourceID string) (*ProtectedItemWithBackupRulesResponse, error) {
+	data := map[string][]string{}
+	var err error
+
+	data["TargetUser"] = []string{TargetUser}
+
+	data["SourceID"] = []string{SourceID}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/get-protected-item-with-backup-rules", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &ProtectedItemWithBackupRulesResponse{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err
@@ -10511,6 +10716,60 @@ func (c *CometAPIClient) AdminSelfBackupStart(ctx context.Context) (*CometAPIRes
 	return result, nil
 }
 
+// AdminSetProtectedItemWithBackupRules: Add or update a Protected Item with its backup rules
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetUser: Selected account username
+// SourceID: Selected Protected Item GUID
+// RequireHash: (Optional) Previous account profile hash
+// Source: (Optional) Optional Protected Item to create or update
+// BackupRules: (Optional) Optional backup rules for the Protected Item
+func (c *CometAPIClient) AdminSetProtectedItemWithBackupRules(ctx context.Context, TargetUser string, SourceID string, RequireHash *string, Source *SourceConfig, BackupRules map[string]BackupRuleConfig) (*CometAPIResponseMessage, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	data["TargetUser"] = []string{TargetUser}
+
+	data["SourceID"] = []string{SourceID}
+
+	if RequireHash != nil {
+		data["RequireHash"] = []string{*RequireHash}
+	}
+
+	if Source != nil {
+		b, err = json.Marshal(Source)
+		if err != nil {
+			return nil, err
+		}
+		data["Source"] = []string{string(b)}
+	}
+
+	if BackupRules != nil {
+		b, err = json.Marshal(BackupRules)
+		if err != nil {
+			return nil, err
+		}
+		data["BackupRules"] = []string{string(b)}
+	}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/set-protected-item-with-backup-rules", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CometAPIResponseMessage{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // AdminSetUserProfile: Modify user account profile
 //
 // You must supply administrator authentication credentials to use this API.
@@ -11266,6 +11525,34 @@ func (c *CometAPIClient) UserWebAccountValidateTotp(ctx context.Context, Profile
 	return result, nil
 }
 
+// UserWebDeleteProtectedItem: Delete a Protected Item
+//
+// You must supply user authentication credentials to use this API, and the user account must be
+// authorized for web access.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// SourceID: Selected Protected Item GUID
+func (c *CometAPIClient) UserWebDeleteProtectedItem(ctx context.Context, SourceID string) (*CometAPIResponseMessage, error) {
+	data := map[string][]string{}
+	var err error
+
+	data["SourceID"] = []string{SourceID}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/delete-protected-item", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CometAPIResponseMessage{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // UserWebDispatcherBrowseVirtualMachines: Browse virtual machines in target snapshot
 //
 // You must supply user authentication credentials to use this API, and the user account must be
@@ -11362,6 +11649,35 @@ func (c *CometAPIClient) UserWebDispatcherDeleteSnapshots(ctx context.Context, T
 	data["SnapshotIDs"] = []string{string(b)}
 
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/delete-snapshots", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CometAPIResponseMessage{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// UserWebDispatcherDropConnection: Disconnect a live connected device
+// The device will almost certainly attempt to reconnect.
+//
+// You must supply user authentication credentials to use this API, and the user account must be
+// authorized for web access.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetID: The live connection GUID
+func (c *CometAPIClient) UserWebDispatcherDropConnection(ctx context.Context, TargetID string) (*CometAPIResponseMessage, error) {
+	data := map[string][]string{}
+	var err error
+
+	data["TargetID"] = []string{TargetID}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/drop-connection", data)
 	if err != nil {
 		return nil, err
 	}
@@ -12563,6 +12879,38 @@ func (c *CometAPIClient) UserWebDispatcherTestSmbAuth(ctx context.Context, Targe
 	return result, nil
 }
 
+// UserWebDispatcherUpdateLoginPassword: Instruct a live connected device to update its login
+// password
+//
+// You must supply user authentication credentials to use this API, and the user account must be
+// authorized for web access.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetID: The live connection GUID
+// NewPassword: The new password of this user
+func (c *CometAPIClient) UserWebDispatcherUpdateLoginPassword(ctx context.Context, TargetID string, NewPassword string) (*CometAPIResponseMessage, error) {
+	data := map[string][]string{}
+	var err error
+
+	data["TargetID"] = []string{TargetID}
+
+	data["NewPassword"] = []string{NewPassword}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/update-login-password", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CometAPIResponseMessage{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // UserWebGetJobLog: Get backup job report log, in plaintext format (Web)
 //
 // You must supply user authentication credentials to use this API, and the user account must be
@@ -12697,6 +13045,34 @@ func (c *CometAPIClient) UserWebGetJobsForCustomSearch(ctx context.Context, Quer
 	}
 
 	result := []BackupJobDetail{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// UserWebGetProtectedItemWithBackupRules: Get a Protected Item with its backup rules
+//
+// You must supply user authentication credentials to use this API, and the user account must be
+// authorized for web access.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// SourceID: Selected Protected Item GUID
+func (c *CometAPIClient) UserWebGetProtectedItemWithBackupRules(ctx context.Context, SourceID string) (*ProtectedItemWithBackupRulesResponse, error) {
+	data := map[string][]string{}
+	var err error
+
+	data["SourceID"] = []string{SourceID}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/get-protected-item-with-backup-rules", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &ProtectedItemWithBackupRulesResponse{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err
@@ -12961,6 +13337,58 @@ func (c *CometAPIClient) UserWebSetProfileHash(ctx context.Context, ProfileData 
 	}
 
 	result := &GetProfileAndHashResponseMessage{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// UserWebSetProtectedItemWithBackupRules: Add or update a Protected Item with its backup rules
+//
+// You must supply user authentication credentials to use this API, and the user account must be
+// authorized for web access.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// SourceID: Selected Protected Item GUID
+// RequireHash: (Optional) Previous account profile hash
+// Source: (Optional) Optional Protected Item to update or create
+// BackupRules: (Optional) Optional backup rules for the Protected Item
+func (c *CometAPIClient) UserWebSetProtectedItemWithBackupRules(ctx context.Context, SourceID string, RequireHash *string, Source *SourceConfig, BackupRules map[string]BackupRuleConfig) (*CometAPIResponseMessage, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	data["SourceID"] = []string{SourceID}
+
+	if RequireHash != nil {
+		data["RequireHash"] = []string{*RequireHash}
+	}
+
+	if Source != nil {
+		b, err = json.Marshal(Source)
+		if err != nil {
+			return nil, err
+		}
+		data["Source"] = []string{string(b)}
+	}
+
+	if BackupRules != nil {
+		b, err = json.Marshal(BackupRules)
+		if err != nil {
+			return nil, err
+		}
+		data["BackupRules"] = []string{string(b)}
+	}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/set-protected-item-with-backup-rules", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CometAPIResponseMessage{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err

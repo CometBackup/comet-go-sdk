@@ -68,6 +68,12 @@ func easyjsonB7f3de24Decode(in *jlexer.Lexer, out *WindowsCodeSignProperties) {
 			out.WindowsCodeSignAzureAppSecret = string(in.String())
 		case "WindowsCodeSignAzureTenantID":
 			out.WindowsCodeSignAzureTenantID = string(in.String())
+		case "WindowsCodeSignRelicServerURL":
+			out.WindowsCodeSignRelicServerURL = string(in.String())
+		case "WindowsCodeSignRelicKeypairFile":
+			out.WindowsCodeSignRelicKeypairFile = string(in.String())
+		case "WindowsCodeSignRelicKeyName":
+			out.WindowsCodeSignRelicKeyName = string(in.String())
 		default:
 			out.UnmarshalUnknown(in, key)
 		}
@@ -161,6 +167,21 @@ func easyjsonB7f3de24Encode(out *jwriter.Writer, in WindowsCodeSignProperties) {
 		const prefix string = ",\"WindowsCodeSignAzureTenantID\":"
 		out.RawString(prefix)
 		out.String(string(in.WindowsCodeSignAzureTenantID))
+	}
+	{
+		const prefix string = ",\"WindowsCodeSignRelicServerURL\":"
+		out.RawString(prefix)
+		out.String(string(in.WindowsCodeSignRelicServerURL))
+	}
+	{
+		const prefix string = ",\"WindowsCodeSignRelicKeypairFile\":"
+		out.RawString(prefix)
+		out.String(string(in.WindowsCodeSignRelicKeypairFile))
+	}
+	{
+		const prefix string = ",\"WindowsCodeSignRelicKeyName\":"
+		out.RawString(prefix)
+		out.String(string(in.WindowsCodeSignRelicKeyName))
 	}
 	in.MarshalUnknowns(out, false)
 	out.RawByte('}')
@@ -2141,6 +2162,29 @@ func easyjsonB7f3de24Decode19(in *jlexer.Lexer, out *VaultSnapshot) {
 			out.CreateTime = int64(in.Int64())
 		case "HasOriginalPathInfo":
 			out.HasOriginalPathInfo = bool(in.Bool())
+		case "Tags":
+			if in.IsNull() {
+				in.Skip()
+				out.Tags = nil
+			} else {
+				in.Delim('[')
+				if out.Tags == nil {
+					if !in.IsDelim(']') {
+						out.Tags = make([]string, 0, 4)
+					} else {
+						out.Tags = []string{}
+					}
+				} else {
+					out.Tags = (out.Tags)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v40 string
+					v40 = string(in.String())
+					out.Tags = append(out.Tags, v40)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
 		default:
 			out.UnmarshalUnknown(in, key)
 		}
@@ -2179,6 +2223,20 @@ func easyjsonB7f3de24Encode19(out *jwriter.Writer, in VaultSnapshot) {
 		const prefix string = ",\"HasOriginalPathInfo\":"
 		out.RawString(prefix)
 		out.Bool(bool(in.HasOriginalPathInfo))
+	}
+	if len(in.Tags) != 0 {
+		const prefix string = ",\"Tags\":"
+		out.RawString(prefix)
+		{
+			out.RawByte('[')
+			for v41, v42 := range in.Tags {
+				if v41 > 0 {
+					out.RawByte(',')
+				}
+				out.String(string(v42))
+			}
+			out.RawByte(']')
+		}
 	}
 	in.MarshalUnknowns(out, false)
 	out.RawByte('}')
@@ -2346,9 +2404,9 @@ func easyjsonB7f3de24Decode21(in *jlexer.Lexer, out *VSSWriterInfo) {
 					out.Components = (out.Components)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v40 VSSComponent
-					(v40).UnmarshalEasyJSON(in)
-					out.Components = append(out.Components, v40)
+					var v43 VSSComponent
+					(v43).UnmarshalEasyJSON(in)
+					out.Components = append(out.Components, v43)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -2379,11 +2437,11 @@ func easyjsonB7f3de24Encode21(out *jwriter.Writer, in VSSWriterInfo) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v41, v42 := range in.Components {
-				if v41 > 0 {
+			for v44, v45 := range in.Components {
+				if v44 > 0 {
 					out.RawByte(',')
 				}
-				(v42).MarshalEasyJSON(out)
+				(v45).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -3049,9 +3107,9 @@ func easyjsonB7f3de24Decode30(in *jlexer.Lexer, out *VMInfoList) {
 					out.VMs = (out.VMs)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v43 VMInfo
-					(v43).UnmarshalEasyJSON(in)
-					out.VMs = append(out.VMs, v43)
+					var v46 VMInfo
+					(v46).UnmarshalEasyJSON(in)
+					out.VMs = append(out.VMs, v46)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -3077,11 +3135,11 @@ func easyjsonB7f3de24Encode30(out *jwriter.Writer, in VMInfoList) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v44, v45 := range in.VMs {
-				if v44 > 0 {
+			for v47, v48 := range in.VMs {
+				if v47 > 0 {
 					out.RawByte(',')
 				}
-				(v45).MarshalEasyJSON(out)
+				(v48).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -3160,9 +3218,9 @@ func easyjsonB7f3de24Decode31(in *jlexer.Lexer, out *VMInfo) {
 					out.Disks = (out.Disks)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v46 VMDiskInfo
-					(v46).UnmarshalEasyJSON(in)
-					out.Disks = append(out.Disks, v46)
+					var v49 VMDiskInfo
+					(v49).UnmarshalEasyJSON(in)
+					out.Disks = append(out.Disks, v49)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -3218,11 +3276,11 @@ func easyjsonB7f3de24Encode31(out *jwriter.Writer, in VMInfo) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v47, v48 := range in.Disks {
-				if v47 > 0 {
+			for v50, v51 := range in.Disks {
+				if v50 > 0 {
 					out.RawByte(',')
 				}
-				(v48).MarshalEasyJSON(out)
+				(v51).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -3612,9 +3670,9 @@ func easyjsonB7f3de24Decode36(in *jlexer.Lexer, out *UserProfileConfig) {
 					out.Emails = (out.Emails)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v49 string
-					v49 = string(in.String())
-					out.Emails = append(out.Emails, v49)
+					var v52 string
+					v52 = string(in.String())
+					out.Emails = append(out.Emails, v52)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -3628,9 +3686,9 @@ func easyjsonB7f3de24Decode36(in *jlexer.Lexer, out *UserProfileConfig) {
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v50 UserCustomEmailSettings
-					(v50).UnmarshalEasyJSON(in)
-					(out.OverrideEmailSettings)[key] = v50
+					var v53 UserCustomEmailSettings
+					(v53).UnmarshalEasyJSON(in)
+					(out.OverrideEmailSettings)[key] = v53
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -3646,9 +3704,9 @@ func easyjsonB7f3de24Decode36(in *jlexer.Lexer, out *UserProfileConfig) {
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v51 DestinationConfig
-					(v51).UnmarshalEasyJSON(in)
-					(out.Destinations)[key] = v51
+					var v54 DestinationConfig
+					(v54).UnmarshalEasyJSON(in)
+					(out.Destinations)[key] = v54
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -3664,9 +3722,9 @@ func easyjsonB7f3de24Decode36(in *jlexer.Lexer, out *UserProfileConfig) {
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v52 SourceConfig
-					(v52).UnmarshalEasyJSON(in)
-					(out.Sources)[key] = v52
+					var v55 SourceConfig
+					(v55).UnmarshalEasyJSON(in)
+					(out.Sources)[key] = v55
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -3680,9 +3738,9 @@ func easyjsonB7f3de24Decode36(in *jlexer.Lexer, out *UserProfileConfig) {
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v53 BackupRuleConfig
-					(v53).UnmarshalEasyJSON(in)
-					(out.BackupRules)[key] = v53
+					var v56 BackupRuleConfig
+					(v56).UnmarshalEasyJSON(in)
+					(out.BackupRules)[key] = v56
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -3696,9 +3754,9 @@ func easyjsonB7f3de24Decode36(in *jlexer.Lexer, out *UserProfileConfig) {
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v54 DeviceConfig
-					(v54).UnmarshalEasyJSON(in)
-					(out.Devices)[key] = v54
+					var v57 DeviceConfig
+					(v57).UnmarshalEasyJSON(in)
+					(out.Devices)[key] = v57
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -3747,6 +3805,8 @@ func easyjsonB7f3de24Decode36(in *jlexer.Lexer, out *UserProfileConfig) {
 			(out.ServerConfig).UnmarshalEasyJSON(in)
 		case "AutoStorageTemplateGUID":
 			out.AutoStorageTemplateGUID = string(in.String())
+		case "LinuxHomedirSandbox":
+			out.LinuxHomedirSandbox = bool(in.Bool())
 		default:
 			out.UnmarshalUnknown(in, key)
 		}
@@ -3798,11 +3858,11 @@ func easyjsonB7f3de24Encode36(out *jwriter.Writer, in UserProfileConfig) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v55, v56 := range in.Emails {
-				if v55 > 0 {
+			for v58, v59 := range in.Emails {
+				if v58 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v56))
+				out.String(string(v59))
 			}
 			out.RawByte(']')
 		}
@@ -3814,16 +3874,16 @@ func easyjsonB7f3de24Encode36(out *jwriter.Writer, in UserProfileConfig) {
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v57First := true
-			for v57Name, v57Value := range in.OverrideEmailSettings {
-				if v57First {
-					v57First = false
+			v60First := true
+			for v60Name, v60Value := range in.OverrideEmailSettings {
+				if v60First {
+					v60First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v57Name))
+				out.String(string(v60Name))
 				out.RawByte(':')
-				(v57Value).MarshalEasyJSON(out)
+				(v60Value).MarshalEasyJSON(out)
 			}
 			out.RawByte('}')
 		}
@@ -3840,16 +3900,16 @@ func easyjsonB7f3de24Encode36(out *jwriter.Writer, in UserProfileConfig) {
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v58First := true
-			for v58Name, v58Value := range in.Destinations {
-				if v58First {
-					v58First = false
+			v61First := true
+			for v61Name, v61Value := range in.Destinations {
+				if v61First {
+					v61First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v58Name))
+				out.String(string(v61Name))
 				out.RawByte(':')
-				(v58Value).MarshalEasyJSON(out)
+				(v61Value).MarshalEasyJSON(out)
 			}
 			out.RawByte('}')
 		}
@@ -3866,16 +3926,16 @@ func easyjsonB7f3de24Encode36(out *jwriter.Writer, in UserProfileConfig) {
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v59First := true
-			for v59Name, v59Value := range in.Sources {
-				if v59First {
-					v59First = false
+			v62First := true
+			for v62Name, v62Value := range in.Sources {
+				if v62First {
+					v62First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v59Name))
+				out.String(string(v62Name))
 				out.RawByte(':')
-				(v59Value).MarshalEasyJSON(out)
+				(v62Value).MarshalEasyJSON(out)
 			}
 			out.RawByte('}')
 		}
@@ -3887,16 +3947,16 @@ func easyjsonB7f3de24Encode36(out *jwriter.Writer, in UserProfileConfig) {
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v60First := true
-			for v60Name, v60Value := range in.BackupRules {
-				if v60First {
-					v60First = false
+			v63First := true
+			for v63Name, v63Value := range in.BackupRules {
+				if v63First {
+					v63First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v60Name))
+				out.String(string(v63Name))
 				out.RawByte(':')
-				(v60Value).MarshalEasyJSON(out)
+				(v63Value).MarshalEasyJSON(out)
 			}
 			out.RawByte('}')
 		}
@@ -3908,16 +3968,16 @@ func easyjsonB7f3de24Encode36(out *jwriter.Writer, in UserProfileConfig) {
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v61First := true
-			for v61Name, v61Value := range in.Devices {
-				if v61First {
-					v61First = false
+			v64First := true
+			for v64Name, v64Value := range in.Devices {
+				if v64First {
+					v64First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v61Name))
+				out.String(string(v64Name))
 				out.RawByte(':')
-				(v61Value).MarshalEasyJSON(out)
+				(v64Value).MarshalEasyJSON(out)
 			}
 			out.RawByte('}')
 		}
@@ -4032,6 +4092,11 @@ func easyjsonB7f3de24Encode36(out *jwriter.Writer, in UserProfileConfig) {
 		out.RawString(prefix)
 		out.String(string(in.AutoStorageTemplateGUID))
 	}
+	{
+		const prefix string = ",\"LinuxHomedirSandbox\":"
+		out.RawString(prefix)
+		out.Bool(bool(in.LinuxHomedirSandbox))
+	}
 	in.MarshalUnknowns(out, false)
 	out.RawByte('}')
 }
@@ -4116,9 +4181,9 @@ func easyjsonB7f3de24Decode37(in *jlexer.Lexer, out *UserPolicy) {
 					out.FileAndFolderMandatoryExclusions = (out.FileAndFolderMandatoryExclusions)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v62 ExtraFileExclusion
-					(v62).UnmarshalEasyJSON(in)
-					out.FileAndFolderMandatoryExclusions = append(out.FileAndFolderMandatoryExclusions, v62)
+					var v65 ExtraFileExclusion
+					(v65).UnmarshalEasyJSON(in)
+					out.FileAndFolderMandatoryExclusions = append(out.FileAndFolderMandatoryExclusions, v65)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -4176,9 +4241,9 @@ func easyjsonB7f3de24Decode37(in *jlexer.Lexer, out *UserPolicy) {
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v63 SourceConfig
-					(v63).UnmarshalEasyJSON(in)
-					(out.DefaultSources)[key] = v63
+					var v66 SourceConfig
+					(v66).UnmarshalEasyJSON(in)
+					(out.DefaultSources)[key] = v66
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -4192,9 +4257,9 @@ func easyjsonB7f3de24Decode37(in *jlexer.Lexer, out *UserPolicy) {
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v64 BackupRuleConfig
-					(v64).UnmarshalEasyJSON(in)
-					(out.DefaultSourcesBackupRules)[key] = v64
+					var v67 BackupRuleConfig
+					(v67).UnmarshalEasyJSON(in)
+					(out.DefaultSourcesBackupRules)[key] = v67
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -4208,9 +4273,9 @@ func easyjsonB7f3de24Decode37(in *jlexer.Lexer, out *UserPolicy) {
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v65 DefaultSourceWithOSRestriction
-					(v65).UnmarshalEasyJSON(in)
-					(out.DefaultSourcesWithOSRestriction)[key] = v65
+					var v68 DefaultSourceWithOSRestriction
+					(v68).UnmarshalEasyJSON(in)
+					(out.DefaultSourcesWithOSRestriction)[key] = v68
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -4224,9 +4289,9 @@ func easyjsonB7f3de24Decode37(in *jlexer.Lexer, out *UserPolicy) {
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v66 BackupRuleConfig
-					(v66).UnmarshalEasyJSON(in)
-					(out.DefaultBackupRules)[key] = v66
+					var v69 BackupRuleConfig
+					(v69).UnmarshalEasyJSON(in)
+					(out.DefaultBackupRules)[key] = v69
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -4309,11 +4374,11 @@ func easyjsonB7f3de24Encode37(out *jwriter.Writer, in UserPolicy) {
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v67, v68 := range in.FileAndFolderMandatoryExclusions {
-				if v67 > 0 {
+			for v70, v71 := range in.FileAndFolderMandatoryExclusions {
+				if v70 > 0 {
 					out.RawByte(',')
 				}
-				(v68).MarshalEasyJSON(out)
+				(v71).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -4435,16 +4500,16 @@ func easyjsonB7f3de24Encode37(out *jwriter.Writer, in UserPolicy) {
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v69First := true
-			for v69Name, v69Value := range in.DefaultSources {
-				if v69First {
-					v69First = false
+			v72First := true
+			for v72Name, v72Value := range in.DefaultSources {
+				if v72First {
+					v72First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v69Name))
+				out.String(string(v72Name))
 				out.RawByte(':')
-				(v69Value).MarshalEasyJSON(out)
+				(v72Value).MarshalEasyJSON(out)
 			}
 			out.RawByte('}')
 		}
@@ -4456,16 +4521,16 @@ func easyjsonB7f3de24Encode37(out *jwriter.Writer, in UserPolicy) {
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v70First := true
-			for v70Name, v70Value := range in.DefaultSourcesBackupRules {
-				if v70First {
-					v70First = false
+			v73First := true
+			for v73Name, v73Value := range in.DefaultSourcesBackupRules {
+				if v73First {
+					v73First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v70Name))
+				out.String(string(v73Name))
 				out.RawByte(':')
-				(v70Value).MarshalEasyJSON(out)
+				(v73Value).MarshalEasyJSON(out)
 			}
 			out.RawByte('}')
 		}
@@ -4477,16 +4542,16 @@ func easyjsonB7f3de24Encode37(out *jwriter.Writer, in UserPolicy) {
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v71First := true
-			for v71Name, v71Value := range in.DefaultSourcesWithOSRestriction {
-				if v71First {
-					v71First = false
+			v74First := true
+			for v74Name, v74Value := range in.DefaultSourcesWithOSRestriction {
+				if v74First {
+					v74First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v71Name))
+				out.String(string(v74Name))
 				out.RawByte(':')
-				(v71Value).MarshalEasyJSON(out)
+				(v74Value).MarshalEasyJSON(out)
 			}
 			out.RawByte('}')
 		}
@@ -4498,16 +4563,16 @@ func easyjsonB7f3de24Encode37(out *jwriter.Writer, in UserPolicy) {
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v72First := true
-			for v72Name, v72Value := range in.DefaultBackupRules {
-				if v72First {
-					v72First = false
+			v75First := true
+			for v75Name, v75Value := range in.DefaultBackupRules {
+				if v75First {
+					v75First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v72Name))
+				out.String(string(v75Name))
 				out.RawByte(':')
-				(v72Value).MarshalEasyJSON(out)
+				(v75Value).MarshalEasyJSON(out)
 			}
 			out.RawByte('}')
 		}
@@ -4739,9 +4804,9 @@ func easyjsonB7f3de24Decode40(in *jlexer.Lexer, out *UserCustomEmailSettings) {
 					out.Reports = (out.Reports)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v73 EmailReportConfig
-					(v73).UnmarshalEasyJSON(in)
-					out.Reports = append(out.Reports, v73)
+					var v76 EmailReportConfig
+					(v76).UnmarshalEasyJSON(in)
+					out.Reports = append(out.Reports, v76)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -4767,11 +4832,11 @@ func easyjsonB7f3de24Encode40(out *jwriter.Writer, in UserCustomEmailSettings) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v74, v75 := range in.Reports {
-				if v74 > 0 {
+			for v77, v78 := range in.Reports {
+				if v77 > 0 {
 					out.RawByte(',')
 				}
-				(v75).MarshalEasyJSON(out)
+				(v78).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -4937,9 +5002,9 @@ func easyjsonB7f3de24Decode42(in *jlexer.Lexer, out *UpdateCampaignStatus) {
 					out.Devices = (out.Devices)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v76 UpdateCampaignStatusDeviceEntry
-					(v76).UnmarshalEasyJSON(in)
-					out.Devices = append(out.Devices, v76)
+					var v79 UpdateCampaignStatusDeviceEntry
+					(v79).UnmarshalEasyJSON(in)
+					out.Devices = append(out.Devices, v79)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -5010,11 +5075,11 @@ func easyjsonB7f3de24Encode42(out *jwriter.Writer, in UpdateCampaignStatus) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v77, v78 := range in.Devices {
-				if v77 > 0 {
+			for v80, v81 := range in.Devices {
+				if v80 > 0 {
 					out.RawByte(',')
 				}
-				(v78).MarshalEasyJSON(out)
+				(v81).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -5548,9 +5613,9 @@ func easyjsonB7f3de24Decode48(in *jlexer.Lexer, out *U2FSignRequest) {
 					out.RegisteredKeys = (out.RegisteredKeys)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v79 U2FRegisteredKey
-					(v79).UnmarshalEasyJSON(in)
-					out.RegisteredKeys = append(out.RegisteredKeys, v79)
+					var v82 U2FRegisteredKey
+					(v82).UnmarshalEasyJSON(in)
+					out.RegisteredKeys = append(out.RegisteredKeys, v82)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -5591,11 +5656,11 @@ func easyjsonB7f3de24Encode48(out *jwriter.Writer, in U2FSignRequest) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v80, v81 := range in.RegisteredKeys {
-				if v80 > 0 {
+			for v83, v84 := range in.RegisteredKeys {
+				if v83 > 0 {
 					out.RawByte(',')
 				}
-				(v81).MarshalEasyJSON(out)
+				(v84).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -5670,9 +5735,9 @@ func easyjsonB7f3de24Decode49(in *jlexer.Lexer, out *U2FRegistrationChallengeRes
 					out.RegisteredKeys = (out.RegisteredKeys)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v82 U2FRegisteredKey
-					(v82).UnmarshalEasyJSON(in)
-					out.RegisteredKeys = append(out.RegisteredKeys, v82)
+					var v85 U2FRegisteredKey
+					(v85).UnmarshalEasyJSON(in)
+					out.RegisteredKeys = append(out.RegisteredKeys, v85)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -5693,9 +5758,9 @@ func easyjsonB7f3de24Decode49(in *jlexer.Lexer, out *U2FRegistrationChallengeRes
 					out.RegisterRequests = (out.RegisterRequests)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v83 U2FRegisterRequest
-					(v83).UnmarshalEasyJSON(in)
-					out.RegisterRequests = append(out.RegisterRequests, v83)
+					var v86 U2FRegisterRequest
+					(v86).UnmarshalEasyJSON(in)
+					out.RegisterRequests = append(out.RegisterRequests, v86)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -5741,11 +5806,11 @@ func easyjsonB7f3de24Encode49(out *jwriter.Writer, in U2FRegistrationChallengeRe
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v84, v85 := range in.RegisteredKeys {
-				if v84 > 0 {
+			for v87, v88 := range in.RegisteredKeys {
+				if v87 > 0 {
 					out.RawByte(',')
 				}
-				(v85).MarshalEasyJSON(out)
+				(v88).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -5757,11 +5822,11 @@ func easyjsonB7f3de24Encode49(out *jwriter.Writer, in U2FRegistrationChallengeRe
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v86, v87 := range in.RegisterRequests {
-				if v86 > 0 {
+			for v89, v90 := range in.RegisterRequests {
+				if v89 > 0 {
 					out.RawByte(',')
 				}
-				(v87).MarshalEasyJSON(out)
+				(v90).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -6930,9 +6995,9 @@ func easyjsonB7f3de24Decode60(in *jlexer.Lexer, out *StorageVaultProviderPolicy)
 					out.AllowedProvidersWhenRestricted = (out.AllowedProvidersWhenRestricted)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v88 uint64
-					v88 = uint64(in.Uint64())
-					out.AllowedProvidersWhenRestricted = append(out.AllowedProvidersWhenRestricted, v88)
+					var v91 uint64
+					v91 = uint64(in.Uint64())
+					out.AllowedProvidersWhenRestricted = append(out.AllowedProvidersWhenRestricted, v91)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -6963,11 +7028,11 @@ func easyjsonB7f3de24Encode60(out *jwriter.Writer, in StorageVaultProviderPolicy
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v89, v90 := range in.AllowedProvidersWhenRestricted {
-				if v89 > 0 {
+			for v92, v93 := range in.AllowedProvidersWhenRestricted {
+				if v92 > 0 {
 					out.RawByte(',')
 				}
-				out.Uint64(uint64(v90))
+				out.Uint64(uint64(v93))
 			}
 			out.RawByte(']')
 		}
@@ -7038,9 +7103,9 @@ func easyjsonB7f3de24Decode61(in *jlexer.Lexer, out *StorageRoleOptions) {
 					out.LocalStorage_Legacy = (out.LocalStorage_Legacy)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v91 LocalStorageDirectory
-					(v91).UnmarshalEasyJSON(in)
-					out.LocalStorage_Legacy = append(out.LocalStorage_Legacy, v91)
+					var v94 LocalStorageDirectory
+					(v94).UnmarshalEasyJSON(in)
+					out.LocalStorage_Legacy = append(out.LocalStorage_Legacy, v94)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -7061,9 +7126,9 @@ func easyjsonB7f3de24Decode61(in *jlexer.Lexer, out *StorageRoleOptions) {
 					out.ReplicateTo = (out.ReplicateTo)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v92 ReplicaServer
-					(v92).UnmarshalEasyJSON(in)
-					out.ReplicateTo = append(out.ReplicateTo, v92)
+					var v95 ReplicaServer
+					(v95).UnmarshalEasyJSON(in)
+					out.ReplicateTo = append(out.ReplicateTo, v95)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -7097,11 +7162,11 @@ func easyjsonB7f3de24Encode61(out *jwriter.Writer, in StorageRoleOptions) {
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v93, v94 := range in.LocalStorage_Legacy {
-				if v93 > 0 {
+			for v96, v97 := range in.LocalStorage_Legacy {
+				if v96 > 0 {
 					out.RawByte(',')
 				}
-				(v94).MarshalEasyJSON(out)
+				(v97).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -7113,11 +7178,11 @@ func easyjsonB7f3de24Encode61(out *jwriter.Writer, in StorageRoleOptions) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v95, v96 := range in.ReplicateTo {
-				if v95 > 0 {
+			for v98, v99 := range in.ReplicateTo {
+				if v98 > 0 {
 					out.RawByte(',')
 				}
-				(v96).MarshalEasyJSON(out)
+				(v99).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -7374,9 +7439,9 @@ func easyjsonB7f3de24Decode64(in *jlexer.Lexer, out *SpannedStorageExtraInfo) {
 					out.Targets = (out.Targets)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v97 StorageFreeSpaceInfo
-					(v97).UnmarshalEasyJSON(in)
-					out.Targets = append(out.Targets, v97)
+					var v100 StorageFreeSpaceInfo
+					(v100).UnmarshalEasyJSON(in)
+					out.Targets = append(out.Targets, v100)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -7402,11 +7467,11 @@ func easyjsonB7f3de24Encode64(out *jwriter.Writer, in SpannedStorageExtraInfo) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v98, v99 := range in.Targets {
-				if v98 > 0 {
+			for v101, v102 := range in.Targets {
+				if v101 > 0 {
 					out.RawByte(',')
 				}
-				(v99).MarshalEasyJSON(out)
+				(v102).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -7473,9 +7538,9 @@ func easyjsonB7f3de24Decode65(in *jlexer.Lexer, out *SpannedDestinationLocation)
 					out.SpanTargets = (out.SpanTargets)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v100 DestinationLocation
-					(v100).UnmarshalEasyJSON(in)
-					out.SpanTargets = append(out.SpanTargets, v100)
+					var v103 DestinationLocation
+					(v103).UnmarshalEasyJSON(in)
+					out.SpanTargets = append(out.SpanTargets, v103)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -7503,11 +7568,11 @@ func easyjsonB7f3de24Encode65(out *jwriter.Writer, in SpannedDestinationLocation
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v101, v102 := range in.SpanTargets {
-				if v101 > 0 {
+			for v104, v105 := range in.SpanTargets {
+				if v104 > 0 {
 					out.RawByte(',')
 				}
-				(v102).MarshalEasyJSON(out)
+				(v105).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -7744,9 +7809,9 @@ func easyjsonB7f3de24Decode68(in *jlexer.Lexer, out *SourceConfig) {
 					out.PreExec = (out.PreExec)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v103 string
-					v103 = string(in.String())
-					out.PreExec = append(out.PreExec, v103)
+					var v106 string
+					v106 = string(in.String())
+					out.PreExec = append(out.PreExec, v106)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -7767,9 +7832,9 @@ func easyjsonB7f3de24Decode68(in *jlexer.Lexer, out *SourceConfig) {
 					out.ThawExec = (out.ThawExec)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v104 string
-					v104 = string(in.String())
-					out.ThawExec = append(out.ThawExec, v104)
+					var v107 string
+					v107 = string(in.String())
+					out.ThawExec = append(out.ThawExec, v107)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -7790,9 +7855,9 @@ func easyjsonB7f3de24Decode68(in *jlexer.Lexer, out *SourceConfig) {
 					out.PostExec = (out.PostExec)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v105 string
-					v105 = string(in.String())
-					out.PostExec = append(out.PostExec, v105)
+					var v108 string
+					v108 = string(in.String())
+					out.PostExec = append(out.PostExec, v108)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -7806,9 +7871,9 @@ func easyjsonB7f3de24Decode68(in *jlexer.Lexer, out *SourceConfig) {
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v106 string
-					v106 = string(in.String())
-					(out.EngineProps)[key] = v106
+					var v109 string
+					v109 = string(in.String())
+					(out.EngineProps)[key] = v109
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -7830,9 +7895,9 @@ func easyjsonB7f3de24Decode68(in *jlexer.Lexer, out *SourceConfig) {
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v107 RetentionPolicy
-					(v107).UnmarshalEasyJSON(in)
-					(out.OverrideDestinationRetention)[key] = v107
+					var v110 RetentionPolicy
+					(v110).UnmarshalEasyJSON(in)
+					(out.OverrideDestinationRetention)[key] = v110
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -7885,11 +7950,11 @@ func easyjsonB7f3de24Encode68(out *jwriter.Writer, in SourceConfig) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v108, v109 := range in.PreExec {
-				if v108 > 0 {
+			for v111, v112 := range in.PreExec {
+				if v111 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v109))
+				out.String(string(v112))
 			}
 			out.RawByte(']')
 		}
@@ -7901,11 +7966,11 @@ func easyjsonB7f3de24Encode68(out *jwriter.Writer, in SourceConfig) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v110, v111 := range in.ThawExec {
-				if v110 > 0 {
+			for v113, v114 := range in.ThawExec {
+				if v113 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v111))
+				out.String(string(v114))
 			}
 			out.RawByte(']')
 		}
@@ -7917,11 +7982,11 @@ func easyjsonB7f3de24Encode68(out *jwriter.Writer, in SourceConfig) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v112, v113 := range in.PostExec {
-				if v112 > 0 {
+			for v115, v116 := range in.PostExec {
+				if v115 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v113))
+				out.String(string(v116))
 			}
 			out.RawByte(']')
 		}
@@ -7933,16 +7998,16 @@ func easyjsonB7f3de24Encode68(out *jwriter.Writer, in SourceConfig) {
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v114First := true
-			for v114Name, v114Value := range in.EngineProps {
-				if v114First {
-					v114First = false
+			v117First := true
+			for v117Name, v117Value := range in.EngineProps {
+				if v117First {
+					v117First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v114Name))
+				out.String(string(v117Name))
 				out.RawByte(':')
-				out.String(string(v114Value))
+				out.String(string(v117Value))
 			}
 			out.RawByte('}')
 		}
@@ -7962,16 +8027,16 @@ func easyjsonB7f3de24Encode68(out *jwriter.Writer, in SourceConfig) {
 		out.RawString(prefix)
 		{
 			out.RawByte('{')
-			v115First := true
-			for v115Name, v115Value := range in.OverrideDestinationRetention {
-				if v115First {
-					v115First = false
+			v118First := true
+			for v118Name, v118Value := range in.OverrideDestinationRetention {
+				if v118First {
+					v118First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v115Name))
+				out.String(string(v118Name))
 				out.RawByte(':')
-				(v115Value).MarshalEasyJSON(out)
+				(v118Value).MarshalEasyJSON(out)
 			}
 			out.RawByte('}')
 		}
@@ -8050,9 +8115,9 @@ func easyjsonB7f3de24Decode69(in *jlexer.Lexer, out *SourceBasicInfo) {
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v116 RetentionPolicy
-					(v116).UnmarshalEasyJSON(in)
-					(out.OverrideDestinationRetention)[key] = v116
+					var v119 RetentionPolicy
+					(v119).UnmarshalEasyJSON(in)
+					(out.OverrideDestinationRetention)[key] = v119
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -8101,16 +8166,16 @@ func easyjsonB7f3de24Encode69(out *jwriter.Writer, in SourceBasicInfo) {
 		out.RawString(prefix)
 		{
 			out.RawByte('{')
-			v117First := true
-			for v117Name, v117Value := range in.OverrideDestinationRetention {
-				if v117First {
-					v117First = false
+			v120First := true
+			for v120Name, v120Value := range in.OverrideDestinationRetention {
+				if v120First {
+					v120First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v117Name))
+				out.String(string(v120Name))
 				out.RawByte(':')
-				(v117Value).MarshalEasyJSON(out)
+				(v120Value).MarshalEasyJSON(out)
 			}
 			out.RawByte('}')
 		}
@@ -8183,9 +8248,9 @@ func easyjsonB7f3de24Decode70(in *jlexer.Lexer, out *SoftwareUpdateNewsResponse)
 					out.WhatsNew = (out.WhatsNew)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v118 string
-					v118 = string(in.String())
-					out.WhatsNew = append(out.WhatsNew, v118)
+					var v121 string
+					v121 = string(in.String())
+					out.WhatsNew = append(out.WhatsNew, v121)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -8226,11 +8291,11 @@ func easyjsonB7f3de24Encode70(out *jwriter.Writer, in SoftwareUpdateNewsResponse
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v119, v120 := range in.WhatsNew {
-				if v119 > 0 {
+			for v122, v123 := range in.WhatsNew {
+				if v122 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v120))
+				out.String(string(v123))
 			}
 			out.RawByte(']')
 		}
@@ -8723,9 +8788,9 @@ func easyjsonB7f3de24Decode76(in *jlexer.Lexer, out *ServerMetaVersionInfo) {
 					out.ExperimentalOptions = (out.ExperimentalOptions)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v121 string
-					v121 = string(in.String())
-					out.ExperimentalOptions = append(out.ExperimentalOptions, v121)
+					var v124 string
+					v124 = string(in.String())
+					out.ExperimentalOptions = append(out.ExperimentalOptions, v124)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -8755,9 +8820,9 @@ func easyjsonB7f3de24Decode76(in *jlexer.Lexer, out *ServerMetaVersionInfo) {
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v122 int
-					v122 = int(in.Int())
-					(out.BoosterLimit)[key] = v122
+					var v125 int
+					v125 = int(in.Int())
+					(out.BoosterLimit)[key] = v125
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -8796,9 +8861,9 @@ func easyjsonB7f3de24Decode76(in *jlexer.Lexer, out *ServerMetaVersionInfo) {
 					out.SelfBackup = (out.SelfBackup)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v123 SelfBackupStatistics
-					(v123).UnmarshalEasyJSON(in)
-					out.SelfBackup = append(out.SelfBackup, v123)
+					var v126 SelfBackupStatistics
+					(v126).UnmarshalEasyJSON(in)
+					out.SelfBackup = append(out.SelfBackup, v126)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -8857,11 +8922,11 @@ func easyjsonB7f3de24Encode76(out *jwriter.Writer, in ServerMetaVersionInfo) {
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v124, v125 := range in.ExperimentalOptions {
-				if v124 > 0 {
+			for v127, v128 := range in.ExperimentalOptions {
+				if v127 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v125))
+				out.String(string(v128))
 			}
 			out.RawByte(']')
 		}
@@ -8913,16 +8978,16 @@ func easyjsonB7f3de24Encode76(out *jwriter.Writer, in ServerMetaVersionInfo) {
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v126First := true
-			for v126Name, v126Value := range in.BoosterLimit {
-				if v126First {
-					v126First = false
+			v129First := true
+			for v129Name, v129Value := range in.BoosterLimit {
+				if v129First {
+					v129First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v126Name))
+				out.String(string(v129Name))
 				out.RawByte(':')
-				out.Int(int(v126Value))
+				out.Int(int(v129Value))
 			}
 			out.RawByte('}')
 		}
@@ -8979,11 +9044,11 @@ func easyjsonB7f3de24Encode76(out *jwriter.Writer, in ServerMetaVersionInfo) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v127, v128 := range in.SelfBackup {
-				if v127 > 0 {
+			for v130, v131 := range in.SelfBackup {
+				if v130 > 0 {
 					out.RawByte(',')
 				}
-				(v128).MarshalEasyJSON(out)
+				(v131).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -9072,9 +9137,9 @@ func easyjsonB7f3de24Decode77(in *jlexer.Lexer, out *ServerMetaBrandingPropertie
 					out.ExternalAuthenticationSources = (out.ExternalAuthenticationSources)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v129 ExternalAuthenticationSourceDisplay
-					(v129).UnmarshalEasyJSON(in)
-					out.ExternalAuthenticationSources = append(out.ExternalAuthenticationSources, v129)
+					var v132 ExternalAuthenticationSourceDisplay
+					(v132).UnmarshalEasyJSON(in)
+					out.ExternalAuthenticationSources = append(out.ExternalAuthenticationSources, v132)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -9161,11 +9226,11 @@ func easyjsonB7f3de24Encode77(out *jwriter.Writer, in ServerMetaBrandingProperti
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v130, v131 := range in.ExternalAuthenticationSources {
-				if v130 > 0 {
+			for v133, v134 := range in.ExternalAuthenticationSources {
+				if v133 > 0 {
 					out.RawByte(',')
 				}
-				(v131).MarshalEasyJSON(out)
+				(v134).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -9386,9 +9451,9 @@ func easyjsonB7f3de24Decode80(in *jlexer.Lexer, out *ServerConfigOptions) {
 					out.AdminUsers = (out.AdminUsers)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v132 AllowedAdminUser
-					(v132).UnmarshalEasyJSON(in)
-					out.AdminUsers = append(out.AdminUsers, v132)
+					var v135 AllowedAdminUser
+					(v135).UnmarshalEasyJSON(in)
+					out.AdminUsers = append(out.AdminUsers, v135)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -9419,9 +9484,9 @@ func easyjsonB7f3de24Decode80(in *jlexer.Lexer, out *ServerConfigOptions) {
 					out.ExperimentalOptions = (out.ExperimentalOptions)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v133 string
-					v133 = string(in.String())
-					out.ExperimentalOptions = append(out.ExperimentalOptions, v133)
+					var v136 string
+					v136 = string(in.String())
+					out.ExperimentalOptions = append(out.ExperimentalOptions, v136)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -9435,9 +9500,9 @@ func easyjsonB7f3de24Decode80(in *jlexer.Lexer, out *ServerConfigOptions) {
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v134 ExternalAuthenticationSource
-					(v134).UnmarshalEasyJSON(in)
-					(out.ExternalAdminUserSources)[key] = v134
+					var v137 ExternalAuthenticationSource
+					(v137).UnmarshalEasyJSON(in)
+					(out.ExternalAdminUserSources)[key] = v137
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -9464,9 +9529,9 @@ func easyjsonB7f3de24Decode80(in *jlexer.Lexer, out *ServerConfigOptions) {
 					out.ListenAddresses = (out.ListenAddresses)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v135 HTTPConnectorOptions
-					(v135).UnmarshalEasyJSON(in)
-					out.ListenAddresses = append(out.ListenAddresses, v135)
+					var v138 HTTPConnectorOptions
+					(v138).UnmarshalEasyJSON(in)
+					out.ListenAddresses = append(out.ListenAddresses, v138)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -9480,9 +9545,9 @@ func easyjsonB7f3de24Decode80(in *jlexer.Lexer, out *ServerConfigOptions) {
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v136 Organization
-					(v136).UnmarshalEasyJSON(in)
-					(out.Organizations)[key] = v136
+					var v139 Organization
+					(v139).UnmarshalEasyJSON(in)
+					(out.Organizations)[key] = v139
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -9503,9 +9568,9 @@ func easyjsonB7f3de24Decode80(in *jlexer.Lexer, out *ServerConfigOptions) {
 					out.PSAConfigs = (out.PSAConfigs)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v137 PSAConfig
-					(v137).UnmarshalEasyJSON(in)
-					out.PSAConfigs = append(out.PSAConfigs, v137)
+					var v140 PSAConfig
+					(v140).UnmarshalEasyJSON(in)
+					out.PSAConfigs = append(out.PSAConfigs, v140)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -9529,9 +9594,9 @@ func easyjsonB7f3de24Decode80(in *jlexer.Lexer, out *ServerConfigOptions) {
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v138 WebhookOption
-					(v138).UnmarshalEasyJSON(in)
-					(out.WebhookOptions)[key] = v138
+					var v141 WebhookOption
+					(v141).UnmarshalEasyJSON(in)
+					(out.WebhookOptions)[key] = v141
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -9545,9 +9610,9 @@ func easyjsonB7f3de24Decode80(in *jlexer.Lexer, out *ServerConfigOptions) {
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v139 FileOption
-					(v139).UnmarshalEasyJSON(in)
-					(out.AuditFileOptions)[key] = v139
+					var v142 FileOption
+					(v142).UnmarshalEasyJSON(in)
+					(out.AuditFileOptions)[key] = v142
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -9573,11 +9638,11 @@ func easyjsonB7f3de24Encode80(out *jwriter.Writer, in ServerConfigOptions) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v140, v141 := range in.AdminUsers {
-				if v140 > 0 {
+			for v143, v144 := range in.AdminUsers {
+				if v143 > 0 {
 					out.RawByte(',')
 				}
-				(v141).MarshalEasyJSON(out)
+				(v144).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -9612,11 +9677,11 @@ func easyjsonB7f3de24Encode80(out *jwriter.Writer, in ServerConfigOptions) {
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v142, v143 := range in.ExperimentalOptions {
-				if v142 > 0 {
+			for v145, v146 := range in.ExperimentalOptions {
+				if v145 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v143))
+				out.String(string(v146))
 			}
 			out.RawByte(']')
 		}
@@ -9628,16 +9693,16 @@ func easyjsonB7f3de24Encode80(out *jwriter.Writer, in ServerConfigOptions) {
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v144First := true
-			for v144Name, v144Value := range in.ExternalAdminUserSources {
-				if v144First {
-					v144First = false
+			v147First := true
+			for v147Name, v147Value := range in.ExternalAdminUserSources {
+				if v147First {
+					v147First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v144Name))
+				out.String(string(v147Name))
 				out.RawByte(':')
-				(v144Value).MarshalEasyJSON(out)
+				(v147Value).MarshalEasyJSON(out)
 			}
 			out.RawByte('}')
 		}
@@ -9664,11 +9729,11 @@ func easyjsonB7f3de24Encode80(out *jwriter.Writer, in ServerConfigOptions) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v145, v146 := range in.ListenAddresses {
-				if v145 > 0 {
+			for v148, v149 := range in.ListenAddresses {
+				if v148 > 0 {
 					out.RawByte(',')
 				}
-				(v146).MarshalEasyJSON(out)
+				(v149).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -9680,16 +9745,16 @@ func easyjsonB7f3de24Encode80(out *jwriter.Writer, in ServerConfigOptions) {
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v147First := true
-			for v147Name, v147Value := range in.Organizations {
-				if v147First {
-					v147First = false
+			v150First := true
+			for v150Name, v150Value := range in.Organizations {
+				if v150First {
+					v150First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v147Name))
+				out.String(string(v150Name))
 				out.RawByte(':')
-				(v147Value).MarshalEasyJSON(out)
+				(v150Value).MarshalEasyJSON(out)
 			}
 			out.RawByte('}')
 		}
@@ -9701,11 +9766,11 @@ func easyjsonB7f3de24Encode80(out *jwriter.Writer, in ServerConfigOptions) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v148, v149 := range in.PSAConfigs {
-				if v148 > 0 {
+			for v151, v152 := range in.PSAConfigs {
+				if v151 > 0 {
 					out.RawByte(',')
 				}
-				(v149).MarshalEasyJSON(out)
+				(v152).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -9742,16 +9807,16 @@ func easyjsonB7f3de24Encode80(out *jwriter.Writer, in ServerConfigOptions) {
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v150First := true
-			for v150Name, v150Value := range in.WebhookOptions {
-				if v150First {
-					v150First = false
+			v153First := true
+			for v153Name, v153Value := range in.WebhookOptions {
+				if v153First {
+					v153First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v150Name))
+				out.String(string(v153Name))
 				out.RawByte(':')
-				(v150Value).MarshalEasyJSON(out)
+				(v153Value).MarshalEasyJSON(out)
 			}
 			out.RawByte('}')
 		}
@@ -9763,16 +9828,16 @@ func easyjsonB7f3de24Encode80(out *jwriter.Writer, in ServerConfigOptions) {
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v151First := true
-			for v151Name, v151Value := range in.AuditFileOptions {
-				if v151First {
-					v151First = false
+			v154First := true
+			for v154Name, v154Value := range in.AuditFileOptions {
+				if v154First {
+					v154First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v151Name))
+				out.String(string(v154Name))
 				out.RawByte(':')
-				(v151Value).MarshalEasyJSON(out)
+				(v154Value).MarshalEasyJSON(out)
 			}
 			out.RawByte('}')
 		}
@@ -9839,9 +9904,9 @@ func easyjsonB7f3de24Decode81(in *jlexer.Lexer, out *SelfBackupTarget) {
 					out.Schedule = (out.Schedule)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v152 ScheduleConfig
-					(v152).UnmarshalEasyJSON(in)
-					out.Schedule = append(out.Schedule, v152)
+					var v155 ScheduleConfig
+					(v155).UnmarshalEasyJSON(in)
+					out.Schedule = append(out.Schedule, v155)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -9887,11 +9952,11 @@ func easyjsonB7f3de24Encode81(out *jwriter.Writer, in SelfBackupTarget) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v153, v154 := range in.Schedule {
-				if v153 > 0 {
+			for v156, v157 := range in.Schedule {
+				if v156 > 0 {
 					out.RawByte(',')
 				}
-				(v154).MarshalEasyJSON(out)
+				(v157).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -10103,9 +10168,9 @@ func easyjsonB7f3de24Decode83(in *jlexer.Lexer, out *SelfBackupOptions) {
 					out.Targets = (out.Targets)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v155 SelfBackupTarget
-					(v155).UnmarshalEasyJSON(in)
-					out.Targets = append(out.Targets, v155)
+					var v158 SelfBackupTarget
+					(v158).UnmarshalEasyJSON(in)
+					out.Targets = append(out.Targets, v158)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -10131,11 +10196,11 @@ func easyjsonB7f3de24Encode83(out *jwriter.Writer, in SelfBackupOptions) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v156, v157 := range in.Targets {
-				if v156 > 0 {
+			for v159, v160 := range in.Targets {
+				if v159 > 0 {
 					out.RawByte(',')
 				}
-				(v157).MarshalEasyJSON(out)
+				(v160).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -10315,30 +10380,30 @@ func easyjsonB7f3de24Decode85(in *jlexer.Lexer, out *SearchSnapshotsResponse) {
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v158 []SearchResultFileInfo
+					var v161 []SearchResultFileInfo
 					if in.IsNull() {
 						in.Skip()
-						v158 = nil
+						v161 = nil
 					} else {
 						in.Delim('[')
-						if v158 == nil {
+						if v161 == nil {
 							if !in.IsDelim(']') {
-								v158 = make([]SearchResultFileInfo, 0, 0)
+								v161 = make([]SearchResultFileInfo, 0, 0)
 							} else {
-								v158 = []SearchResultFileInfo{}
+								v161 = []SearchResultFileInfo{}
 							}
 						} else {
-							v158 = (v158)[:0]
+							v161 = (v161)[:0]
 						}
 						for !in.IsDelim(']') {
-							var v159 SearchResultFileInfo
-							(v159).UnmarshalEasyJSON(in)
-							v158 = append(v158, v159)
+							var v162 SearchResultFileInfo
+							(v162).UnmarshalEasyJSON(in)
+							v161 = append(v161, v162)
 							in.WantComma()
 						}
 						in.Delim(']')
 					}
-					(out.SnapshotFiles)[key] = v158
+					(out.SnapshotFiles)[key] = v161
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -10374,24 +10439,24 @@ func easyjsonB7f3de24Encode85(out *jwriter.Writer, in SearchSnapshotsResponse) {
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v160First := true
-			for v160Name, v160Value := range in.SnapshotFiles {
-				if v160First {
-					v160First = false
+			v163First := true
+			for v163Name, v163Value := range in.SnapshotFiles {
+				if v163First {
+					v163First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v160Name))
+				out.String(string(v163Name))
 				out.RawByte(':')
-				if v160Value == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+				if v163Value == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
 					out.RawString("null")
 				} else {
 					out.RawByte('[')
-					for v161, v162 := range v160Value {
-						if v161 > 0 {
+					for v164, v165 := range v163Value {
+						if v164 > 0 {
 							out.RawByte(',')
 						}
-						(v162).MarshalEasyJSON(out)
+						(v165).MarshalEasyJSON(out)
 					}
 					out.RawByte(']')
 				}
@@ -10585,9 +10650,9 @@ func easyjsonB7f3de24Decode87(in *jlexer.Lexer, out *SearchClause) {
 					out.ClauseChildren = (out.ClauseChildren)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v163 SearchClause
-					(v163).UnmarshalEasyJSON(in)
-					out.ClauseChildren = append(out.ClauseChildren, v163)
+					var v166 SearchClause
+					(v166).UnmarshalEasyJSON(in)
+					out.ClauseChildren = append(out.ClauseChildren, v166)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -10631,11 +10696,11 @@ func easyjsonB7f3de24Encode87(out *jwriter.Writer, in SearchClause) {
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v164, v165 := range in.ClauseChildren {
-				if v164 > 0 {
+			for v167, v168 := range in.ClauseChildren {
+				if v167 > 0 {
 					out.RawByte(',')
 				}
-				(v165).MarshalEasyJSON(out)
+				(v168).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -11565,9 +11630,9 @@ func easyjsonB7f3de24Decode95(in *jlexer.Lexer, out *RetentionPolicy) {
 					out.Ranges = (out.Ranges)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v166 RetentionRange
-					(v166).UnmarshalEasyJSON(in)
-					out.Ranges = append(out.Ranges, v166)
+					var v169 RetentionRange
+					(v169).UnmarshalEasyJSON(in)
+					out.Ranges = append(out.Ranges, v169)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -11598,11 +11663,11 @@ func easyjsonB7f3de24Encode95(out *jwriter.Writer, in RetentionPolicy) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v167, v168 := range in.Ranges {
-				if v167 > 0 {
+			for v170, v171 := range in.Ranges {
+				if v170 > 0 {
 					out.RawByte(',')
 				}
-				(v168).MarshalEasyJSON(out)
+				(v171).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -11683,9 +11748,9 @@ func easyjsonB7f3de24Decode96(in *jlexer.Lexer, out *RestoreJobAdvancedOptions) 
 					out.ExactDestPaths = (out.ExactDestPaths)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v169 string
-					v169 = string(in.String())
-					out.ExactDestPaths = append(out.ExactDestPaths, v169)
+					var v172 string
+					v172 = string(in.String())
+					out.ExactDestPaths = append(out.ExactDestPaths, v172)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -11780,11 +11845,11 @@ func easyjsonB7f3de24Encode96(out *jwriter.Writer, in RestoreJobAdvancedOptions)
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v170, v171 := range in.ExactDestPaths {
-				if v170 > 0 {
+			for v173, v174 := range in.ExactDestPaths {
+				if v173 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v171))
+				out.String(string(v174))
 			}
 			out.RawByte(']')
 		}
@@ -13156,9 +13221,9 @@ func easyjsonB7f3de24Decode107(in *jlexer.Lexer, out *RatelimitOptions) {
 					out.Rules = (out.Rules)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v172 RatelimitRule
-					(v172).UnmarshalEasyJSON(in)
-					out.Rules = append(out.Rules, v172)
+					var v175 RatelimitRule
+					(v175).UnmarshalEasyJSON(in)
+					out.Rules = append(out.Rules, v175)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -13183,11 +13248,11 @@ func easyjsonB7f3de24Encode107(out *jwriter.Writer, in RatelimitOptions) {
 		out.RawString(prefix[1:])
 		{
 			out.RawByte('[')
-			for v173, v174 := range in.Rules {
-				if v173 > 0 {
+			for v176, v177 := range in.Rules {
+				if v176 > 0 {
 					out.RawByte(',')
 				}
-				(v174).MarshalEasyJSON(out)
+				(v177).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -13504,7 +13569,134 @@ func (v *ProxmoxConnection) UnmarshalJSON(data []byte) error {
 func (v *ProxmoxConnection) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjsonB7f3de24Decode110(l, v)
 }
-func easyjsonB7f3de24Decode111(in *jlexer.Lexer, out *ProtectedItemEngineTypePolicy) {
+func easyjsonB7f3de24Decode111(in *jlexer.Lexer, out *ProtectedItemWithBackupRulesResponse) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeFieldName(false)
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "Status":
+			out.Status = int(in.Int())
+		case "Message":
+			out.Message = string(in.String())
+		case "Source":
+			(out.Source).UnmarshalEasyJSON(in)
+		case "BackupRules":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				in.Delim('{')
+				if !in.IsDelim('}') {
+					out.BackupRules = make(map[string]BackupRuleConfig)
+				} else {
+					out.BackupRules = nil
+				}
+				for !in.IsDelim('}') {
+					key := string(in.String())
+					in.WantColon()
+					var v178 BackupRuleConfig
+					(v178).UnmarshalEasyJSON(in)
+					(out.BackupRules)[key] = v178
+					in.WantComma()
+				}
+				in.Delim('}')
+			}
+		case "ProfileHash":
+			out.ProfileHash = string(in.String())
+		default:
+			out.UnmarshalUnknown(in, key)
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjsonB7f3de24Encode111(out *jwriter.Writer, in ProtectedItemWithBackupRulesResponse) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	{
+		const prefix string = ",\"Status\":"
+		out.RawString(prefix[1:])
+		out.Int(int(in.Status))
+	}
+	{
+		const prefix string = ",\"Message\":"
+		out.RawString(prefix)
+		out.String(string(in.Message))
+	}
+	{
+		const prefix string = ",\"Source\":"
+		out.RawString(prefix)
+		(in.Source).MarshalEasyJSON(out)
+	}
+	if len(in.BackupRules) != 0 {
+		const prefix string = ",\"BackupRules\":"
+		out.RawString(prefix)
+		{
+			out.RawByte('{')
+			v179First := true
+			for v179Name, v179Value := range in.BackupRules {
+				if v179First {
+					v179First = false
+				} else {
+					out.RawByte(',')
+				}
+				out.String(string(v179Name))
+				out.RawByte(':')
+				(v179Value).MarshalEasyJSON(out)
+			}
+			out.RawByte('}')
+		}
+	}
+	{
+		const prefix string = ",\"ProfileHash\":"
+		out.RawString(prefix)
+		out.String(string(in.ProfileHash))
+	}
+	in.MarshalUnknowns(out, false)
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v ProtectedItemWithBackupRulesResponse) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjsonB7f3de24Encode111(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v ProtectedItemWithBackupRulesResponse) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjsonB7f3de24Encode111(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *ProtectedItemWithBackupRulesResponse) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjsonB7f3de24Decode111(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *ProtectedItemWithBackupRulesResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjsonB7f3de24Decode111(l, v)
+}
+func easyjsonB7f3de24Decode112(in *jlexer.Lexer, out *ProtectedItemEngineTypePolicy) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -13541,9 +13733,9 @@ func easyjsonB7f3de24Decode111(in *jlexer.Lexer, out *ProtectedItemEngineTypePol
 					out.AllowedEngineTypeWhenRestricted = (out.AllowedEngineTypeWhenRestricted)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v175 string
-					v175 = string(in.String())
-					out.AllowedEngineTypeWhenRestricted = append(out.AllowedEngineTypeWhenRestricted, v175)
+					var v180 string
+					v180 = string(in.String())
+					out.AllowedEngineTypeWhenRestricted = append(out.AllowedEngineTypeWhenRestricted, v180)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -13558,7 +13750,7 @@ func easyjsonB7f3de24Decode111(in *jlexer.Lexer, out *ProtectedItemEngineTypePol
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode111(out *jwriter.Writer, in ProtectedItemEngineTypePolicy) {
+func easyjsonB7f3de24Encode112(out *jwriter.Writer, in ProtectedItemEngineTypePolicy) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -13574,11 +13766,11 @@ func easyjsonB7f3de24Encode111(out *jwriter.Writer, in ProtectedItemEngineTypePo
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v176, v177 := range in.AllowedEngineTypeWhenRestricted {
-				if v176 > 0 {
+			for v181, v182 := range in.AllowedEngineTypeWhenRestricted {
+				if v181 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v177))
+				out.String(string(v182))
 			}
 			out.RawByte(']')
 		}
@@ -13590,27 +13782,27 @@ func easyjsonB7f3de24Encode111(out *jwriter.Writer, in ProtectedItemEngineTypePo
 // MarshalJSON supports json.Marshaler interface
 func (v ProtectedItemEngineTypePolicy) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode111(&w, v)
+	easyjsonB7f3de24Encode112(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ProtectedItemEngineTypePolicy) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode111(w, v)
+	easyjsonB7f3de24Encode112(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *ProtectedItemEngineTypePolicy) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode111(&r, v)
+	easyjsonB7f3de24Decode112(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *ProtectedItemEngineTypePolicy) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode111(l, v)
+	easyjsonB7f3de24Decode112(l, v)
 }
-func easyjsonB7f3de24Decode112(in *jlexer.Lexer, out *PrivateBrandingProperties) {
+func easyjsonB7f3de24Decode113(in *jlexer.Lexer, out *PrivateBrandingProperties) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -13679,6 +13871,12 @@ func easyjsonB7f3de24Decode112(in *jlexer.Lexer, out *PrivateBrandingProperties)
 			out.WindowsCodeSignAzureAppSecret = string(in.String())
 		case "WindowsCodeSignAzureTenantID":
 			out.WindowsCodeSignAzureTenantID = string(in.String())
+		case "WindowsCodeSignRelicServerURL":
+			out.WindowsCodeSignRelicServerURL = string(in.String())
+		case "WindowsCodeSignRelicKeypairFile":
+			out.WindowsCodeSignRelicKeypairFile = string(in.String())
+		case "WindowsCodeSignRelicKeyName":
+			out.WindowsCodeSignRelicKeyName = string(in.String())
 		case "MacOSCodeSign":
 			(out.MacOSCodeSign).UnmarshalEasyJSON(in)
 		default:
@@ -13691,7 +13889,7 @@ func easyjsonB7f3de24Decode112(in *jlexer.Lexer, out *PrivateBrandingProperties)
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode112(out *jwriter.Writer, in PrivateBrandingProperties) {
+func easyjsonB7f3de24Encode113(out *jwriter.Writer, in PrivateBrandingProperties) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -13821,6 +14019,21 @@ func easyjsonB7f3de24Encode112(out *jwriter.Writer, in PrivateBrandingProperties
 		out.String(string(in.WindowsCodeSignAzureTenantID))
 	}
 	{
+		const prefix string = ",\"WindowsCodeSignRelicServerURL\":"
+		out.RawString(prefix)
+		out.String(string(in.WindowsCodeSignRelicServerURL))
+	}
+	{
+		const prefix string = ",\"WindowsCodeSignRelicKeypairFile\":"
+		out.RawString(prefix)
+		out.String(string(in.WindowsCodeSignRelicKeypairFile))
+	}
+	{
+		const prefix string = ",\"WindowsCodeSignRelicKeyName\":"
+		out.RawString(prefix)
+		out.String(string(in.WindowsCodeSignRelicKeyName))
+	}
+	{
 		const prefix string = ",\"MacOSCodeSign\":"
 		out.RawString(prefix)
 		(in.MacOSCodeSign).MarshalEasyJSON(out)
@@ -13832,27 +14045,27 @@ func easyjsonB7f3de24Encode112(out *jwriter.Writer, in PrivateBrandingProperties
 // MarshalJSON supports json.Marshaler interface
 func (v PrivateBrandingProperties) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode112(&w, v)
+	easyjsonB7f3de24Encode113(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v PrivateBrandingProperties) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode112(w, v)
+	easyjsonB7f3de24Encode113(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *PrivateBrandingProperties) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode112(&r, v)
+	easyjsonB7f3de24Decode113(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *PrivateBrandingProperties) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode112(l, v)
+	easyjsonB7f3de24Decode113(l, v)
 }
-func easyjsonB7f3de24Decode113(in *jlexer.Lexer, out *PolicyOptions) {
+func easyjsonB7f3de24Decode114(in *jlexer.Lexer, out *PolicyOptions) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -13887,9 +14100,9 @@ func easyjsonB7f3de24Decode113(in *jlexer.Lexer, out *PolicyOptions) {
 					out.DeleteSources = (out.DeleteSources)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v178 string
-					v178 = string(in.String())
-					out.DeleteSources = append(out.DeleteSources, v178)
+					var v183 string
+					v183 = string(in.String())
+					out.DeleteSources = append(out.DeleteSources, v183)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -13904,7 +14117,7 @@ func easyjsonB7f3de24Decode113(in *jlexer.Lexer, out *PolicyOptions) {
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode113(out *jwriter.Writer, in PolicyOptions) {
+func easyjsonB7f3de24Encode114(out *jwriter.Writer, in PolicyOptions) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -13915,11 +14128,11 @@ func easyjsonB7f3de24Encode113(out *jwriter.Writer, in PolicyOptions) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v179, v180 := range in.DeleteSources {
-				if v179 > 0 {
+			for v184, v185 := range in.DeleteSources {
+				if v184 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v180))
+				out.String(string(v185))
 			}
 			out.RawByte(']')
 		}
@@ -13931,27 +14144,27 @@ func easyjsonB7f3de24Encode113(out *jwriter.Writer, in PolicyOptions) {
 // MarshalJSON supports json.Marshaler interface
 func (v PolicyOptions) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode113(&w, v)
+	easyjsonB7f3de24Encode114(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v PolicyOptions) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode113(w, v)
+	easyjsonB7f3de24Encode114(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *PolicyOptions) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode113(&r, v)
+	easyjsonB7f3de24Decode114(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *PolicyOptions) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode113(l, v)
+	easyjsonB7f3de24Decode114(l, v)
 }
-func easyjsonB7f3de24Decode114(in *jlexer.Lexer, out *PartitionConflict) {
+func easyjsonB7f3de24Decode115(in *jlexer.Lexer, out *PartitionConflict) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -13986,7 +14199,7 @@ func easyjsonB7f3de24Decode114(in *jlexer.Lexer, out *PartitionConflict) {
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode114(out *jwriter.Writer, in PartitionConflict) {
+func easyjsonB7f3de24Encode115(out *jwriter.Writer, in PartitionConflict) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -14012,27 +14225,27 @@ func easyjsonB7f3de24Encode114(out *jwriter.Writer, in PartitionConflict) {
 // MarshalJSON supports json.Marshaler interface
 func (v PartitionConflict) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode114(&w, v)
+	easyjsonB7f3de24Encode115(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v PartitionConflict) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode114(w, v)
+	easyjsonB7f3de24Encode115(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *PartitionConflict) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode114(&r, v)
+	easyjsonB7f3de24Decode115(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *PartitionConflict) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode114(l, v)
+	easyjsonB7f3de24Decode115(l, v)
 }
-func easyjsonB7f3de24Decode115(in *jlexer.Lexer, out *Partition) {
+func easyjsonB7f3de24Decode116(in *jlexer.Lexer, out *Partition) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -14081,9 +14294,9 @@ func easyjsonB7f3de24Decode115(in *jlexer.Lexer, out *Partition) {
 					out.MountPoints = (out.MountPoints)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v181 string
-					v181 = string(in.String())
-					out.MountPoints = append(out.MountPoints, v181)
+					var v186 string
+					v186 = string(in.String())
+					out.MountPoints = append(out.MountPoints, v186)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -14108,7 +14321,7 @@ func easyjsonB7f3de24Decode115(in *jlexer.Lexer, out *Partition) {
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode115(out *jwriter.Writer, in Partition) {
+func easyjsonB7f3de24Encode116(out *jwriter.Writer, in Partition) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -14154,11 +14367,11 @@ func easyjsonB7f3de24Encode115(out *jwriter.Writer, in Partition) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v182, v183 := range in.MountPoints {
-				if v182 > 0 {
+			for v187, v188 := range in.MountPoints {
+				if v187 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v183))
+				out.String(string(v188))
 			}
 			out.RawByte(']')
 		}
@@ -14195,27 +14408,27 @@ func easyjsonB7f3de24Encode115(out *jwriter.Writer, in Partition) {
 // MarshalJSON supports json.Marshaler interface
 func (v Partition) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode115(&w, v)
+	easyjsonB7f3de24Encode116(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Partition) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode115(w, v)
+	easyjsonB7f3de24Encode116(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *Partition) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode115(&r, v)
+	easyjsonB7f3de24Decode116(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Partition) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode115(l, v)
+	easyjsonB7f3de24Decode116(l, v)
 }
-func easyjsonB7f3de24Decode116(in *jlexer.Lexer, out *PVEVM) {
+func easyjsonB7f3de24Decode117(in *jlexer.Lexer, out *PVEVM) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -14252,9 +14465,9 @@ func easyjsonB7f3de24Decode116(in *jlexer.Lexer, out *PVEVM) {
 					out.Disks = (out.Disks)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v184 PVEDisk
-					(v184).UnmarshalEasyJSON(in)
-					out.Disks = append(out.Disks, v184)
+					var v189 PVEDisk
+					(v189).UnmarshalEasyJSON(in)
+					out.Disks = append(out.Disks, v189)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -14283,7 +14496,7 @@ func easyjsonB7f3de24Decode116(in *jlexer.Lexer, out *PVEVM) {
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode116(out *jwriter.Writer, in PVEVM) {
+func easyjsonB7f3de24Encode117(out *jwriter.Writer, in PVEVM) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -14299,11 +14512,11 @@ func easyjsonB7f3de24Encode116(out *jwriter.Writer, in PVEVM) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v185, v186 := range in.Disks {
-				if v185 > 0 {
+			for v190, v191 := range in.Disks {
+				if v190 > 0 {
 					out.RawByte(',')
 				}
-				(v186).MarshalEasyJSON(out)
+				(v191).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -14350,27 +14563,27 @@ func easyjsonB7f3de24Encode116(out *jwriter.Writer, in PVEVM) {
 // MarshalJSON supports json.Marshaler interface
 func (v PVEVM) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode116(&w, v)
+	easyjsonB7f3de24Encode117(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v PVEVM) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode116(w, v)
+	easyjsonB7f3de24Encode117(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *PVEVM) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode116(&r, v)
+	easyjsonB7f3de24Decode117(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *PVEVM) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode116(l, v)
+	easyjsonB7f3de24Decode117(l, v)
 }
-func easyjsonB7f3de24Decode117(in *jlexer.Lexer, out *PVEStorageName) {
+func easyjsonB7f3de24Decode118(in *jlexer.Lexer, out *PVEStorageName) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -14403,7 +14616,7 @@ func easyjsonB7f3de24Decode117(in *jlexer.Lexer, out *PVEStorageName) {
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode117(out *jwriter.Writer, in PVEStorageName) {
+func easyjsonB7f3de24Encode118(out *jwriter.Writer, in PVEStorageName) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -14424,116 +14637,24 @@ func easyjsonB7f3de24Encode117(out *jwriter.Writer, in PVEStorageName) {
 // MarshalJSON supports json.Marshaler interface
 func (v PVEStorageName) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode117(&w, v)
-	return w.Buffer.BuildBytes(), w.Error
-}
-
-// MarshalEasyJSON supports easyjson.Marshaler interface
-func (v PVEStorageName) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode117(w, v)
-}
-
-// UnmarshalJSON supports json.Unmarshaler interface
-func (v *PVEStorageName) UnmarshalJSON(data []byte) error {
-	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode117(&r, v)
-	return r.Error()
-}
-
-// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *PVEStorageName) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode117(l, v)
-}
-func easyjsonB7f3de24Decode118(in *jlexer.Lexer, out *PVERestoreSelection) {
-	isTopLevel := in.IsStart()
-	if in.IsNull() {
-		if isTopLevel {
-			in.Consumed()
-		}
-		in.Skip()
-		return
-	}
-	in.Delim('{')
-	for !in.IsDelim('}') {
-		key := in.UnsafeFieldName(false)
-		in.WantColon()
-		if in.IsNull() {
-			in.Skip()
-			in.WantComma()
-			continue
-		}
-		switch key {
-		case "ID":
-			out.ID = string(in.String())
-		case "Name":
-			out.Name = string(in.String())
-		case "TargetVM":
-			(out.TargetVM).UnmarshalEasyJSON(in)
-		default:
-			out.UnmarshalUnknown(in, key)
-		}
-		in.WantComma()
-	}
-	in.Delim('}')
-	if isTopLevel {
-		in.Consumed()
-	}
-}
-func easyjsonB7f3de24Encode118(out *jwriter.Writer, in PVERestoreSelection) {
-	out.RawByte('{')
-	first := true
-	_ = first
-	if in.ID != "" {
-		const prefix string = ",\"ID\":"
-		first = false
-		out.RawString(prefix[1:])
-		out.String(string(in.ID))
-	}
-	if in.Name != "" {
-		const prefix string = ",\"Name\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.Name))
-	}
-	{
-		const prefix string = ",\"TargetVM\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		(in.TargetVM).MarshalEasyJSON(out)
-	}
-	in.MarshalUnknowns(out, false)
-	out.RawByte('}')
-}
-
-// MarshalJSON supports json.Marshaler interface
-func (v PVERestoreSelection) MarshalJSON() ([]byte, error) {
-	w := jwriter.Writer{}
 	easyjsonB7f3de24Encode118(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
-func (v PVERestoreSelection) MarshalEasyJSON(w *jwriter.Writer) {
+func (v PVEStorageName) MarshalEasyJSON(w *jwriter.Writer) {
 	easyjsonB7f3de24Encode118(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
-func (v *PVERestoreSelection) UnmarshalJSON(data []byte) error {
+func (v *PVEStorageName) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
 	easyjsonB7f3de24Decode118(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *PVERestoreSelection) UnmarshalEasyJSON(l *jlexer.Lexer) {
+func (v *PVEStorageName) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjsonB7f3de24Decode118(l, v)
 }
 func easyjsonB7f3de24Decode119(in *jlexer.Lexer, out *PVEParams) {
@@ -14573,17 +14694,15 @@ func easyjsonB7f3de24Decode119(in *jlexer.Lexer, out *PVEParams) {
 					out.Exclusions = (out.Exclusions)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v187 PVEBackupNode
-					(v187).UnmarshalEasyJSON(in)
-					out.Exclusions = append(out.Exclusions, v187)
+					var v192 PVEBackupNode
+					(v192).UnmarshalEasyJSON(in)
+					out.Exclusions = append(out.Exclusions, v192)
 					in.WantComma()
 				}
 				in.Delim(']')
 			}
 		case "Method":
 			out.Method = string(in.String())
-		case "Quota":
-			out.Quota = int64(in.Int64())
 		case "SSHConnection":
 			(out.SSHConnection).UnmarshalEasyJSON(in)
 		case "Selections":
@@ -14602,13 +14721,15 @@ func easyjsonB7f3de24Decode119(in *jlexer.Lexer, out *PVEParams) {
 					out.Selections = (out.Selections)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v188 PVEBackupNode
-					(v188).UnmarshalEasyJSON(in)
-					out.Selections = append(out.Selections, v188)
+					var v193 PVEBackupNode
+					(v193).UnmarshalEasyJSON(in)
+					out.Selections = append(out.Selections, v193)
 					in.WantComma()
 				}
 				in.Delim(']')
 			}
+		case "UseCBT":
+			out.UseCBT = bool(in.Bool())
 		default:
 			out.UnmarshalUnknown(in, key)
 		}
@@ -14639,11 +14760,11 @@ func easyjsonB7f3de24Encode119(out *jwriter.Writer, in PVEParams) {
 		}
 		{
 			out.RawByte('[')
-			for v189, v190 := range in.Exclusions {
-				if v189 > 0 {
+			for v194, v195 := range in.Exclusions {
+				if v194 > 0 {
 					out.RawByte(',')
 				}
-				(v190).MarshalEasyJSON(out)
+				(v195).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -14657,16 +14778,6 @@ func easyjsonB7f3de24Encode119(out *jwriter.Writer, in PVEParams) {
 			out.RawString(prefix)
 		}
 		out.String(string(in.Method))
-	}
-	if in.Quota != 0 {
-		const prefix string = ",\"Quota\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.Int64(int64(in.Quota))
 	}
 	if true {
 		const prefix string = ",\"SSHConnection\":"
@@ -14688,14 +14799,24 @@ func easyjsonB7f3de24Encode119(out *jwriter.Writer, in PVEParams) {
 		}
 		{
 			out.RawByte('[')
-			for v191, v192 := range in.Selections {
-				if v191 > 0 {
+			for v196, v197 := range in.Selections {
+				if v196 > 0 {
 					out.RawByte(',')
 				}
-				(v192).MarshalEasyJSON(out)
+				(v197).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
+	}
+	if in.UseCBT {
+		const prefix string = ",\"UseCBT\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Bool(bool(in.UseCBT))
 	}
 	in.MarshalUnknowns(out, first)
 	out.RawByte('}')
@@ -14752,7 +14873,7 @@ func easyjsonB7f3de24Decode120(in *jlexer.Lexer, out *PVEDisk) {
 		case "Volume":
 			out.Volume = string(in.String())
 		case "Size":
-			out.Size = string(in.String())
+			out.Size = int64(in.Int64())
 		case "Format":
 			out.Format = string(in.String())
 		case "Options":
@@ -14791,10 +14912,10 @@ func easyjsonB7f3de24Encode120(out *jwriter.Writer, in PVEDisk) {
 		out.RawString(prefix)
 		out.String(string(in.Volume))
 	}
-	if in.Size != "" {
+	if in.Size != 0 {
 		const prefix string = ",\"Size\":"
 		out.RawString(prefix)
-		out.String(string(in.Size))
+		out.Int64(int64(in.Size))
 	}
 	if in.Format != "" {
 		const prefix string = ",\"Format\":"
@@ -14868,9 +14989,9 @@ func easyjsonB7f3de24Decode121(in *jlexer.Lexer, out *PVEBackupVM) {
 					out.IncludedDisks = (out.IncludedDisks)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v193 PVEBackupDisk
-					(v193).UnmarshalEasyJSON(in)
-					out.IncludedDisks = append(out.IncludedDisks, v193)
+					var v198 PVEBackupDisk
+					(v198).UnmarshalEasyJSON(in)
+					out.IncludedDisks = append(out.IncludedDisks, v198)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -14903,11 +15024,11 @@ func easyjsonB7f3de24Encode121(out *jwriter.Writer, in PVEBackupVM) {
 		out.RawString(prefix[1:])
 		{
 			out.RawByte('[')
-			for v194, v195 := range in.IncludedDisks {
-				if v194 > 0 {
+			for v199, v200 := range in.IncludedDisks {
+				if v199 > 0 {
 					out.RawByte(',')
 				}
-				(v195).MarshalEasyJSON(out)
+				(v200).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -15014,9 +15135,9 @@ func easyjsonB7f3de24Decode122(in *jlexer.Lexer, out *PVEBackupNode) {
 					out.IncludedVMs = (out.IncludedVMs)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v196 PVEBackupVM
-					(v196).UnmarshalEasyJSON(in)
-					out.IncludedVMs = append(out.IncludedVMs, v196)
+					var v201 PVEBackupVM
+					(v201).UnmarshalEasyJSON(in)
+					out.IncludedVMs = append(out.IncludedVMs, v201)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -15045,11 +15166,11 @@ func easyjsonB7f3de24Encode122(out *jwriter.Writer, in PVEBackupNode) {
 		out.RawString(prefix[1:])
 		{
 			out.RawByte('[')
-			for v197, v198 := range in.IncludedVMs {
-				if v197 > 0 {
+			for v202, v203 := range in.IncludedVMs {
+				if v202 > 0 {
 					out.RawByte(',')
 				}
-				(v198).MarshalEasyJSON(out)
+				(v203).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -15296,9 +15417,9 @@ func easyjsonB7f3de24Decode125(in *jlexer.Lexer, out *PSAConfig) {
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v199 string
-					v199 = string(in.String())
-					(out.CustomHeaders)[key] = v199
+					var v204 string
+					v204 = string(in.String())
+					(out.CustomHeaders)[key] = v204
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -15335,16 +15456,16 @@ func easyjsonB7f3de24Encode125(out *jwriter.Writer, in PSAConfig) {
 		out.RawString(prefix)
 		{
 			out.RawByte('{')
-			v200First := true
-			for v200Name, v200Value := range in.CustomHeaders {
-				if v200First {
-					v200First = false
+			v205First := true
+			for v205Name, v205Value := range in.CustomHeaders {
+				if v205First {
+					v205First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v200Name))
+				out.String(string(v205Name))
 				out.RawByte(':')
-				out.String(string(v200Value))
+				out.String(string(v205Value))
 			}
 			out.RawByte('}')
 		}
@@ -15579,9 +15700,9 @@ func easyjsonB7f3de24Decode128(in *jlexer.Lexer, out *Organization) {
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v201 FileOption
-					(v201).UnmarshalEasyJSON(in)
-					(out.AuditFileOptions)[key] = v201
+					var v206 FileOption
+					(v206).UnmarshalEasyJSON(in)
+					(out.AuditFileOptions)[key] = v206
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -15608,9 +15729,9 @@ func easyjsonB7f3de24Decode128(in *jlexer.Lexer, out *Organization) {
 					out.ExperimentalOptions = (out.ExperimentalOptions)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v202 string
-					v202 = string(in.String())
-					out.ExperimentalOptions = append(out.ExperimentalOptions, v202)
+					var v207 string
+					v207 = string(in.String())
+					out.ExperimentalOptions = append(out.ExperimentalOptions, v207)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -15631,9 +15752,9 @@ func easyjsonB7f3de24Decode128(in *jlexer.Lexer, out *Organization) {
 					out.Hosts = (out.Hosts)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v203 string
-					v203 = string(in.String())
-					out.Hosts = append(out.Hosts, v203)
+					var v208 string
+					v208 = string(in.String())
+					out.Hosts = append(out.Hosts, v208)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -15658,9 +15779,9 @@ func easyjsonB7f3de24Decode128(in *jlexer.Lexer, out *Organization) {
 					out.PSAConfigs = (out.PSAConfigs)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v204 PSAConfig
-					(v204).UnmarshalEasyJSON(in)
-					out.PSAConfigs = append(out.PSAConfigs, v204)
+					var v209 PSAConfig
+					(v209).UnmarshalEasyJSON(in)
+					out.PSAConfigs = append(out.PSAConfigs, v209)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -15681,9 +15802,9 @@ func easyjsonB7f3de24Decode128(in *jlexer.Lexer, out *Organization) {
 					out.RemoteStorage = (out.RemoteStorage)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v205 RemoteStorageOption
-					(v205).UnmarshalEasyJSON(in)
-					out.RemoteStorage = append(out.RemoteStorage, v205)
+					var v210 RemoteStorageOption
+					(v210).UnmarshalEasyJSON(in)
+					out.RemoteStorage = append(out.RemoteStorage, v210)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -15699,9 +15820,9 @@ func easyjsonB7f3de24Decode128(in *jlexer.Lexer, out *Organization) {
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v206 WebhookOption
-					(v206).UnmarshalEasyJSON(in)
-					(out.WebhookOptions)[key] = v206
+					var v211 WebhookOption
+					(v211).UnmarshalEasyJSON(in)
+					(out.WebhookOptions)[key] = v211
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -15727,16 +15848,16 @@ func easyjsonB7f3de24Encode128(out *jwriter.Writer, in Organization) {
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v207First := true
-			for v207Name, v207Value := range in.AuditFileOptions {
-				if v207First {
-					v207First = false
+			v212First := true
+			for v212Name, v212Value := range in.AuditFileOptions {
+				if v212First {
+					v212First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v207Name))
+				out.String(string(v212Name))
 				out.RawByte(':')
-				(v207Value).MarshalEasyJSON(out)
+				(v212Value).MarshalEasyJSON(out)
 			}
 			out.RawByte('}')
 		}
@@ -15761,11 +15882,11 @@ func easyjsonB7f3de24Encode128(out *jwriter.Writer, in Organization) {
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v208, v209 := range in.ExperimentalOptions {
-				if v208 > 0 {
+			for v213, v214 := range in.ExperimentalOptions {
+				if v213 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v209))
+				out.String(string(v214))
 			}
 			out.RawByte(']')
 		}
@@ -15777,11 +15898,11 @@ func easyjsonB7f3de24Encode128(out *jwriter.Writer, in Organization) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v210, v211 := range in.Hosts {
-				if v210 > 0 {
+			for v215, v216 := range in.Hosts {
+				if v215 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v211))
+				out.String(string(v216))
 			}
 			out.RawByte(']')
 		}
@@ -15803,11 +15924,11 @@ func easyjsonB7f3de24Encode128(out *jwriter.Writer, in Organization) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v212, v213 := range in.PSAConfigs {
-				if v212 > 0 {
+			for v217, v218 := range in.PSAConfigs {
+				if v217 > 0 {
 					out.RawByte(',')
 				}
-				(v213).MarshalEasyJSON(out)
+				(v218).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -15819,11 +15940,11 @@ func easyjsonB7f3de24Encode128(out *jwriter.Writer, in Organization) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v214, v215 := range in.RemoteStorage {
-				if v214 > 0 {
+			for v219, v220 := range in.RemoteStorage {
+				if v219 > 0 {
 					out.RawByte(',')
 				}
-				(v215).MarshalEasyJSON(out)
+				(v220).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -15840,16 +15961,16 @@ func easyjsonB7f3de24Encode128(out *jwriter.Writer, in Organization) {
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v216First := true
-			for v216Name, v216Value := range in.WebhookOptions {
-				if v216First {
-					v216First = false
+			v221First := true
+			for v221Name, v221Value := range in.WebhookOptions {
+				if v221First {
+					v221First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v216Name))
+				out.String(string(v221Name))
 				out.RawByte(':')
-				(v216Value).MarshalEasyJSON(out)
+				(v221Value).MarshalEasyJSON(out)
 			}
 			out.RawByte('}')
 		}
@@ -15918,9 +16039,9 @@ func easyjsonB7f3de24Decode129(in *jlexer.Lexer, out *OidcConfig) {
 					out.Hosts = (out.Hosts)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v217 string
-					v217 = string(in.String())
-					out.Hosts = append(out.Hosts, v217)
+					var v222 string
+					v222 = string(in.String())
+					out.Hosts = append(out.Hosts, v222)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -15951,9 +16072,9 @@ func easyjsonB7f3de24Decode129(in *jlexer.Lexer, out *OidcConfig) {
 					out.Scopes = (out.Scopes)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v218 string
-					v218 = string(in.String())
-					out.Scopes = append(out.Scopes, v218)
+					var v223 string
+					v223 = string(in.String())
+					out.Scopes = append(out.Scopes, v223)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -15974,9 +16095,9 @@ func easyjsonB7f3de24Decode129(in *jlexer.Lexer, out *OidcConfig) {
 					out.RequiredClaims = (out.RequiredClaims)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v219 OidcClaim
-					(v219).UnmarshalEasyJSON(in)
-					out.RequiredClaims = append(out.RequiredClaims, v219)
+					var v224 OidcClaim
+					(v224).UnmarshalEasyJSON(in)
+					out.RequiredClaims = append(out.RequiredClaims, v224)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -16011,11 +16132,11 @@ func easyjsonB7f3de24Encode129(out *jwriter.Writer, in OidcConfig) {
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v220, v221 := range in.Hosts {
-				if v220 > 0 {
+			for v225, v226 := range in.Hosts {
+				if v225 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v221))
+				out.String(string(v226))
 			}
 			out.RawByte(']')
 		}
@@ -16050,11 +16171,11 @@ func easyjsonB7f3de24Encode129(out *jwriter.Writer, in OidcConfig) {
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v222, v223 := range in.Scopes {
-				if v222 > 0 {
+			for v227, v228 := range in.Scopes {
+				if v227 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v223))
+				out.String(string(v228))
 			}
 			out.RawByte(']')
 		}
@@ -16064,11 +16185,11 @@ func easyjsonB7f3de24Encode129(out *jwriter.Writer, in OidcConfig) {
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v224, v225 := range in.RequiredClaims {
-				if v224 > 0 {
+			for v229, v230 := range in.RequiredClaims {
+				if v229 > 0 {
 					out.RawByte(',')
 				}
-				(v225).MarshalEasyJSON(out)
+				(v230).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -16232,9 +16353,9 @@ func easyjsonB7f3de24Decode131(in *jlexer.Lexer, out *Office365ObjectInfo) {
 					out.Members = (out.Members)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v226 string
-					v226 = string(in.String())
-					out.Members = append(out.Members, v226)
+					var v231 string
+					v231 = string(in.String())
+					out.Members = append(out.Members, v231)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -16280,11 +16401,11 @@ func easyjsonB7f3de24Encode131(out *jwriter.Writer, in Office365ObjectInfo) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v227, v228 := range in.Members {
-				if v227 > 0 {
+			for v232, v233 := range in.Members {
+				if v232 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v228))
+				out.String(string(v233))
 			}
 			out.RawByte(']')
 		}
@@ -16377,9 +16498,9 @@ func easyjsonB7f3de24Decode132(in *jlexer.Lexer, out *Office365MixedVirtualAccou
 					out.Members = (out.Members)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v229 string
-					v229 = string(in.String())
-					out.Members = append(out.Members, v229)
+					var v234 string
+					v234 = string(in.String())
+					out.Members = append(out.Members, v234)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -16498,11 +16619,11 @@ func easyjsonB7f3de24Encode132(out *jwriter.Writer, in Office365MixedVirtualAcco
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v230, v231 := range in.Members {
-				if v230 > 0 {
+			for v235, v236 := range in.Members {
+				if v235 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v231))
+				out.String(string(v236))
 			}
 			out.RawByte(']')
 		}
@@ -16582,9 +16703,9 @@ func easyjsonB7f3de24Decode133(in *jlexer.Lexer, out *Office365CustomSettingV2) 
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v232 uint
-					v232 = uint(in.Uint())
-					(out.BackupOptions)[key] = v232
+					var v237 uint
+					v237 = uint(in.Uint())
+					(out.BackupOptions)[key] = v237
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -16602,9 +16723,9 @@ func easyjsonB7f3de24Decode133(in *jlexer.Lexer, out *Office365CustomSettingV2) 
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v233 uint
-					v233 = uint(in.Uint())
-					(out.MemberBackupOptions)[key] = v233
+					var v238 uint
+					v238 = uint(in.Uint())
+					(out.MemberBackupOptions)[key] = v238
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -16622,9 +16743,9 @@ func easyjsonB7f3de24Decode133(in *jlexer.Lexer, out *Office365CustomSettingV2) 
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v234 uint
-					v234 = uint(in.Uint())
-					(out.FilterOptions)[key] = v234
+					var v239 uint
+					v239 = uint(in.Uint())
+					(out.FilterOptions)[key] = v239
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -16642,9 +16763,9 @@ func easyjsonB7f3de24Decode133(in *jlexer.Lexer, out *Office365CustomSettingV2) 
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v235 uint
-					v235 = uint(in.Uint())
-					(out.FilterMemberOptions)[key] = v235
+					var v240 uint
+					v240 = uint(in.Uint())
+					(out.FilterMemberOptions)[key] = v240
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -16683,16 +16804,16 @@ func easyjsonB7f3de24Encode133(out *jwriter.Writer, in Office365CustomSettingV2)
 		out.RawString(prefix)
 		{
 			out.RawByte('{')
-			v236First := true
-			for v236Name, v236Value := range in.BackupOptions {
-				if v236First {
-					v236First = false
+			v241First := true
+			for v241Name, v241Value := range in.BackupOptions {
+				if v241First {
+					v241First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v236Name))
+				out.String(string(v241Name))
 				out.RawByte(':')
-				out.Uint(uint(v236Value))
+				out.Uint(uint(v241Value))
 			}
 			out.RawByte('}')
 		}
@@ -16702,16 +16823,16 @@ func easyjsonB7f3de24Encode133(out *jwriter.Writer, in Office365CustomSettingV2)
 		out.RawString(prefix)
 		{
 			out.RawByte('{')
-			v237First := true
-			for v237Name, v237Value := range in.MemberBackupOptions {
-				if v237First {
-					v237First = false
+			v242First := true
+			for v242Name, v242Value := range in.MemberBackupOptions {
+				if v242First {
+					v242First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v237Name))
+				out.String(string(v242Name))
 				out.RawByte(':')
-				out.Uint(uint(v237Value))
+				out.Uint(uint(v242Value))
 			}
 			out.RawByte('}')
 		}
@@ -16721,16 +16842,16 @@ func easyjsonB7f3de24Encode133(out *jwriter.Writer, in Office365CustomSettingV2)
 		out.RawString(prefix)
 		{
 			out.RawByte('{')
-			v238First := true
-			for v238Name, v238Value := range in.FilterOptions {
-				if v238First {
-					v238First = false
+			v243First := true
+			for v243Name, v243Value := range in.FilterOptions {
+				if v243First {
+					v243First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v238Name))
+				out.String(string(v243Name))
 				out.RawByte(':')
-				out.Uint(uint(v238Value))
+				out.Uint(uint(v243Value))
 			}
 			out.RawByte('}')
 		}
@@ -16740,16 +16861,16 @@ func easyjsonB7f3de24Encode133(out *jwriter.Writer, in Office365CustomSettingV2)
 		out.RawString(prefix)
 		{
 			out.RawByte('{')
-			v239First := true
-			for v239Name, v239Value := range in.FilterMemberOptions {
-				if v239First {
-					v239First = false
+			v244First := true
+			for v244Name, v244Value := range in.FilterMemberOptions {
+				if v244First {
+					v244First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v239Name))
+				out.String(string(v244Name))
 				out.RawByte(':')
-				out.Uint(uint(v239Value))
+				out.Uint(uint(v244Value))
 			}
 			out.RawByte('}')
 		}
@@ -16820,9 +16941,9 @@ func easyjsonB7f3de24Decode134(in *jlexer.Lexer, out *Office365CustomSetting) {
 					out.MailboxUserIDs = (out.MailboxUserIDs)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v240 string
-					v240 = string(in.String())
-					out.MailboxUserIDs = append(out.MailboxUserIDs, v240)
+					var v245 string
+					v245 = string(in.String())
+					out.MailboxUserIDs = append(out.MailboxUserIDs, v245)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -16843,9 +16964,9 @@ func easyjsonB7f3de24Decode134(in *jlexer.Lexer, out *Office365CustomSetting) {
 					out.MailboxGroupIDs = (out.MailboxGroupIDs)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v241 string
-					v241 = string(in.String())
-					out.MailboxGroupIDs = append(out.MailboxGroupIDs, v241)
+					var v246 string
+					v246 = string(in.String())
+					out.MailboxGroupIDs = append(out.MailboxGroupIDs, v246)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -16866,9 +16987,9 @@ func easyjsonB7f3de24Decode134(in *jlexer.Lexer, out *Office365CustomSetting) {
 					out.SiteIDs = (out.SiteIDs)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v242 string
-					v242 = string(in.String())
-					out.SiteIDs = append(out.SiteIDs, v242)
+					var v247 string
+					v247 = string(in.String())
+					out.SiteIDs = append(out.SiteIDs, v247)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -16904,11 +17025,11 @@ func easyjsonB7f3de24Encode134(out *jwriter.Writer, in Office365CustomSetting) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v243, v244 := range in.MailboxUserIDs {
-				if v243 > 0 {
+			for v248, v249 := range in.MailboxUserIDs {
+				if v248 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v244))
+				out.String(string(v249))
 			}
 			out.RawByte(']')
 		}
@@ -16920,11 +17041,11 @@ func easyjsonB7f3de24Encode134(out *jwriter.Writer, in Office365CustomSetting) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v245, v246 := range in.MailboxGroupIDs {
-				if v245 > 0 {
+			for v250, v251 := range in.MailboxGroupIDs {
+				if v250 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v246))
+				out.String(string(v251))
 			}
 			out.RawByte(']')
 		}
@@ -16936,11 +17057,11 @@ func easyjsonB7f3de24Encode134(out *jwriter.Writer, in Office365CustomSetting) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v247, v248 := range in.SiteIDs {
-				if v247 > 0 {
+			for v252, v253 := range in.SiteIDs {
+				if v252 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v248))
+				out.String(string(v253))
 			}
 			out.RawByte(']')
 		}
@@ -17114,9 +17235,9 @@ func easyjsonB7f3de24Decode136(in *jlexer.Lexer, out *Office365Connection) {
 					out.MailboxUniqueMembers = (out.MailboxUniqueMembers)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v249 string
-					v249 = string(in.String())
-					out.MailboxUniqueMembers = append(out.MailboxUniqueMembers, v249)
+					var v254 string
+					v254 = string(in.String())
+					out.MailboxUniqueMembers = append(out.MailboxUniqueMembers, v254)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -17137,9 +17258,9 @@ func easyjsonB7f3de24Decode136(in *jlexer.Lexer, out *Office365Connection) {
 					out.SiteUniqueMembers = (out.SiteUniqueMembers)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v250 string
-					v250 = string(in.String())
-					out.SiteUniqueMembers = append(out.SiteUniqueMembers, v250)
+					var v255 string
+					v255 = string(in.String())
+					out.SiteUniqueMembers = append(out.SiteUniqueMembers, v255)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -17195,11 +17316,11 @@ func easyjsonB7f3de24Encode136(out *jwriter.Writer, in Office365Connection) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v251, v252 := range in.MailboxUniqueMembers {
-				if v251 > 0 {
+			for v256, v257 := range in.MailboxUniqueMembers {
+				if v256 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v252))
+				out.String(string(v257))
 			}
 			out.RawByte(']')
 		}
@@ -17211,11 +17332,11 @@ func easyjsonB7f3de24Encode136(out *jwriter.Writer, in Office365Connection) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v253, v254 := range in.SiteUniqueMembers {
-				if v253 > 0 {
+			for v258, v259 := range in.SiteUniqueMembers {
+				if v258 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v254))
+				out.String(string(v259))
 			}
 			out.RawByte(']')
 		}
@@ -17784,9 +17905,9 @@ func easyjsonB7f3de24Decode142(in *jlexer.Lexer, out *MongoDBConnection) {
 					out.ReplicaMembers = (out.ReplicaMembers)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v255 string
-					v255 = string(in.String())
-					out.ReplicaMembers = append(out.ReplicaMembers, v255)
+					var v260 string
+					v260 = string(in.String())
+					out.ReplicaMembers = append(out.ReplicaMembers, v260)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -17878,11 +17999,11 @@ func easyjsonB7f3de24Encode142(out *jwriter.Writer, in MongoDBConnection) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v256, v257 := range in.ReplicaMembers {
-				if v256 > 0 {
+			for v261, v262 := range in.ReplicaMembers {
+				if v261 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v257))
+				out.String(string(v262))
 			}
 			out.RawByte(']')
 		}
@@ -18796,9 +18917,9 @@ func easyjsonB7f3de24Decode151(in *jlexer.Lexer, out *LicenseLimits) {
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v258 int
-					v258 = int(in.Int())
-					(out.BoosterCount)[key] = v258
+					var v263 int
+					v263 = int(in.Int())
+					(out.BoosterCount)[key] = v263
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -18833,16 +18954,16 @@ func easyjsonB7f3de24Encode151(out *jwriter.Writer, in LicenseLimits) {
 		}
 		{
 			out.RawByte('{')
-			v259First := true
-			for v259Name, v259Value := range in.BoosterCount {
-				if v259First {
-					v259First = false
+			v264First := true
+			for v264Name, v264Value := range in.BoosterCount {
+				if v264First {
+					v264First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v259Name))
+				out.String(string(v264Name))
 				out.RawByte(':')
-				out.Int(int(v259Value))
+				out.Int(int(v264Value))
 			}
 			out.RawByte('}')
 		}
@@ -19554,9 +19675,9 @@ func easyjsonB7f3de24Decode159(in *jlexer.Lexer, out *HyperVMachineInfo) {
 					out.HardDrives = (out.HardDrives)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v260 string
-					v260 = string(in.String())
-					out.HardDrives = append(out.HardDrives, v260)
+					var v265 string
+					v265 = string(in.String())
+					out.HardDrives = append(out.HardDrives, v265)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -19606,11 +19727,11 @@ func easyjsonB7f3de24Encode159(out *jwriter.Writer, in HyperVMachineInfo) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v261, v262 := range in.HardDrives {
-				if v261 > 0 {
+			for v266, v267 := range in.HardDrives {
+				if v266 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v262))
+				out.String(string(v267))
 			}
 			out.RawByte(']')
 		}
@@ -20035,9 +20156,9 @@ func easyjsonB7f3de24Decode164(in *jlexer.Lexer, out *GetUserGroupWithUsersRespo
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v263 UserProfileConfig
-					(v263).UnmarshalEasyJSON(in)
-					(out.Users)[key] = v263
+					var v268 UserProfileConfig
+					(v268).UnmarshalEasyJSON(in)
+					(out.Users)[key] = v268
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -20068,16 +20189,16 @@ func easyjsonB7f3de24Encode164(out *jwriter.Writer, in GetUserGroupWithUsersResp
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v264First := true
-			for v264Name, v264Value := range in.Users {
-				if v264First {
-					v264First = false
+			v269First := true
+			for v269Name, v269Value := range in.Users {
+				if v269First {
+					v269First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v264Name))
+				out.String(string(v269Name))
 				out.RawByte(':')
-				(v264Value).MarshalEasyJSON(out)
+				(v269Value).MarshalEasyJSON(out)
 			}
 			out.RawByte('}')
 		}
@@ -20477,9 +20598,9 @@ func easyjsonB7f3de24Decode169(in *jlexer.Lexer, out *FileOption) {
 					out.AllowEventTypes = (out.AllowEventTypes)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v265 StreamableEventType
-					v265 = StreamableEventType(in.Int())
-					out.AllowEventTypes = append(out.AllowEventTypes, v265)
+					var v270 StreamableEventType
+					v270 = StreamableEventType(in.Int())
+					out.AllowEventTypes = append(out.AllowEventTypes, v270)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -20514,11 +20635,11 @@ func easyjsonB7f3de24Encode169(out *jwriter.Writer, in FileOption) {
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v266, v267 := range in.AllowEventTypes {
-				if v266 > 0 {
+			for v271, v272 := range in.AllowEventTypes {
+				if v271 > 0 {
 					out.RawByte(',')
 				}
-				out.Int(int(v267))
+				out.Int(int(v272))
 			}
 			out.RawByte(']')
 		}
@@ -20812,9 +20933,9 @@ func easyjsonB7f3de24Decode172(in *jlexer.Lexer, out *ExternalLDAPAuthentication
 					out.FallbackServers = (out.FallbackServers)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v268 ExternalLDAPAuthenticationSourceServer
-					(v268).UnmarshalEasyJSON(in)
-					out.FallbackServers = append(out.FallbackServers, v268)
+					var v273 ExternalLDAPAuthenticationSourceServer
+					(v273).UnmarshalEasyJSON(in)
+					out.FallbackServers = append(out.FallbackServers, v273)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -20868,11 +20989,11 @@ func easyjsonB7f3de24Encode172(out *jwriter.Writer, in ExternalLDAPAuthenticatio
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v269, v270 := range in.FallbackServers {
-				if v269 > 0 {
+			for v274, v275 := range in.FallbackServers {
+				if v274 > 0 {
 					out.RawByte(',')
 				}
-				(v270).MarshalEasyJSON(out)
+				(v275).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -21387,9 +21508,9 @@ func easyjsonB7f3de24Decode177(in *jlexer.Lexer, out *EmailReportingOption) {
 					out.Recipients = (out.Recipients)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v271 string
-					v271 = string(in.String())
-					out.Recipients = append(out.Recipients, v271)
+					var v276 string
+					v276 = string(in.String())
+					out.Recipients = append(out.Recipients, v276)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -21430,11 +21551,11 @@ func easyjsonB7f3de24Encode177(out *jwriter.Writer, in EmailReportingOption) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v272, v273 := range in.Recipients {
-				if v272 > 0 {
+			for v277, v278 := range in.Recipients {
+				if v277 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v273))
+				out.String(string(v278))
 			}
 			out.RawByte(']')
 		}
@@ -21507,9 +21628,9 @@ func easyjsonB7f3de24Decode178(in *jlexer.Lexer, out *EmailReportGeneratedPrevie
 					out.To = (out.To)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v274 string
-					v274 = string(in.String())
-					out.To = append(out.To, v274)
+					var v279 string
+					v279 = string(in.String())
+					out.To = append(out.To, v279)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -21556,11 +21677,11 @@ func easyjsonB7f3de24Encode178(out *jwriter.Writer, in EmailReportGeneratedPrevi
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v275, v276 := range in.To {
-				if v275 > 0 {
+			for v280, v281 := range in.To {
+				if v280 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v276))
+				out.String(string(v281))
 			}
 			out.RawByte(']')
 		}
@@ -21644,9 +21765,9 @@ func easyjsonB7f3de24Decode179(in *jlexer.Lexer, out *EmailReportConfig) {
 					out.SummaryFrequency = (out.SummaryFrequency)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v277 ScheduleConfig
-					(v277).UnmarshalEasyJSON(in)
-					out.SummaryFrequency = append(out.SummaryFrequency, v277)
+					var v282 ScheduleConfig
+					(v282).UnmarshalEasyJSON(in)
+					out.SummaryFrequency = append(out.SummaryFrequency, v282)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -21681,11 +21802,11 @@ func easyjsonB7f3de24Encode179(out *jwriter.Writer, in EmailReportConfig) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v278, v279 := range in.SummaryFrequency {
-				if v278 > 0 {
+			for v283, v284 := range in.SummaryFrequency {
+				if v283 > 0 {
 					out.RawByte(',')
 				}
-				(v279).MarshalEasyJSON(out)
+				(v284).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -21768,9 +21889,9 @@ func easyjsonB7f3de24Decode180(in *jlexer.Lexer, out *EmailOptions) {
 					out.EmailReportingOptions = (out.EmailReportingOptions)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v280 EmailReportingOption
-					(v280).UnmarshalEasyJSON(in)
-					out.EmailReportingOptions = append(out.EmailReportingOptions, v280)
+					var v285 EmailReportingOption
+					(v285).UnmarshalEasyJSON(in)
+					out.EmailReportingOptions = append(out.EmailReportingOptions, v285)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -21823,11 +21944,11 @@ func easyjsonB7f3de24Encode180(out *jwriter.Writer, in EmailOptions) {
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v281, v282 := range in.EmailReportingOptions {
-				if v281 > 0 {
+			for v286, v287 := range in.EmailReportingOptions {
+				if v286 > 0 {
 					out.RawByte(',')
 				}
-				(v282).MarshalEasyJSON(out)
+				(v287).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -22021,9 +22142,9 @@ func easyjsonB7f3de24Decode182(in *jlexer.Lexer, out *DispatcherWindiskSnapshotR
 					out.WindiskSnapshot = (out.WindiskSnapshot)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v283 DiskDrive
-					(v283).UnmarshalEasyJSON(in)
-					out.WindiskSnapshot = append(out.WindiskSnapshot, v283)
+					var v288 DiskDrive
+					(v288).UnmarshalEasyJSON(in)
+					out.WindiskSnapshot = append(out.WindiskSnapshot, v288)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -22059,11 +22180,11 @@ func easyjsonB7f3de24Encode182(out *jwriter.Writer, in DispatcherWindiskSnapshot
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v284, v285 := range in.WindiskSnapshot {
-				if v284 > 0 {
+			for v289, v290 := range in.WindiskSnapshot {
+				if v289 > 0 {
 					out.RawByte(',')
 				}
-				(v285).MarshalEasyJSON(out)
+				(v290).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -22134,9 +22255,9 @@ func easyjsonB7f3de24Decode183(in *jlexer.Lexer, out *DispatcherVaultSnapshotsRe
 					out.Snapshots = (out.Snapshots)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v286 VaultSnapshot
-					(v286).UnmarshalEasyJSON(in)
-					out.Snapshots = append(out.Snapshots, v286)
+					var v291 VaultSnapshot
+					(v291).UnmarshalEasyJSON(in)
+					out.Snapshots = append(out.Snapshots, v291)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -22172,11 +22293,11 @@ func easyjsonB7f3de24Encode183(out *jwriter.Writer, in DispatcherVaultSnapshotsR
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v287, v288 := range in.Snapshots {
-				if v287 > 0 {
+			for v292, v293 := range in.Snapshots {
+				if v292 > 0 {
 					out.RawByte(',')
 				}
-				(v288).MarshalEasyJSON(out)
+				(v293).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -22247,9 +22368,9 @@ func easyjsonB7f3de24Decode184(in *jlexer.Lexer, out *DispatcherStoredObjectsRes
 					out.StoredObjects = (out.StoredObjects)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v289 StoredObject
-					(v289).UnmarshalEasyJSON(in)
-					out.StoredObjects = append(out.StoredObjects, v289)
+					var v294 StoredObject
+					(v294).UnmarshalEasyJSON(in)
+					out.StoredObjects = append(out.StoredObjects, v294)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -22285,11 +22406,11 @@ func easyjsonB7f3de24Encode184(out *jwriter.Writer, in DispatcherStoredObjectsRe
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v290, v291 := range in.StoredObjects {
-				if v290 > 0 {
+			for v295, v296 := range in.StoredObjects {
+				if v295 > 0 {
 					out.RawByte(',')
 				}
-				(v291).MarshalEasyJSON(out)
+				(v296).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -22360,9 +22481,9 @@ func easyjsonB7f3de24Decode185(in *jlexer.Lexer, out *DispatcherListSnapshotVirt
 					out.VMs = (out.VMs)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v292 VMInfo
-					(v292).UnmarshalEasyJSON(in)
-					out.VMs = append(out.VMs, v292)
+					var v297 VMInfo
+					(v297).UnmarshalEasyJSON(in)
+					out.VMs = append(out.VMs, v297)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -22398,11 +22519,11 @@ func easyjsonB7f3de24Encode185(out *jwriter.Writer, in DispatcherListSnapshotVir
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v293, v294 := range in.VMs {
-				if v293 > 0 {
+			for v298, v299 := range in.VMs {
+				if v298 > 0 {
 					out.RawByte(',')
 				}
-				(v294).MarshalEasyJSON(out)
+				(v299).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -22466,9 +22587,9 @@ func easyjsonB7f3de24Decode186(in *jlexer.Lexer, out *DispatcherAdminSourcesResp
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v295 string
-					v295 = string(in.String())
-					(out.ImportSources)[key] = v295
+					var v300 string
+					v300 = string(in.String())
+					(out.ImportSources)[key] = v300
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -22504,16 +22625,16 @@ func easyjsonB7f3de24Encode186(out *jwriter.Writer, in DispatcherAdminSourcesRes
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v296First := true
-			for v296Name, v296Value := range in.ImportSources {
-				if v296First {
-					v296First = false
+			v301First := true
+			for v301Name, v301Value := range in.ImportSources {
+				if v301First {
+					v301First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v296Name))
+				out.String(string(v301Name))
 				out.RawByte(':')
-				out.String(string(v296Value))
+				out.String(string(v301Value))
 			}
 			out.RawByte('}')
 		}
@@ -22545,7 +22666,88 @@ func (v *DispatcherAdminSourcesResponse) UnmarshalJSON(data []byte) error {
 func (v *DispatcherAdminSourcesResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjsonB7f3de24Decode186(l, v)
 }
-func easyjsonB7f3de24Decode187(in *jlexer.Lexer, out *DiskDrive) {
+func easyjsonB7f3de24Decode187(in *jlexer.Lexer, out *DispatchWithJobIDResponse) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeFieldName(false)
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "Status":
+			out.Status = int(in.Int())
+		case "Message":
+			out.Message = string(in.String())
+		case "JobID":
+			out.JobID = string(in.String())
+		default:
+			out.UnmarshalUnknown(in, key)
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjsonB7f3de24Encode187(out *jwriter.Writer, in DispatchWithJobIDResponse) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	{
+		const prefix string = ",\"Status\":"
+		out.RawString(prefix[1:])
+		out.Int(int(in.Status))
+	}
+	{
+		const prefix string = ",\"Message\":"
+		out.RawString(prefix)
+		out.String(string(in.Message))
+	}
+	if in.JobID != "" {
+		const prefix string = ",\"JobID\":"
+		out.RawString(prefix)
+		out.String(string(in.JobID))
+	}
+	in.MarshalUnknowns(out, false)
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v DispatchWithJobIDResponse) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjsonB7f3de24Encode187(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v DispatchWithJobIDResponse) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjsonB7f3de24Encode187(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *DispatchWithJobIDResponse) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjsonB7f3de24Decode187(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *DispatchWithJobIDResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjsonB7f3de24Decode187(l, v)
+}
+func easyjsonB7f3de24Decode188(in *jlexer.Lexer, out *DiskDrive) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -22592,9 +22794,9 @@ func easyjsonB7f3de24Decode187(in *jlexer.Lexer, out *DiskDrive) {
 					out.Partitions = (out.Partitions)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v297 Partition
-					(v297).UnmarshalEasyJSON(in)
-					out.Partitions = append(out.Partitions, v297)
+					var v302 Partition
+					(v302).UnmarshalEasyJSON(in)
+					out.Partitions = append(out.Partitions, v302)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -22615,9 +22817,9 @@ func easyjsonB7f3de24Decode187(in *jlexer.Lexer, out *DiskDrive) {
 					out.DeviceParents = (out.DeviceParents)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v298 string
-					v298 = string(in.String())
-					out.DeviceParents = append(out.DeviceParents, v298)
+					var v303 string
+					v303 = string(in.String())
+					out.DeviceParents = append(out.DeviceParents, v303)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -22648,9 +22850,9 @@ func easyjsonB7f3de24Decode187(in *jlexer.Lexer, out *DiskDrive) {
 					out.PartitionConflicts = (out.PartitionConflicts)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v299 PartitionConflict
-					(v299).UnmarshalEasyJSON(in)
-					out.PartitionConflicts = append(out.PartitionConflicts, v299)
+					var v304 PartitionConflict
+					(v304).UnmarshalEasyJSON(in)
+					out.PartitionConflicts = append(out.PartitionConflicts, v304)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -22665,7 +22867,7 @@ func easyjsonB7f3de24Decode187(in *jlexer.Lexer, out *DiskDrive) {
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode187(out *jwriter.Writer, in DiskDrive) {
+func easyjsonB7f3de24Encode188(out *jwriter.Writer, in DiskDrive) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -22706,11 +22908,11 @@ func easyjsonB7f3de24Encode187(out *jwriter.Writer, in DiskDrive) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v300, v301 := range in.Partitions {
-				if v300 > 0 {
+			for v305, v306 := range in.Partitions {
+				if v305 > 0 {
 					out.RawByte(',')
 				}
-				(v301).MarshalEasyJSON(out)
+				(v306).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -22722,11 +22924,11 @@ func easyjsonB7f3de24Encode187(out *jwriter.Writer, in DiskDrive) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v302, v303 := range in.DeviceParents {
-				if v302 > 0 {
+			for v307, v308 := range in.DeviceParents {
+				if v307 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v303))
+				out.String(string(v308))
 			}
 			out.RawByte(']')
 		}
@@ -22763,11 +22965,11 @@ func easyjsonB7f3de24Encode187(out *jwriter.Writer, in DiskDrive) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v304, v305 := range in.PartitionConflicts {
-				if v304 > 0 {
+			for v309, v310 := range in.PartitionConflicts {
+				if v309 > 0 {
 					out.RawByte(',')
 				}
-				(v305).MarshalEasyJSON(out)
+				(v310).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -22779,27 +22981,27 @@ func easyjsonB7f3de24Encode187(out *jwriter.Writer, in DiskDrive) {
 // MarshalJSON supports json.Marshaler interface
 func (v DiskDrive) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode187(&w, v)
+	easyjsonB7f3de24Encode188(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v DiskDrive) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode187(w, v)
+	easyjsonB7f3de24Encode188(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *DiskDrive) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode187(&r, v)
+	easyjsonB7f3de24Decode188(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *DiskDrive) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode187(l, v)
+	easyjsonB7f3de24Decode188(l, v)
 }
-func easyjsonB7f3de24Decode188(in *jlexer.Lexer, out *DeviceConfig) {
+func easyjsonB7f3de24Decode189(in *jlexer.Lexer, out *DeviceConfig) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -22837,9 +23039,9 @@ func easyjsonB7f3de24Decode188(in *jlexer.Lexer, out *DeviceConfig) {
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v306 SourceBasicInfo
-					(v306).UnmarshalEasyJSON(in)
-					(out.Sources)[key] = v306
+					var v311 SourceBasicInfo
+					(v311).UnmarshalEasyJSON(in)
+					(out.Sources)[key] = v311
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -22860,7 +23062,7 @@ func easyjsonB7f3de24Decode188(in *jlexer.Lexer, out *DeviceConfig) {
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode188(out *jwriter.Writer, in DeviceConfig) {
+func easyjsonB7f3de24Encode189(out *jwriter.Writer, in DeviceConfig) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -22884,16 +23086,16 @@ func easyjsonB7f3de24Encode188(out *jwriter.Writer, in DeviceConfig) {
 		out.RawString(prefix)
 		{
 			out.RawByte('{')
-			v307First := true
-			for v307Name, v307Value := range in.Sources {
-				if v307First {
-					v307First = false
+			v312First := true
+			for v312Name, v312Value := range in.Sources {
+				if v312First {
+					v312First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v307Name))
+				out.String(string(v312Name))
 				out.RawByte(':')
-				(v307Value).MarshalEasyJSON(out)
+				(v312Value).MarshalEasyJSON(out)
 			}
 			out.RawByte('}')
 		}
@@ -22920,27 +23122,27 @@ func easyjsonB7f3de24Encode188(out *jwriter.Writer, in DeviceConfig) {
 // MarshalJSON supports json.Marshaler interface
 func (v DeviceConfig) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode188(&w, v)
+	easyjsonB7f3de24Encode189(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v DeviceConfig) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode188(w, v)
+	easyjsonB7f3de24Encode189(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *DeviceConfig) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode188(&r, v)
+	easyjsonB7f3de24Decode189(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *DeviceConfig) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode188(l, v)
+	easyjsonB7f3de24Decode189(l, v)
 }
-func easyjsonB7f3de24Decode189(in *jlexer.Lexer, out *DestinationStatistics) {
+func easyjsonB7f3de24Decode190(in *jlexer.Lexer, out *DestinationStatistics) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -22979,7 +23181,7 @@ func easyjsonB7f3de24Decode189(in *jlexer.Lexer, out *DestinationStatistics) {
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode189(out *jwriter.Writer, in DestinationStatistics) {
+func easyjsonB7f3de24Encode190(out *jwriter.Writer, in DestinationStatistics) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -23015,27 +23217,27 @@ func easyjsonB7f3de24Encode189(out *jwriter.Writer, in DestinationStatistics) {
 // MarshalJSON supports json.Marshaler interface
 func (v DestinationStatistics) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode189(&w, v)
+	easyjsonB7f3de24Encode190(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v DestinationStatistics) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode189(w, v)
+	easyjsonB7f3de24Encode190(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *DestinationStatistics) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode189(&r, v)
+	easyjsonB7f3de24Decode190(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *DestinationStatistics) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode189(l, v)
+	easyjsonB7f3de24Decode190(l, v)
 }
-func easyjsonB7f3de24Decode190(in *jlexer.Lexer, out *DestinationLocation) {
+func easyjsonB7f3de24Decode191(in *jlexer.Lexer, out *DestinationLocation) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -23162,9 +23364,9 @@ func easyjsonB7f3de24Decode190(in *jlexer.Lexer, out *DestinationLocation) {
 					out.SpanTargets = (out.SpanTargets)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v308 DestinationLocation
-					(v308).UnmarshalEasyJSON(in)
-					out.SpanTargets = append(out.SpanTargets, v308)
+					var v313 DestinationLocation
+					(v313).UnmarshalEasyJSON(in)
+					out.SpanTargets = append(out.SpanTargets, v313)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -23183,7 +23385,7 @@ func easyjsonB7f3de24Decode190(in *jlexer.Lexer, out *DestinationLocation) {
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode190(out *jwriter.Writer, in DestinationLocation) {
+func easyjsonB7f3de24Encode191(out *jwriter.Writer, in DestinationLocation) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -23424,11 +23626,11 @@ func easyjsonB7f3de24Encode190(out *jwriter.Writer, in DestinationLocation) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v309, v310 := range in.SpanTargets {
-				if v309 > 0 {
+			for v314, v315 := range in.SpanTargets {
+				if v314 > 0 {
 					out.RawByte(',')
 				}
-				(v310).MarshalEasyJSON(out)
+				(v315).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -23450,27 +23652,27 @@ func easyjsonB7f3de24Encode190(out *jwriter.Writer, in DestinationLocation) {
 // MarshalJSON supports json.Marshaler interface
 func (v DestinationLocation) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode190(&w, v)
+	easyjsonB7f3de24Encode191(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v DestinationLocation) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode190(w, v)
+	easyjsonB7f3de24Encode191(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *DestinationLocation) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode190(&r, v)
+	easyjsonB7f3de24Decode191(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *DestinationLocation) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode190(l, v)
+	easyjsonB7f3de24Decode191(l, v)
 }
-func easyjsonB7f3de24Decode191(in *jlexer.Lexer, out *DestinationConfig) {
+func easyjsonB7f3de24Decode192(in *jlexer.Lexer, out *DestinationConfig) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -23511,9 +23713,9 @@ func easyjsonB7f3de24Decode191(in *jlexer.Lexer, out *DestinationConfig) {
 					out.PreExec = (out.PreExec)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v311 string
-					v311 = string(in.String())
-					out.PreExec = append(out.PreExec, v311)
+					var v316 string
+					v316 = string(in.String())
+					out.PreExec = append(out.PreExec, v316)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -23534,9 +23736,9 @@ func easyjsonB7f3de24Decode191(in *jlexer.Lexer, out *DestinationConfig) {
 					out.ThawExec = (out.ThawExec)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v312 string
-					v312 = string(in.String())
-					out.ThawExec = append(out.ThawExec, v312)
+					var v317 string
+					v317 = string(in.String())
+					out.ThawExec = append(out.ThawExec, v317)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -23557,9 +23759,9 @@ func easyjsonB7f3de24Decode191(in *jlexer.Lexer, out *DestinationConfig) {
 					out.PostExec = (out.PostExec)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v313 string
-					v313 = string(in.String())
-					out.PostExec = append(out.PostExec, v313)
+					var v318 string
+					v318 = string(in.String())
+					out.PostExec = append(out.PostExec, v318)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -23672,9 +23874,9 @@ func easyjsonB7f3de24Decode191(in *jlexer.Lexer, out *DestinationConfig) {
 					out.SpanTargets = (out.SpanTargets)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v314 DestinationLocation
-					(v314).UnmarshalEasyJSON(in)
-					out.SpanTargets = append(out.SpanTargets, v314)
+					var v319 DestinationLocation
+					(v319).UnmarshalEasyJSON(in)
+					out.SpanTargets = append(out.SpanTargets, v319)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -23717,9 +23919,9 @@ func easyjsonB7f3de24Decode191(in *jlexer.Lexer, out *DestinationConfig) {
 					out.AssociatedDevices = (out.AssociatedDevices)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v315 string
-					v315 = string(in.String())
-					out.AssociatedDevices = append(out.AssociatedDevices, v315)
+					var v320 string
+					v320 = string(in.String())
+					out.AssociatedDevices = append(out.AssociatedDevices, v320)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -23734,7 +23936,7 @@ func easyjsonB7f3de24Decode191(in *jlexer.Lexer, out *DestinationConfig) {
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode191(out *jwriter.Writer, in DestinationConfig) {
+func easyjsonB7f3de24Encode192(out *jwriter.Writer, in DestinationConfig) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -23760,11 +23962,11 @@ func easyjsonB7f3de24Encode191(out *jwriter.Writer, in DestinationConfig) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v316, v317 := range in.PreExec {
-				if v316 > 0 {
+			for v321, v322 := range in.PreExec {
+				if v321 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v317))
+				out.String(string(v322))
 			}
 			out.RawByte(']')
 		}
@@ -23776,11 +23978,11 @@ func easyjsonB7f3de24Encode191(out *jwriter.Writer, in DestinationConfig) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v318, v319 := range in.ThawExec {
-				if v318 > 0 {
+			for v323, v324 := range in.ThawExec {
+				if v323 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v319))
+				out.String(string(v324))
 			}
 			out.RawByte(']')
 		}
@@ -23792,11 +23994,11 @@ func easyjsonB7f3de24Encode191(out *jwriter.Writer, in DestinationConfig) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v320, v321 := range in.PostExec {
-				if v320 > 0 {
+			for v325, v326 := range in.PostExec {
+				if v325 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v321))
+				out.String(string(v326))
 			}
 			out.RawByte(']')
 		}
@@ -24038,11 +24240,11 @@ func easyjsonB7f3de24Encode191(out *jwriter.Writer, in DestinationConfig) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v322, v323 := range in.SpanTargets {
-				if v322 > 0 {
+			for v327, v328 := range in.SpanTargets {
+				if v327 > 0 {
 					out.RawByte(',')
 				}
-				(v323).MarshalEasyJSON(out)
+				(v328).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -24109,11 +24311,11 @@ func easyjsonB7f3de24Encode191(out *jwriter.Writer, in DestinationConfig) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v324, v325 := range in.AssociatedDevices {
-				if v324 > 0 {
+			for v329, v330 := range in.AssociatedDevices {
+				if v329 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v325))
+				out.String(string(v330))
 			}
 			out.RawByte(']')
 		}
@@ -24125,27 +24327,27 @@ func easyjsonB7f3de24Encode191(out *jwriter.Writer, in DestinationConfig) {
 // MarshalJSON supports json.Marshaler interface
 func (v DestinationConfig) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode191(&w, v)
+	easyjsonB7f3de24Encode192(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v DestinationConfig) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode191(w, v)
+	easyjsonB7f3de24Encode192(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *DestinationConfig) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode191(&r, v)
+	easyjsonB7f3de24Decode192(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *DestinationConfig) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode191(l, v)
+	easyjsonB7f3de24Decode192(l, v)
 }
-func easyjsonB7f3de24Decode192(in *jlexer.Lexer, out *DefaultSourceWithOSRestriction) {
+func easyjsonB7f3de24Decode193(in *jlexer.Lexer, out *DefaultSourceWithOSRestriction) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -24178,7 +24380,7 @@ func easyjsonB7f3de24Decode192(in *jlexer.Lexer, out *DefaultSourceWithOSRestric
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode192(out *jwriter.Writer, in DefaultSourceWithOSRestriction) {
+func easyjsonB7f3de24Encode193(out *jwriter.Writer, in DefaultSourceWithOSRestriction) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -24199,27 +24401,27 @@ func easyjsonB7f3de24Encode192(out *jwriter.Writer, in DefaultSourceWithOSRestri
 // MarshalJSON supports json.Marshaler interface
 func (v DefaultSourceWithOSRestriction) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode192(&w, v)
+	easyjsonB7f3de24Encode193(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v DefaultSourceWithOSRestriction) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode192(w, v)
+	easyjsonB7f3de24Encode193(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *DefaultSourceWithOSRestriction) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode192(&r, v)
+	easyjsonB7f3de24Decode193(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *DefaultSourceWithOSRestriction) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode192(l, v)
+	easyjsonB7f3de24Decode193(l, v)
 }
-func easyjsonB7f3de24Decode193(in *jlexer.Lexer, out *DefaultEmailReportPolicy) {
+func easyjsonB7f3de24Decode194(in *jlexer.Lexer, out *DefaultEmailReportPolicy) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -24256,9 +24458,9 @@ func easyjsonB7f3de24Decode193(in *jlexer.Lexer, out *DefaultEmailReportPolicy) 
 					out.Reports = (out.Reports)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v326 EmailReportConfig
-					(v326).UnmarshalEasyJSON(in)
-					out.Reports = append(out.Reports, v326)
+					var v331 EmailReportConfig
+					(v331).UnmarshalEasyJSON(in)
+					out.Reports = append(out.Reports, v331)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -24273,7 +24475,7 @@ func easyjsonB7f3de24Decode193(in *jlexer.Lexer, out *DefaultEmailReportPolicy) 
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode193(out *jwriter.Writer, in DefaultEmailReportPolicy) {
+func easyjsonB7f3de24Encode194(out *jwriter.Writer, in DefaultEmailReportPolicy) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -24289,11 +24491,11 @@ func easyjsonB7f3de24Encode193(out *jwriter.Writer, in DefaultEmailReportPolicy)
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v327, v328 := range in.Reports {
-				if v327 > 0 {
+			for v332, v333 := range in.Reports {
+				if v332 > 0 {
 					out.RawByte(',')
 				}
-				(v328).MarshalEasyJSON(out)
+				(v333).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -24305,27 +24507,27 @@ func easyjsonB7f3de24Encode193(out *jwriter.Writer, in DefaultEmailReportPolicy)
 // MarshalJSON supports json.Marshaler interface
 func (v DefaultEmailReportPolicy) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode193(&w, v)
+	easyjsonB7f3de24Encode194(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v DefaultEmailReportPolicy) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode193(w, v)
+	easyjsonB7f3de24Encode194(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *DefaultEmailReportPolicy) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode193(&r, v)
+	easyjsonB7f3de24Decode194(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *DefaultEmailReportPolicy) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode193(l, v)
+	easyjsonB7f3de24Decode194(l, v)
 }
-func easyjsonB7f3de24Decode194(in *jlexer.Lexer, out *DaysOfWeekConfig) {
+func easyjsonB7f3de24Decode195(in *jlexer.Lexer, out *DaysOfWeekConfig) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -24368,7 +24570,7 @@ func easyjsonB7f3de24Decode194(in *jlexer.Lexer, out *DaysOfWeekConfig) {
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode194(out *jwriter.Writer, in DaysOfWeekConfig) {
+func easyjsonB7f3de24Encode195(out *jwriter.Writer, in DaysOfWeekConfig) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -24414,27 +24616,27 @@ func easyjsonB7f3de24Encode194(out *jwriter.Writer, in DaysOfWeekConfig) {
 // MarshalJSON supports json.Marshaler interface
 func (v DaysOfWeekConfig) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode194(&w, v)
+	easyjsonB7f3de24Encode195(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v DaysOfWeekConfig) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode194(w, v)
+	easyjsonB7f3de24Encode195(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *DaysOfWeekConfig) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode194(&r, v)
+	easyjsonB7f3de24Decode195(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *DaysOfWeekConfig) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode194(l, v)
+	easyjsonB7f3de24Decode195(l, v)
 }
-func easyjsonB7f3de24Decode195(in *jlexer.Lexer, out *CustomRemoteBucketSettings) {
+func easyjsonB7f3de24Decode196(in *jlexer.Lexer, out *CustomRemoteBucketSettings) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -24464,9 +24666,9 @@ func easyjsonB7f3de24Decode195(in *jlexer.Lexer, out *CustomRemoteBucketSettings
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v329 string
-					v329 = string(in.String())
-					(out.CustomHeaders)[key] = v329
+					var v334 string
+					v334 = string(in.String())
+					(out.CustomHeaders)[key] = v334
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -24485,7 +24687,7 @@ func easyjsonB7f3de24Decode195(in *jlexer.Lexer, out *CustomRemoteBucketSettings
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode195(out *jwriter.Writer, in CustomRemoteBucketSettings) {
+func easyjsonB7f3de24Encode196(out *jwriter.Writer, in CustomRemoteBucketSettings) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -24501,16 +24703,16 @@ func easyjsonB7f3de24Encode195(out *jwriter.Writer, in CustomRemoteBucketSetting
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v330First := true
-			for v330Name, v330Value := range in.CustomHeaders {
-				if v330First {
-					v330First = false
+			v335First := true
+			for v335Name, v335Value := range in.CustomHeaders {
+				if v335First {
+					v335First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v330Name))
+				out.String(string(v335Name))
 				out.RawByte(':')
-				out.String(string(v330Value))
+				out.String(string(v335Value))
 			}
 			out.RawByte('}')
 		}
@@ -24532,27 +24734,27 @@ func easyjsonB7f3de24Encode195(out *jwriter.Writer, in CustomRemoteBucketSetting
 // MarshalJSON supports json.Marshaler interface
 func (v CustomRemoteBucketSettings) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode195(&w, v)
+	easyjsonB7f3de24Encode196(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v CustomRemoteBucketSettings) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode195(w, v)
+	easyjsonB7f3de24Encode196(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *CustomRemoteBucketSettings) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode195(&r, v)
+	easyjsonB7f3de24Decode196(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *CustomRemoteBucketSettings) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode195(l, v)
+	easyjsonB7f3de24Decode196(l, v)
 }
-func easyjsonB7f3de24Decode196(in *jlexer.Lexer, out *CreateUserGroupResponse) {
+func easyjsonB7f3de24Decode197(in *jlexer.Lexer, out *CreateUserGroupResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -24587,7 +24789,7 @@ func easyjsonB7f3de24Decode196(in *jlexer.Lexer, out *CreateUserGroupResponse) {
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode196(out *jwriter.Writer, in CreateUserGroupResponse) {
+func easyjsonB7f3de24Encode197(out *jwriter.Writer, in CreateUserGroupResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -24613,27 +24815,27 @@ func easyjsonB7f3de24Encode196(out *jwriter.Writer, in CreateUserGroupResponse) 
 // MarshalJSON supports json.Marshaler interface
 func (v CreateUserGroupResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode196(&w, v)
+	easyjsonB7f3de24Encode197(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v CreateUserGroupResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode196(w, v)
+	easyjsonB7f3de24Encode197(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *CreateUserGroupResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode196(&r, v)
+	easyjsonB7f3de24Decode197(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *CreateUserGroupResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode196(l, v)
+	easyjsonB7f3de24Decode197(l, v)
 }
-func easyjsonB7f3de24Decode197(in *jlexer.Lexer, out *CreateGroupPolicyResponse) {
+func easyjsonB7f3de24Decode198(in *jlexer.Lexer, out *CreateGroupPolicyResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -24668,7 +24870,7 @@ func easyjsonB7f3de24Decode197(in *jlexer.Lexer, out *CreateGroupPolicyResponse)
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode197(out *jwriter.Writer, in CreateGroupPolicyResponse) {
+func easyjsonB7f3de24Encode198(out *jwriter.Writer, in CreateGroupPolicyResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -24694,27 +24896,27 @@ func easyjsonB7f3de24Encode197(out *jwriter.Writer, in CreateGroupPolicyResponse
 // MarshalJSON supports json.Marshaler interface
 func (v CreateGroupPolicyResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode197(&w, v)
+	easyjsonB7f3de24Encode198(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v CreateGroupPolicyResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode197(w, v)
+	easyjsonB7f3de24Encode198(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *CreateGroupPolicyResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode197(&r, v)
+	easyjsonB7f3de24Decode198(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *CreateGroupPolicyResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode197(l, v)
+	easyjsonB7f3de24Decode198(l, v)
 }
-func easyjsonB7f3de24Decode198(in *jlexer.Lexer, out *CountJobsResponse) {
+func easyjsonB7f3de24Decode199(in *jlexer.Lexer, out *CountJobsResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -24745,7 +24947,7 @@ func easyjsonB7f3de24Decode198(in *jlexer.Lexer, out *CountJobsResponse) {
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode198(out *jwriter.Writer, in CountJobsResponse) {
+func easyjsonB7f3de24Encode199(out *jwriter.Writer, in CountJobsResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -24761,27 +24963,27 @@ func easyjsonB7f3de24Encode198(out *jwriter.Writer, in CountJobsResponse) {
 // MarshalJSON supports json.Marshaler interface
 func (v CountJobsResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode198(&w, v)
+	easyjsonB7f3de24Encode199(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v CountJobsResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode198(w, v)
+	easyjsonB7f3de24Encode199(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *CountJobsResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode198(&r, v)
+	easyjsonB7f3de24Decode199(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *CountJobsResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode198(l, v)
+	easyjsonB7f3de24Decode199(l, v)
 }
-func easyjsonB7f3de24Decode199(in *jlexer.Lexer, out *ContentMeasurementComponent) {
+func easyjsonB7f3de24Decode200(in *jlexer.Lexer, out *ContentMeasurementComponent) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -24818,9 +25020,9 @@ func easyjsonB7f3de24Decode199(in *jlexer.Lexer, out *ContentMeasurementComponen
 					out.UsedBy = (out.UsedBy)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v331 string
-					v331 = string(in.String())
-					out.UsedBy = append(out.UsedBy, v331)
+					var v336 string
+					v336 = string(in.String())
+					out.UsedBy = append(out.UsedBy, v336)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -24835,7 +25037,7 @@ func easyjsonB7f3de24Decode199(in *jlexer.Lexer, out *ContentMeasurementComponen
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode199(out *jwriter.Writer, in ContentMeasurementComponent) {
+func easyjsonB7f3de24Encode200(out *jwriter.Writer, in ContentMeasurementComponent) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -24851,11 +25053,11 @@ func easyjsonB7f3de24Encode199(out *jwriter.Writer, in ContentMeasurementCompone
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v332, v333 := range in.UsedBy {
-				if v332 > 0 {
+			for v337, v338 := range in.UsedBy {
+				if v337 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v333))
+				out.String(string(v338))
 			}
 			out.RawByte(']')
 		}
@@ -24867,27 +25069,27 @@ func easyjsonB7f3de24Encode199(out *jwriter.Writer, in ContentMeasurementCompone
 // MarshalJSON supports json.Marshaler interface
 func (v ContentMeasurementComponent) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode199(&w, v)
+	easyjsonB7f3de24Encode200(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ContentMeasurementComponent) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode199(w, v)
+	easyjsonB7f3de24Encode200(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *ContentMeasurementComponent) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode199(&r, v)
+	easyjsonB7f3de24Decode200(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *ContentMeasurementComponent) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode199(l, v)
+	easyjsonB7f3de24Decode200(l, v)
 }
-func easyjsonB7f3de24Decode200(in *jlexer.Lexer, out *ContentMeasurement) {
+func easyjsonB7f3de24Decode201(in *jlexer.Lexer, out *ContentMeasurement) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -24926,9 +25128,9 @@ func easyjsonB7f3de24Decode200(in *jlexer.Lexer, out *ContentMeasurement) {
 					out.Components = (out.Components)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v334 ContentMeasurementComponent
-					(v334).UnmarshalEasyJSON(in)
-					out.Components = append(out.Components, v334)
+					var v339 ContentMeasurementComponent
+					(v339).UnmarshalEasyJSON(in)
+					out.Components = append(out.Components, v339)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -24943,7 +25145,7 @@ func easyjsonB7f3de24Decode200(in *jlexer.Lexer, out *ContentMeasurement) {
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode200(out *jwriter.Writer, in ContentMeasurement) {
+func easyjsonB7f3de24Encode201(out *jwriter.Writer, in ContentMeasurement) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -24964,11 +25166,11 @@ func easyjsonB7f3de24Encode200(out *jwriter.Writer, in ContentMeasurement) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v335, v336 := range in.Components {
-				if v335 > 0 {
+			for v340, v341 := range in.Components {
+				if v340 > 0 {
 					out.RawByte(',')
 				}
-				(v336).MarshalEasyJSON(out)
+				(v341).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -24980,27 +25182,27 @@ func easyjsonB7f3de24Encode200(out *jwriter.Writer, in ContentMeasurement) {
 // MarshalJSON supports json.Marshaler interface
 func (v ContentMeasurement) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode200(&w, v)
+	easyjsonB7f3de24Encode201(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ContentMeasurement) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode200(w, v)
+	easyjsonB7f3de24Encode201(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *ContentMeasurement) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode200(&r, v)
+	easyjsonB7f3de24Decode201(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *ContentMeasurement) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode200(l, v)
+	easyjsonB7f3de24Decode201(l, v)
 }
-func easyjsonB7f3de24Decode201(in *jlexer.Lexer, out *ConstellationStatusAPIResponse) {
+func easyjsonB7f3de24Decode202(in *jlexer.Lexer, out *ConstellationStatusAPIResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -25037,9 +25239,9 @@ func easyjsonB7f3de24Decode201(in *jlexer.Lexer, out *ConstellationStatusAPIResp
 					out.Targets = (out.Targets)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v337 string
-					v337 = string(in.String())
-					out.Targets = append(out.Targets, v337)
+					var v342 string
+					v342 = string(in.String())
+					out.Targets = append(out.Targets, v342)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -25060,9 +25262,9 @@ func easyjsonB7f3de24Decode201(in *jlexer.Lexer, out *ConstellationStatusAPIResp
 					out.TargetNames = (out.TargetNames)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v338 string
-					v338 = string(in.String())
-					out.TargetNames = append(out.TargetNames, v338)
+					var v343 string
+					v343 = string(in.String())
+					out.TargetNames = append(out.TargetNames, v343)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -25079,7 +25281,7 @@ func easyjsonB7f3de24Decode201(in *jlexer.Lexer, out *ConstellationStatusAPIResp
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode201(out *jwriter.Writer, in ConstellationStatusAPIResponse) {
+func easyjsonB7f3de24Encode202(out *jwriter.Writer, in ConstellationStatusAPIResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -25095,11 +25297,11 @@ func easyjsonB7f3de24Encode201(out *jwriter.Writer, in ConstellationStatusAPIRes
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v339, v340 := range in.Targets {
-				if v339 > 0 {
+			for v344, v345 := range in.Targets {
+				if v344 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v340))
+				out.String(string(v345))
 			}
 			out.RawByte(']')
 		}
@@ -25109,11 +25311,11 @@ func easyjsonB7f3de24Encode201(out *jwriter.Writer, in ConstellationStatusAPIRes
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v341, v342 := range in.TargetNames {
-				if v341 > 0 {
+			for v346, v347 := range in.TargetNames {
+				if v346 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v342))
+				out.String(string(v347))
 			}
 			out.RawByte(']')
 		}
@@ -25130,27 +25332,27 @@ func easyjsonB7f3de24Encode201(out *jwriter.Writer, in ConstellationStatusAPIRes
 // MarshalJSON supports json.Marshaler interface
 func (v ConstellationStatusAPIResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode201(&w, v)
+	easyjsonB7f3de24Encode202(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ConstellationStatusAPIResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode201(w, v)
+	easyjsonB7f3de24Encode202(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *ConstellationStatusAPIResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode201(&r, v)
+	easyjsonB7f3de24Decode202(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *ConstellationStatusAPIResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode201(l, v)
+	easyjsonB7f3de24Decode202(l, v)
 }
-func easyjsonB7f3de24Decode202(in *jlexer.Lexer, out *ConstellationStats) {
+func easyjsonB7f3de24Decode203(in *jlexer.Lexer, out *ConstellationStats) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -25187,7 +25389,7 @@ func easyjsonB7f3de24Decode202(in *jlexer.Lexer, out *ConstellationStats) {
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode202(out *jwriter.Writer, in ConstellationStats) {
+func easyjsonB7f3de24Encode203(out *jwriter.Writer, in ConstellationStats) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -25218,27 +25420,27 @@ func easyjsonB7f3de24Encode202(out *jwriter.Writer, in ConstellationStats) {
 // MarshalJSON supports json.Marshaler interface
 func (v ConstellationStats) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode202(&w, v)
+	easyjsonB7f3de24Encode203(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ConstellationStats) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode202(w, v)
+	easyjsonB7f3de24Encode203(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *ConstellationStats) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode202(&r, v)
+	easyjsonB7f3de24Decode203(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *ConstellationStats) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode202(l, v)
+	easyjsonB7f3de24Decode203(l, v)
 }
-func easyjsonB7f3de24Decode203(in *jlexer.Lexer, out *ConstellationRoleOptions) {
+func easyjsonB7f3de24Decode204(in *jlexer.Lexer, out *ConstellationRoleOptions) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -25277,9 +25479,9 @@ func easyjsonB7f3de24Decode203(in *jlexer.Lexer, out *ConstellationRoleOptions) 
 					out.Servers = (out.Servers)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v343 RemoteServerAddress
-					(v343).UnmarshalEasyJSON(in)
-					out.Servers = append(out.Servers, v343)
+					var v348 RemoteServerAddress
+					(v348).UnmarshalEasyJSON(in)
+					out.Servers = append(out.Servers, v348)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -25294,7 +25496,7 @@ func easyjsonB7f3de24Decode203(in *jlexer.Lexer, out *ConstellationRoleOptions) 
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode203(out *jwriter.Writer, in ConstellationRoleOptions) {
+func easyjsonB7f3de24Encode204(out *jwriter.Writer, in ConstellationRoleOptions) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -25315,11 +25517,11 @@ func easyjsonB7f3de24Encode203(out *jwriter.Writer, in ConstellationRoleOptions)
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v344, v345 := range in.Servers {
-				if v344 > 0 {
+			for v349, v350 := range in.Servers {
+				if v349 > 0 {
 					out.RawByte(',')
 				}
-				(v345).MarshalEasyJSON(out)
+				(v350).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -25331,27 +25533,27 @@ func easyjsonB7f3de24Encode203(out *jwriter.Writer, in ConstellationRoleOptions)
 // MarshalJSON supports json.Marshaler interface
 func (v ConstellationRoleOptions) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode203(&w, v)
+	easyjsonB7f3de24Encode204(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ConstellationRoleOptions) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode203(w, v)
+	easyjsonB7f3de24Encode204(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *ConstellationRoleOptions) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode203(&r, v)
+	easyjsonB7f3de24Decode204(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *ConstellationRoleOptions) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode203(l, v)
+	easyjsonB7f3de24Decode204(l, v)
 }
-func easyjsonB7f3de24Decode204(in *jlexer.Lexer, out *ConstellationCheckReport) {
+func easyjsonB7f3de24Decode205(in *jlexer.Lexer, out *ConstellationCheckReport) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -25383,9 +25585,9 @@ func easyjsonB7f3de24Decode204(in *jlexer.Lexer, out *ConstellationCheckReport) 
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v346 BucketUsageInfo
-					(v346).UnmarshalEasyJSON(in)
-					(out.Usage)[key] = v346
+					var v351 BucketUsageInfo
+					(v351).UnmarshalEasyJSON(in)
+					(out.Usage)[key] = v351
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -25400,7 +25602,7 @@ func easyjsonB7f3de24Decode204(in *jlexer.Lexer, out *ConstellationCheckReport) 
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode204(out *jwriter.Writer, in ConstellationCheckReport) {
+func easyjsonB7f3de24Encode205(out *jwriter.Writer, in ConstellationCheckReport) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -25421,16 +25623,16 @@ func easyjsonB7f3de24Encode204(out *jwriter.Writer, in ConstellationCheckReport)
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v347First := true
-			for v347Name, v347Value := range in.Usage {
-				if v347First {
-					v347First = false
+			v352First := true
+			for v352Name, v352Value := range in.Usage {
+				if v352First {
+					v352First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v347Name))
+				out.String(string(v352Name))
 				out.RawByte(':')
-				(v347Value).MarshalEasyJSON(out)
+				(v352Value).MarshalEasyJSON(out)
 			}
 			out.RawByte('}')
 		}
@@ -25442,27 +25644,27 @@ func easyjsonB7f3de24Encode204(out *jwriter.Writer, in ConstellationCheckReport)
 // MarshalJSON supports json.Marshaler interface
 func (v ConstellationCheckReport) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode204(&w, v)
+	easyjsonB7f3de24Encode205(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ConstellationCheckReport) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode204(w, v)
+	easyjsonB7f3de24Encode205(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *ConstellationCheckReport) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode204(&r, v)
+	easyjsonB7f3de24Decode205(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *ConstellationCheckReport) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode204(l, v)
+	easyjsonB7f3de24Decode205(l, v)
 }
-func easyjsonB7f3de24Decode205(in *jlexer.Lexer, out *CometDestinationLocation) {
+func easyjsonB7f3de24Decode206(in *jlexer.Lexer, out *CometDestinationLocation) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -25497,7 +25699,7 @@ func easyjsonB7f3de24Decode205(in *jlexer.Lexer, out *CometDestinationLocation) 
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode205(out *jwriter.Writer, in CometDestinationLocation) {
+func easyjsonB7f3de24Encode206(out *jwriter.Writer, in CometDestinationLocation) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -25523,27 +25725,27 @@ func easyjsonB7f3de24Encode205(out *jwriter.Writer, in CometDestinationLocation)
 // MarshalJSON supports json.Marshaler interface
 func (v CometDestinationLocation) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode205(&w, v)
+	easyjsonB7f3de24Encode206(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v CometDestinationLocation) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode205(w, v)
+	easyjsonB7f3de24Encode206(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *CometDestinationLocation) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode205(&r, v)
+	easyjsonB7f3de24Decode206(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *CometDestinationLocation) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode205(l, v)
+	easyjsonB7f3de24Decode206(l, v)
 }
-func easyjsonB7f3de24Decode206(in *jlexer.Lexer, out *CometAPIResponseMessage) {
+func easyjsonB7f3de24Decode207(in *jlexer.Lexer, out *CometAPIResponseMessage) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -25576,7 +25778,7 @@ func easyjsonB7f3de24Decode206(in *jlexer.Lexer, out *CometAPIResponseMessage) {
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode206(out *jwriter.Writer, in CometAPIResponseMessage) {
+func easyjsonB7f3de24Encode207(out *jwriter.Writer, in CometAPIResponseMessage) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -25597,27 +25799,27 @@ func easyjsonB7f3de24Encode206(out *jwriter.Writer, in CometAPIResponseMessage) 
 // MarshalJSON supports json.Marshaler interface
 func (v CometAPIResponseMessage) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode206(&w, v)
+	easyjsonB7f3de24Encode207(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v CometAPIResponseMessage) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode206(w, v)
+	easyjsonB7f3de24Encode207(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *CometAPIResponseMessage) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode206(&r, v)
+	easyjsonB7f3de24Decode207(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *CometAPIResponseMessage) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode206(l, v)
+	easyjsonB7f3de24Decode207(l, v)
 }
-func easyjsonB7f3de24Decode207(in *jlexer.Lexer, out *BucketUsageInfo) {
+func easyjsonB7f3de24Decode208(in *jlexer.Lexer, out *BucketUsageInfo) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -25654,9 +25856,9 @@ func easyjsonB7f3de24Decode207(in *jlexer.Lexer, out *BucketUsageInfo) {
 					out.ExistsOnServers = (out.ExistsOnServers)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v348 int
-					v348 = int(in.Int())
-					out.ExistsOnServers = append(out.ExistsOnServers, v348)
+					var v353 int
+					v353 = int(in.Int())
+					out.ExistsOnServers = append(out.ExistsOnServers, v353)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -25677,9 +25879,9 @@ func easyjsonB7f3de24Decode207(in *jlexer.Lexer, out *BucketUsageInfo) {
 					out.InUseBy = (out.InUseBy)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v349 UserOnServer
-					(v349).UnmarshalEasyJSON(in)
-					out.InUseBy = append(out.InUseBy, v349)
+					var v354 UserOnServer
+					(v354).UnmarshalEasyJSON(in)
+					out.InUseBy = append(out.InUseBy, v354)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -25694,7 +25896,7 @@ func easyjsonB7f3de24Decode207(in *jlexer.Lexer, out *BucketUsageInfo) {
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode207(out *jwriter.Writer, in BucketUsageInfo) {
+func easyjsonB7f3de24Encode208(out *jwriter.Writer, in BucketUsageInfo) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -25710,11 +25912,11 @@ func easyjsonB7f3de24Encode207(out *jwriter.Writer, in BucketUsageInfo) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v350, v351 := range in.ExistsOnServers {
-				if v350 > 0 {
+			for v355, v356 := range in.ExistsOnServers {
+				if v355 > 0 {
 					out.RawByte(',')
 				}
-				out.Int(int(v351))
+				out.Int(int(v356))
 			}
 			out.RawByte(']')
 		}
@@ -25726,11 +25928,11 @@ func easyjsonB7f3de24Encode207(out *jwriter.Writer, in BucketUsageInfo) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v352, v353 := range in.InUseBy {
-				if v352 > 0 {
+			for v357, v358 := range in.InUseBy {
+				if v357 > 0 {
 					out.RawByte(',')
 				}
-				(v353).MarshalEasyJSON(out)
+				(v358).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -25742,27 +25944,27 @@ func easyjsonB7f3de24Encode207(out *jwriter.Writer, in BucketUsageInfo) {
 // MarshalJSON supports json.Marshaler interface
 func (v BucketUsageInfo) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode207(&w, v)
+	easyjsonB7f3de24Encode208(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v BucketUsageInfo) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode207(w, v)
+	easyjsonB7f3de24Encode208(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *BucketUsageInfo) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode207(&r, v)
+	easyjsonB7f3de24Decode208(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *BucketUsageInfo) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode207(l, v)
+	easyjsonB7f3de24Decode208(l, v)
 }
-func easyjsonB7f3de24Decode208(in *jlexer.Lexer, out *BucketProperties) {
+func easyjsonB7f3de24Decode209(in *jlexer.Lexer, out *BucketProperties) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -25801,7 +26003,7 @@ func easyjsonB7f3de24Decode208(in *jlexer.Lexer, out *BucketProperties) {
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode208(out *jwriter.Writer, in BucketProperties) {
+func easyjsonB7f3de24Encode209(out *jwriter.Writer, in BucketProperties) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -25837,27 +26039,27 @@ func easyjsonB7f3de24Encode208(out *jwriter.Writer, in BucketProperties) {
 // MarshalJSON supports json.Marshaler interface
 func (v BucketProperties) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode208(&w, v)
+	easyjsonB7f3de24Encode209(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v BucketProperties) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode208(w, v)
+	easyjsonB7f3de24Encode209(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *BucketProperties) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode208(&r, v)
+	easyjsonB7f3de24Decode209(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *BucketProperties) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode208(l, v)
+	easyjsonB7f3de24Decode209(l, v)
 }
-func easyjsonB7f3de24Decode209(in *jlexer.Lexer, out *BrowseVSSResponse) {
+func easyjsonB7f3de24Decode210(in *jlexer.Lexer, out *BrowseVSSResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -25889,9 +26091,9 @@ func easyjsonB7f3de24Decode209(in *jlexer.Lexer, out *BrowseVSSResponse) {
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v354 VSSWriterInfo
-					(v354).UnmarshalEasyJSON(in)
-					(out.VSSWriters)[key] = v354
+					var v359 VSSWriterInfo
+					(v359).UnmarshalEasyJSON(in)
+					(out.VSSWriters)[key] = v359
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -25906,7 +26108,7 @@ func easyjsonB7f3de24Decode209(in *jlexer.Lexer, out *BrowseVSSResponse) {
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode209(out *jwriter.Writer, in BrowseVSSResponse) {
+func easyjsonB7f3de24Encode210(out *jwriter.Writer, in BrowseVSSResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -25927,16 +26129,16 @@ func easyjsonB7f3de24Encode209(out *jwriter.Writer, in BrowseVSSResponse) {
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v355First := true
-			for v355Name, v355Value := range in.VSSWriters {
-				if v355First {
-					v355First = false
+			v360First := true
+			for v360Name, v360Value := range in.VSSWriters {
+				if v360First {
+					v360First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v355Name))
+				out.String(string(v360Name))
 				out.RawByte(':')
-				(v355Value).MarshalEasyJSON(out)
+				(v360Value).MarshalEasyJSON(out)
 			}
 			out.RawByte('}')
 		}
@@ -25948,27 +26150,27 @@ func easyjsonB7f3de24Encode209(out *jwriter.Writer, in BrowseVSSResponse) {
 // MarshalJSON supports json.Marshaler interface
 func (v BrowseVSSResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode209(&w, v)
+	easyjsonB7f3de24Encode210(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v BrowseVSSResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode209(w, v)
+	easyjsonB7f3de24Encode210(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *BrowseVSSResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode209(&r, v)
+	easyjsonB7f3de24Decode210(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *BrowseVSSResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode209(l, v)
+	easyjsonB7f3de24Decode210(l, v)
 }
-func easyjsonB7f3de24Decode210(in *jlexer.Lexer, out *BrowseVMwareResponse) {
+func easyjsonB7f3de24Decode211(in *jlexer.Lexer, out *BrowseVMwareResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -26007,9 +26209,9 @@ func easyjsonB7f3de24Decode210(in *jlexer.Lexer, out *BrowseVMwareResponse) {
 					out.VirtualMachines = (out.VirtualMachines)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v356 VMwareMachineInfo
-					(v356).UnmarshalEasyJSON(in)
-					out.VirtualMachines = append(out.VirtualMachines, v356)
+					var v361 VMwareMachineInfo
+					(v361).UnmarshalEasyJSON(in)
+					out.VirtualMachines = append(out.VirtualMachines, v361)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -26024,7 +26226,7 @@ func easyjsonB7f3de24Decode210(in *jlexer.Lexer, out *BrowseVMwareResponse) {
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode210(out *jwriter.Writer, in BrowseVMwareResponse) {
+func easyjsonB7f3de24Encode211(out *jwriter.Writer, in BrowseVMwareResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -26045,11 +26247,11 @@ func easyjsonB7f3de24Encode210(out *jwriter.Writer, in BrowseVMwareResponse) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v357, v358 := range in.VirtualMachines {
-				if v357 > 0 {
+			for v362, v363 := range in.VirtualMachines {
+				if v362 > 0 {
 					out.RawByte(',')
 				}
-				(v358).MarshalEasyJSON(out)
+				(v363).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -26061,27 +26263,27 @@ func easyjsonB7f3de24Encode210(out *jwriter.Writer, in BrowseVMwareResponse) {
 // MarshalJSON supports json.Marshaler interface
 func (v BrowseVMwareResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode210(&w, v)
+	easyjsonB7f3de24Encode211(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v BrowseVMwareResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode210(w, v)
+	easyjsonB7f3de24Encode211(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *BrowseVMwareResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode210(&r, v)
+	easyjsonB7f3de24Decode211(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *BrowseVMwareResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode210(l, v)
+	easyjsonB7f3de24Decode211(l, v)
 }
-func easyjsonB7f3de24Decode211(in *jlexer.Lexer, out *BrowseVMwareNetworksResponse) {
+func easyjsonB7f3de24Decode212(in *jlexer.Lexer, out *BrowseVMwareNetworksResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -26120,9 +26322,9 @@ func easyjsonB7f3de24Decode211(in *jlexer.Lexer, out *BrowseVMwareNetworksRespon
 					out.Networks = (out.Networks)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v359 VMwareNetworkInfo
-					(v359).UnmarshalEasyJSON(in)
-					out.Networks = append(out.Networks, v359)
+					var v364 VMwareNetworkInfo
+					(v364).UnmarshalEasyJSON(in)
+					out.Networks = append(out.Networks, v364)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -26137,7 +26339,7 @@ func easyjsonB7f3de24Decode211(in *jlexer.Lexer, out *BrowseVMwareNetworksRespon
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode211(out *jwriter.Writer, in BrowseVMwareNetworksResponse) {
+func easyjsonB7f3de24Encode212(out *jwriter.Writer, in BrowseVMwareNetworksResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -26158,11 +26360,11 @@ func easyjsonB7f3de24Encode211(out *jwriter.Writer, in BrowseVMwareNetworksRespo
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v360, v361 := range in.Networks {
-				if v360 > 0 {
+			for v365, v366 := range in.Networks {
+				if v365 > 0 {
 					out.RawByte(',')
 				}
-				(v361).MarshalEasyJSON(out)
+				(v366).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -26174,27 +26376,27 @@ func easyjsonB7f3de24Encode211(out *jwriter.Writer, in BrowseVMwareNetworksRespo
 // MarshalJSON supports json.Marshaler interface
 func (v BrowseVMwareNetworksResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode211(&w, v)
+	easyjsonB7f3de24Encode212(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v BrowseVMwareNetworksResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode211(w, v)
+	easyjsonB7f3de24Encode212(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *BrowseVMwareNetworksResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode211(&r, v)
+	easyjsonB7f3de24Decode212(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *BrowseVMwareNetworksResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode211(l, v)
+	easyjsonB7f3de24Decode212(l, v)
 }
-func easyjsonB7f3de24Decode212(in *jlexer.Lexer, out *BrowseVMwareHostsResponse) {
+func easyjsonB7f3de24Decode213(in *jlexer.Lexer, out *BrowseVMwareHostsResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -26233,9 +26435,9 @@ func easyjsonB7f3de24Decode212(in *jlexer.Lexer, out *BrowseVMwareHostsResponse)
 					out.Hosts = (out.Hosts)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v362 VMwareHostInfo
-					(v362).UnmarshalEasyJSON(in)
-					out.Hosts = append(out.Hosts, v362)
+					var v367 VMwareHostInfo
+					(v367).UnmarshalEasyJSON(in)
+					out.Hosts = append(out.Hosts, v367)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -26250,7 +26452,7 @@ func easyjsonB7f3de24Decode212(in *jlexer.Lexer, out *BrowseVMwareHostsResponse)
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode212(out *jwriter.Writer, in BrowseVMwareHostsResponse) {
+func easyjsonB7f3de24Encode213(out *jwriter.Writer, in BrowseVMwareHostsResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -26271,11 +26473,11 @@ func easyjsonB7f3de24Encode212(out *jwriter.Writer, in BrowseVMwareHostsResponse
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v363, v364 := range in.Hosts {
-				if v363 > 0 {
+			for v368, v369 := range in.Hosts {
+				if v368 > 0 {
 					out.RawByte(',')
 				}
-				(v364).MarshalEasyJSON(out)
+				(v369).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -26287,27 +26489,27 @@ func easyjsonB7f3de24Encode212(out *jwriter.Writer, in BrowseVMwareHostsResponse
 // MarshalJSON supports json.Marshaler interface
 func (v BrowseVMwareHostsResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode212(&w, v)
+	easyjsonB7f3de24Encode213(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v BrowseVMwareHostsResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode212(w, v)
+	easyjsonB7f3de24Encode213(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *BrowseVMwareHostsResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode212(&r, v)
+	easyjsonB7f3de24Decode213(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *BrowseVMwareHostsResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode212(l, v)
+	easyjsonB7f3de24Decode213(l, v)
 }
-func easyjsonB7f3de24Decode213(in *jlexer.Lexer, out *BrowseVMwareDatastoresResponse) {
+func easyjsonB7f3de24Decode214(in *jlexer.Lexer, out *BrowseVMwareDatastoresResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -26346,9 +26548,9 @@ func easyjsonB7f3de24Decode213(in *jlexer.Lexer, out *BrowseVMwareDatastoresResp
 					out.Datastores = (out.Datastores)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v365 VMwareDatastoreInfo
-					(v365).UnmarshalEasyJSON(in)
-					out.Datastores = append(out.Datastores, v365)
+					var v370 VMwareDatastoreInfo
+					(v370).UnmarshalEasyJSON(in)
+					out.Datastores = append(out.Datastores, v370)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -26363,7 +26565,7 @@ func easyjsonB7f3de24Decode213(in *jlexer.Lexer, out *BrowseVMwareDatastoresResp
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode213(out *jwriter.Writer, in BrowseVMwareDatastoresResponse) {
+func easyjsonB7f3de24Encode214(out *jwriter.Writer, in BrowseVMwareDatastoresResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -26384,11 +26586,11 @@ func easyjsonB7f3de24Encode213(out *jwriter.Writer, in BrowseVMwareDatastoresRes
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v366, v367 := range in.Datastores {
-				if v366 > 0 {
+			for v371, v372 := range in.Datastores {
+				if v371 > 0 {
 					out.RawByte(',')
 				}
-				(v367).MarshalEasyJSON(out)
+				(v372).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -26400,27 +26602,27 @@ func easyjsonB7f3de24Encode213(out *jwriter.Writer, in BrowseVMwareDatastoresRes
 // MarshalJSON supports json.Marshaler interface
 func (v BrowseVMwareDatastoresResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode213(&w, v)
+	easyjsonB7f3de24Encode214(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v BrowseVMwareDatastoresResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode213(w, v)
+	easyjsonB7f3de24Encode214(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *BrowseVMwareDatastoresResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode213(&r, v)
+	easyjsonB7f3de24Decode214(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *BrowseVMwareDatastoresResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode213(l, v)
+	easyjsonB7f3de24Decode214(l, v)
 }
-func easyjsonB7f3de24Decode214(in *jlexer.Lexer, out *BrowseVMwareDatacentersResponse) {
+func easyjsonB7f3de24Decode215(in *jlexer.Lexer, out *BrowseVMwareDatacentersResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -26459,9 +26661,9 @@ func easyjsonB7f3de24Decode214(in *jlexer.Lexer, out *BrowseVMwareDatacentersRes
 					out.Datacenters = (out.Datacenters)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v368 VMwareDatacenterInfo
-					(v368).UnmarshalEasyJSON(in)
-					out.Datacenters = append(out.Datacenters, v368)
+					var v373 VMwareDatacenterInfo
+					(v373).UnmarshalEasyJSON(in)
+					out.Datacenters = append(out.Datacenters, v373)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -26476,7 +26678,7 @@ func easyjsonB7f3de24Decode214(in *jlexer.Lexer, out *BrowseVMwareDatacentersRes
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode214(out *jwriter.Writer, in BrowseVMwareDatacentersResponse) {
+func easyjsonB7f3de24Encode215(out *jwriter.Writer, in BrowseVMwareDatacentersResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -26497,11 +26699,11 @@ func easyjsonB7f3de24Encode214(out *jwriter.Writer, in BrowseVMwareDatacentersRe
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v369, v370 := range in.Datacenters {
-				if v369 > 0 {
+			for v374, v375 := range in.Datacenters {
+				if v374 > 0 {
 					out.RawByte(',')
 				}
-				(v370).MarshalEasyJSON(out)
+				(v375).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -26513,27 +26715,27 @@ func easyjsonB7f3de24Encode214(out *jwriter.Writer, in BrowseVMwareDatacentersRe
 // MarshalJSON supports json.Marshaler interface
 func (v BrowseVMwareDatacentersResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode214(&w, v)
+	easyjsonB7f3de24Encode215(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v BrowseVMwareDatacentersResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode214(w, v)
+	easyjsonB7f3de24Encode215(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *BrowseVMwareDatacentersResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode214(&r, v)
+	easyjsonB7f3de24Decode215(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *BrowseVMwareDatacentersResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode214(l, v)
+	easyjsonB7f3de24Decode215(l, v)
 }
-func easyjsonB7f3de24Decode215(in *jlexer.Lexer, out *BrowseSQLServerResponse) {
+func easyjsonB7f3de24Decode216(in *jlexer.Lexer, out *BrowseSQLServerResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -26565,9 +26767,9 @@ func easyjsonB7f3de24Decode215(in *jlexer.Lexer, out *BrowseSQLServerResponse) {
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v371 string
-					v371 = string(in.String())
-					(out.Objects)[key] = v371
+					var v376 string
+					v376 = string(in.String())
+					(out.Objects)[key] = v376
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -26582,7 +26784,7 @@ func easyjsonB7f3de24Decode215(in *jlexer.Lexer, out *BrowseSQLServerResponse) {
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode215(out *jwriter.Writer, in BrowseSQLServerResponse) {
+func easyjsonB7f3de24Encode216(out *jwriter.Writer, in BrowseSQLServerResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -26603,16 +26805,16 @@ func easyjsonB7f3de24Encode215(out *jwriter.Writer, in BrowseSQLServerResponse) 
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v372First := true
-			for v372Name, v372Value := range in.Objects {
-				if v372First {
-					v372First = false
+			v377First := true
+			for v377Name, v377Value := range in.Objects {
+				if v377First {
+					v377First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v372Name))
+				out.String(string(v377Name))
 				out.RawByte(':')
-				out.String(string(v372Value))
+				out.String(string(v377Value))
 			}
 			out.RawByte('}')
 		}
@@ -26624,27 +26826,27 @@ func easyjsonB7f3de24Encode215(out *jwriter.Writer, in BrowseSQLServerResponse) 
 // MarshalJSON supports json.Marshaler interface
 func (v BrowseSQLServerResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode215(&w, v)
+	easyjsonB7f3de24Encode216(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v BrowseSQLServerResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode215(w, v)
+	easyjsonB7f3de24Encode216(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *BrowseSQLServerResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode215(&r, v)
+	easyjsonB7f3de24Decode216(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *BrowseSQLServerResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode215(l, v)
+	easyjsonB7f3de24Decode216(l, v)
 }
-func easyjsonB7f3de24Decode216(in *jlexer.Lexer, out *BrowseProxmoxStorageResponse) {
+func easyjsonB7f3de24Decode217(in *jlexer.Lexer, out *BrowseProxmoxStorageResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -26683,9 +26885,9 @@ func easyjsonB7f3de24Decode216(in *jlexer.Lexer, out *BrowseProxmoxStorageRespon
 					out.Storage = (out.Storage)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v373 PVEStorageName
-					(v373).UnmarshalEasyJSON(in)
-					out.Storage = append(out.Storage, v373)
+					var v378 PVEStorageName
+					(v378).UnmarshalEasyJSON(in)
+					out.Storage = append(out.Storage, v378)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -26700,7 +26902,7 @@ func easyjsonB7f3de24Decode216(in *jlexer.Lexer, out *BrowseProxmoxStorageRespon
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode216(out *jwriter.Writer, in BrowseProxmoxStorageResponse) {
+func easyjsonB7f3de24Encode217(out *jwriter.Writer, in BrowseProxmoxStorageResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -26721,11 +26923,11 @@ func easyjsonB7f3de24Encode216(out *jwriter.Writer, in BrowseProxmoxStorageRespo
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v374, v375 := range in.Storage {
-				if v374 > 0 {
+			for v379, v380 := range in.Storage {
+				if v379 > 0 {
 					out.RawByte(',')
 				}
-				(v375).MarshalEasyJSON(out)
+				(v380).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -26737,27 +26939,27 @@ func easyjsonB7f3de24Encode216(out *jwriter.Writer, in BrowseProxmoxStorageRespo
 // MarshalJSON supports json.Marshaler interface
 func (v BrowseProxmoxStorageResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode216(&w, v)
+	easyjsonB7f3de24Encode217(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v BrowseProxmoxStorageResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode216(w, v)
+	easyjsonB7f3de24Encode217(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *BrowseProxmoxStorageResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode216(&r, v)
+	easyjsonB7f3de24Decode217(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *BrowseProxmoxStorageResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode216(l, v)
+	easyjsonB7f3de24Decode217(l, v)
 }
-func easyjsonB7f3de24Decode217(in *jlexer.Lexer, out *BrowseProxmoxResponse) {
+func easyjsonB7f3de24Decode218(in *jlexer.Lexer, out *BrowseProxmoxResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -26796,9 +26998,9 @@ func easyjsonB7f3de24Decode217(in *jlexer.Lexer, out *BrowseProxmoxResponse) {
 					out.VMs = (out.VMs)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v376 PVEVM
-					(v376).UnmarshalEasyJSON(in)
-					out.VMs = append(out.VMs, v376)
+					var v381 PVEVM
+					(v381).UnmarshalEasyJSON(in)
+					out.VMs = append(out.VMs, v381)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -26813,7 +27015,7 @@ func easyjsonB7f3de24Decode217(in *jlexer.Lexer, out *BrowseProxmoxResponse) {
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode217(out *jwriter.Writer, in BrowseProxmoxResponse) {
+func easyjsonB7f3de24Encode218(out *jwriter.Writer, in BrowseProxmoxResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -26834,11 +27036,11 @@ func easyjsonB7f3de24Encode217(out *jwriter.Writer, in BrowseProxmoxResponse) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v377, v378 := range in.VMs {
-				if v377 > 0 {
+			for v382, v383 := range in.VMs {
+				if v382 > 0 {
 					out.RawByte(',')
 				}
-				(v378).MarshalEasyJSON(out)
+				(v383).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -26850,27 +27052,27 @@ func easyjsonB7f3de24Encode217(out *jwriter.Writer, in BrowseProxmoxResponse) {
 // MarshalJSON supports json.Marshaler interface
 func (v BrowseProxmoxResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode217(&w, v)
+	easyjsonB7f3de24Encode218(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v BrowseProxmoxResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode217(w, v)
+	easyjsonB7f3de24Encode218(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *BrowseProxmoxResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode217(&r, v)
+	easyjsonB7f3de24Decode218(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *BrowseProxmoxResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode217(l, v)
+	easyjsonB7f3de24Decode218(l, v)
 }
-func easyjsonB7f3de24Decode218(in *jlexer.Lexer, out *BrowseProxmoxNodesResponse) {
+func easyjsonB7f3de24Decode219(in *jlexer.Lexer, out *BrowseProxmoxNodesResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -26909,9 +27111,9 @@ func easyjsonB7f3de24Decode218(in *jlexer.Lexer, out *BrowseProxmoxNodesResponse
 					out.Nodes = (out.Nodes)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v379 string
-					v379 = string(in.String())
-					out.Nodes = append(out.Nodes, v379)
+					var v384 string
+					v384 = string(in.String())
+					out.Nodes = append(out.Nodes, v384)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -26926,7 +27128,7 @@ func easyjsonB7f3de24Decode218(in *jlexer.Lexer, out *BrowseProxmoxNodesResponse
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode218(out *jwriter.Writer, in BrowseProxmoxNodesResponse) {
+func easyjsonB7f3de24Encode219(out *jwriter.Writer, in BrowseProxmoxNodesResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -26947,11 +27149,11 @@ func easyjsonB7f3de24Encode218(out *jwriter.Writer, in BrowseProxmoxNodesRespons
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v380, v381 := range in.Nodes {
-				if v380 > 0 {
+			for v385, v386 := range in.Nodes {
+				if v385 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v381))
+				out.String(string(v386))
 			}
 			out.RawByte(']')
 		}
@@ -26963,27 +27165,27 @@ func easyjsonB7f3de24Encode218(out *jwriter.Writer, in BrowseProxmoxNodesRespons
 // MarshalJSON supports json.Marshaler interface
 func (v BrowseProxmoxNodesResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode218(&w, v)
+	easyjsonB7f3de24Encode219(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v BrowseProxmoxNodesResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode218(w, v)
+	easyjsonB7f3de24Encode219(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *BrowseProxmoxNodesResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode218(&r, v)
+	easyjsonB7f3de24Decode219(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *BrowseProxmoxNodesResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode218(l, v)
+	easyjsonB7f3de24Decode219(l, v)
 }
-func easyjsonB7f3de24Decode219(in *jlexer.Lexer, out *BrowseOffice365ObjectsResponse) {
+func easyjsonB7f3de24Decode220(in *jlexer.Lexer, out *BrowseOffice365ObjectsResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -27022,9 +27224,9 @@ func easyjsonB7f3de24Decode219(in *jlexer.Lexer, out *BrowseOffice365ObjectsResp
 					out.Objects = (out.Objects)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v382 Office365ObjectInfo
-					(v382).UnmarshalEasyJSON(in)
-					out.Objects = append(out.Objects, v382)
+					var v387 Office365ObjectInfo
+					(v387).UnmarshalEasyJSON(in)
+					out.Objects = append(out.Objects, v387)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -27039,7 +27241,7 @@ func easyjsonB7f3de24Decode219(in *jlexer.Lexer, out *BrowseOffice365ObjectsResp
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode219(out *jwriter.Writer, in BrowseOffice365ObjectsResponse) {
+func easyjsonB7f3de24Encode220(out *jwriter.Writer, in BrowseOffice365ObjectsResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -27060,11 +27262,11 @@ func easyjsonB7f3de24Encode219(out *jwriter.Writer, in BrowseOffice365ObjectsRes
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v383, v384 := range in.Objects {
-				if v383 > 0 {
+			for v388, v389 := range in.Objects {
+				if v388 > 0 {
 					out.RawByte(',')
 				}
-				(v384).MarshalEasyJSON(out)
+				(v389).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -27076,27 +27278,27 @@ func easyjsonB7f3de24Encode219(out *jwriter.Writer, in BrowseOffice365ObjectsRes
 // MarshalJSON supports json.Marshaler interface
 func (v BrowseOffice365ObjectsResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode219(&w, v)
+	easyjsonB7f3de24Encode220(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v BrowseOffice365ObjectsResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode219(w, v)
+	easyjsonB7f3de24Encode220(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *BrowseOffice365ObjectsResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode219(&r, v)
+	easyjsonB7f3de24Decode220(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *BrowseOffice365ObjectsResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode219(l, v)
+	easyjsonB7f3de24Decode220(l, v)
 }
-func easyjsonB7f3de24Decode220(in *jlexer.Lexer, out *BrowseOffice365ListVirtualAccountsResponse) {
+func easyjsonB7f3de24Decode221(in *jlexer.Lexer, out *BrowseOffice365ListVirtualAccountsResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -27135,9 +27337,9 @@ func easyjsonB7f3de24Decode220(in *jlexer.Lexer, out *BrowseOffice365ListVirtual
 					out.Objects = (out.Objects)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v385 Office365MixedVirtualAccount
-					(v385).UnmarshalEasyJSON(in)
-					out.Objects = append(out.Objects, v385)
+					var v390 Office365MixedVirtualAccount
+					(v390).UnmarshalEasyJSON(in)
+					out.Objects = append(out.Objects, v390)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -27152,7 +27354,7 @@ func easyjsonB7f3de24Decode220(in *jlexer.Lexer, out *BrowseOffice365ListVirtual
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode220(out *jwriter.Writer, in BrowseOffice365ListVirtualAccountsResponse) {
+func easyjsonB7f3de24Encode221(out *jwriter.Writer, in BrowseOffice365ListVirtualAccountsResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -27173,11 +27375,11 @@ func easyjsonB7f3de24Encode220(out *jwriter.Writer, in BrowseOffice365ListVirtua
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v386, v387 := range in.Objects {
-				if v386 > 0 {
+			for v391, v392 := range in.Objects {
+				if v391 > 0 {
 					out.RawByte(',')
 				}
-				(v387).MarshalEasyJSON(out)
+				(v392).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -27189,27 +27391,27 @@ func easyjsonB7f3de24Encode220(out *jwriter.Writer, in BrowseOffice365ListVirtua
 // MarshalJSON supports json.Marshaler interface
 func (v BrowseOffice365ListVirtualAccountsResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode220(&w, v)
+	easyjsonB7f3de24Encode221(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v BrowseOffice365ListVirtualAccountsResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode220(w, v)
+	easyjsonB7f3de24Encode221(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *BrowseOffice365ListVirtualAccountsResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode220(&r, v)
+	easyjsonB7f3de24Decode221(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *BrowseOffice365ListVirtualAccountsResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode220(l, v)
+	easyjsonB7f3de24Decode221(l, v)
 }
-func easyjsonB7f3de24Decode221(in *jlexer.Lexer, out *BrowseHVResponse) {
+func easyjsonB7f3de24Decode222(in *jlexer.Lexer, out *BrowseHVResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -27248,9 +27450,9 @@ func easyjsonB7f3de24Decode221(in *jlexer.Lexer, out *BrowseHVResponse) {
 					out.VirtualMachines = (out.VirtualMachines)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v388 HyperVMachineInfo
-					(v388).UnmarshalEasyJSON(in)
-					out.VirtualMachines = append(out.VirtualMachines, v388)
+					var v393 HyperVMachineInfo
+					(v393).UnmarshalEasyJSON(in)
+					out.VirtualMachines = append(out.VirtualMachines, v393)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -27265,7 +27467,7 @@ func easyjsonB7f3de24Decode221(in *jlexer.Lexer, out *BrowseHVResponse) {
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode221(out *jwriter.Writer, in BrowseHVResponse) {
+func easyjsonB7f3de24Encode222(out *jwriter.Writer, in BrowseHVResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -27286,11 +27488,11 @@ func easyjsonB7f3de24Encode221(out *jwriter.Writer, in BrowseHVResponse) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v389, v390 := range in.VirtualMachines {
-				if v389 > 0 {
+			for v394, v395 := range in.VirtualMachines {
+				if v394 > 0 {
 					out.RawByte(',')
 				}
-				(v390).MarshalEasyJSON(out)
+				(v395).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -27302,27 +27504,27 @@ func easyjsonB7f3de24Encode221(out *jwriter.Writer, in BrowseHVResponse) {
 // MarshalJSON supports json.Marshaler interface
 func (v BrowseHVResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode221(&w, v)
+	easyjsonB7f3de24Encode222(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v BrowseHVResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode221(w, v)
+	easyjsonB7f3de24Encode222(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *BrowseHVResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode221(&r, v)
+	easyjsonB7f3de24Decode222(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *BrowseHVResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode221(l, v)
+	easyjsonB7f3de24Decode222(l, v)
 }
-func easyjsonB7f3de24Decode222(in *jlexer.Lexer, out *BrowseEDBResponse) {
+func easyjsonB7f3de24Decode223(in *jlexer.Lexer, out *BrowseEDBResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -27361,9 +27563,9 @@ func easyjsonB7f3de24Decode222(in *jlexer.Lexer, out *BrowseEDBResponse) {
 					out.Databases = (out.Databases)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v391 EDBFileInfo
-					(v391).UnmarshalEasyJSON(in)
-					out.Databases = append(out.Databases, v391)
+					var v396 EDBFileInfo
+					(v396).UnmarshalEasyJSON(in)
+					out.Databases = append(out.Databases, v396)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -27378,7 +27580,7 @@ func easyjsonB7f3de24Decode222(in *jlexer.Lexer, out *BrowseEDBResponse) {
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode222(out *jwriter.Writer, in BrowseEDBResponse) {
+func easyjsonB7f3de24Encode223(out *jwriter.Writer, in BrowseEDBResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -27399,11 +27601,11 @@ func easyjsonB7f3de24Encode222(out *jwriter.Writer, in BrowseEDBResponse) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v392, v393 := range in.Databases {
-				if v392 > 0 {
+			for v397, v398 := range in.Databases {
+				if v397 > 0 {
 					out.RawByte(',')
 				}
-				(v393).MarshalEasyJSON(out)
+				(v398).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -27415,27 +27617,27 @@ func easyjsonB7f3de24Encode222(out *jwriter.Writer, in BrowseEDBResponse) {
 // MarshalJSON supports json.Marshaler interface
 func (v BrowseEDBResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode222(&w, v)
+	easyjsonB7f3de24Encode223(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v BrowseEDBResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode222(w, v)
+	easyjsonB7f3de24Encode223(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *BrowseEDBResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode222(&r, v)
+	easyjsonB7f3de24Decode223(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *BrowseEDBResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode222(l, v)
+	easyjsonB7f3de24Decode223(l, v)
 }
-func easyjsonB7f3de24Decode223(in *jlexer.Lexer, out *BrowseDiskDrivesResponse) {
+func easyjsonB7f3de24Decode224(in *jlexer.Lexer, out *BrowseDiskDrivesResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -27474,9 +27676,9 @@ func easyjsonB7f3de24Decode223(in *jlexer.Lexer, out *BrowseDiskDrivesResponse) 
 					out.Disks = (out.Disks)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v394 DiskDrive
-					(v394).UnmarshalEasyJSON(in)
-					out.Disks = append(out.Disks, v394)
+					var v399 DiskDrive
+					(v399).UnmarshalEasyJSON(in)
+					out.Disks = append(out.Disks, v399)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -27491,7 +27693,7 @@ func easyjsonB7f3de24Decode223(in *jlexer.Lexer, out *BrowseDiskDrivesResponse) 
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode223(out *jwriter.Writer, in BrowseDiskDrivesResponse) {
+func easyjsonB7f3de24Encode224(out *jwriter.Writer, in BrowseDiskDrivesResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -27512,11 +27714,11 @@ func easyjsonB7f3de24Encode223(out *jwriter.Writer, in BrowseDiskDrivesResponse)
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v395, v396 := range in.Disks {
-				if v395 > 0 {
+			for v400, v401 := range in.Disks {
+				if v400 > 0 {
 					out.RawByte(',')
 				}
-				(v396).MarshalEasyJSON(out)
+				(v401).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -27528,27 +27730,27 @@ func easyjsonB7f3de24Encode223(out *jwriter.Writer, in BrowseDiskDrivesResponse)
 // MarshalJSON supports json.Marshaler interface
 func (v BrowseDiskDrivesResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode223(&w, v)
+	easyjsonB7f3de24Encode224(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v BrowseDiskDrivesResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode223(w, v)
+	easyjsonB7f3de24Encode224(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *BrowseDiskDrivesResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode223(&r, v)
+	easyjsonB7f3de24Decode224(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *BrowseDiskDrivesResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode223(l, v)
+	easyjsonB7f3de24Decode224(l, v)
 }
-func easyjsonB7f3de24Decode224(in *jlexer.Lexer, out *BrandingProperties) {
+func easyjsonB7f3de24Decode225(in *jlexer.Lexer, out *BrandingProperties) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -27639,6 +27841,12 @@ func easyjsonB7f3de24Decode224(in *jlexer.Lexer, out *BrandingProperties) {
 			out.WindowsCodeSignAzureAppSecret = string(in.String())
 		case "WindowsCodeSignAzureTenantID":
 			out.WindowsCodeSignAzureTenantID = string(in.String())
+		case "WindowsCodeSignRelicServerURL":
+			out.WindowsCodeSignRelicServerURL = string(in.String())
+		case "WindowsCodeSignRelicKeypairFile":
+			out.WindowsCodeSignRelicKeypairFile = string(in.String())
+		case "WindowsCodeSignRelicKeyName":
+			out.WindowsCodeSignRelicKeyName = string(in.String())
 		case "MacOSCodeSign":
 			(out.MacOSCodeSign).UnmarshalEasyJSON(in)
 		default:
@@ -27651,7 +27859,7 @@ func easyjsonB7f3de24Decode224(in *jlexer.Lexer, out *BrandingProperties) {
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode224(out *jwriter.Writer, in BrandingProperties) {
+func easyjsonB7f3de24Encode225(out *jwriter.Writer, in BrandingProperties) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -27836,6 +28044,21 @@ func easyjsonB7f3de24Encode224(out *jwriter.Writer, in BrandingProperties) {
 		out.String(string(in.WindowsCodeSignAzureTenantID))
 	}
 	{
+		const prefix string = ",\"WindowsCodeSignRelicServerURL\":"
+		out.RawString(prefix)
+		out.String(string(in.WindowsCodeSignRelicServerURL))
+	}
+	{
+		const prefix string = ",\"WindowsCodeSignRelicKeypairFile\":"
+		out.RawString(prefix)
+		out.String(string(in.WindowsCodeSignRelicKeypairFile))
+	}
+	{
+		const prefix string = ",\"WindowsCodeSignRelicKeyName\":"
+		out.RawString(prefix)
+		out.String(string(in.WindowsCodeSignRelicKeyName))
+	}
+	{
 		const prefix string = ",\"MacOSCodeSign\":"
 		out.RawString(prefix)
 		(in.MacOSCodeSign).MarshalEasyJSON(out)
@@ -27847,27 +28070,27 @@ func easyjsonB7f3de24Encode224(out *jwriter.Writer, in BrandingProperties) {
 // MarshalJSON supports json.Marshaler interface
 func (v BrandingProperties) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode224(&w, v)
+	easyjsonB7f3de24Encode225(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v BrandingProperties) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode224(w, v)
+	easyjsonB7f3de24Encode225(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *BrandingProperties) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode224(&r, v)
+	easyjsonB7f3de24Decode225(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *BrandingProperties) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode224(l, v)
+	easyjsonB7f3de24Decode225(l, v)
 }
-func easyjsonB7f3de24Decode225(in *jlexer.Lexer, out *BrandingOptions) {
+func easyjsonB7f3de24Decode226(in *jlexer.Lexer, out *BrandingOptions) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -27972,6 +28195,12 @@ func easyjsonB7f3de24Decode225(in *jlexer.Lexer, out *BrandingOptions) {
 			out.WindowsCodeSignAzureAppSecret = string(in.String())
 		case "WindowsCodeSignAzureTenantID":
 			out.WindowsCodeSignAzureTenantID = string(in.String())
+		case "WindowsCodeSignRelicServerURL":
+			out.WindowsCodeSignRelicServerURL = string(in.String())
+		case "WindowsCodeSignRelicKeypairFile":
+			out.WindowsCodeSignRelicKeypairFile = string(in.String())
+		case "WindowsCodeSignRelicKeyName":
+			out.WindowsCodeSignRelicKeyName = string(in.String())
 		case "MacOSCodeSign":
 			(out.MacOSCodeSign).UnmarshalEasyJSON(in)
 		default:
@@ -27984,7 +28213,7 @@ func easyjsonB7f3de24Decode225(in *jlexer.Lexer, out *BrandingOptions) {
 		in.Consumed()
 	}
 }
-func easyjsonB7f3de24Encode225(out *jwriter.Writer, in BrandingOptions) {
+func easyjsonB7f3de24Encode226(out *jwriter.Writer, in BrandingOptions) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -28204,6 +28433,21 @@ func easyjsonB7f3de24Encode225(out *jwriter.Writer, in BrandingOptions) {
 		out.String(string(in.WindowsCodeSignAzureTenantID))
 	}
 	{
+		const prefix string = ",\"WindowsCodeSignRelicServerURL\":"
+		out.RawString(prefix)
+		out.String(string(in.WindowsCodeSignRelicServerURL))
+	}
+	{
+		const prefix string = ",\"WindowsCodeSignRelicKeypairFile\":"
+		out.RawString(prefix)
+		out.String(string(in.WindowsCodeSignRelicKeypairFile))
+	}
+	{
+		const prefix string = ",\"WindowsCodeSignRelicKeyName\":"
+		out.RawString(prefix)
+		out.String(string(in.WindowsCodeSignRelicKeyName))
+	}
+	{
 		const prefix string = ",\"MacOSCodeSign\":"
 		out.RawString(prefix)
 		(in.MacOSCodeSign).MarshalEasyJSON(out)
@@ -28215,98 +28459,24 @@ func easyjsonB7f3de24Encode225(out *jwriter.Writer, in BrandingOptions) {
 // MarshalJSON supports json.Marshaler interface
 func (v BrandingOptions) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonB7f3de24Encode225(&w, v)
-	return w.Buffer.BuildBytes(), w.Error
-}
-
-// MarshalEasyJSON supports easyjson.Marshaler interface
-func (v BrandingOptions) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonB7f3de24Encode225(w, v)
-}
-
-// UnmarshalJSON supports json.Unmarshaler interface
-func (v *BrandingOptions) UnmarshalJSON(data []byte) error {
-	r := jlexer.Lexer{Data: data}
-	easyjsonB7f3de24Decode225(&r, v)
-	return r.Error()
-}
-
-// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *BrandingOptions) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonB7f3de24Decode225(l, v)
-}
-func easyjsonB7f3de24Decode226(in *jlexer.Lexer, out *BlockInfo) {
-	isTopLevel := in.IsStart()
-	if in.IsNull() {
-		if isTopLevel {
-			in.Consumed()
-		}
-		in.Skip()
-		return
-	}
-	in.Delim('{')
-	for !in.IsDelim('}') {
-		key := in.UnsafeFieldName(false)
-		in.WantColon()
-		if in.IsNull() {
-			in.Skip()
-			in.WantComma()
-			continue
-		}
-		switch key {
-		case "DeviceID":
-			out.DeviceID = string(in.String())
-		case "DiskNodeName":
-			out.DiskNodeName = string(in.String())
-		default:
-			out.UnmarshalUnknown(in, key)
-		}
-		in.WantComma()
-	}
-	in.Delim('}')
-	if isTopLevel {
-		in.Consumed()
-	}
-}
-func easyjsonB7f3de24Encode226(out *jwriter.Writer, in BlockInfo) {
-	out.RawByte('{')
-	first := true
-	_ = first
-	{
-		const prefix string = ",\"DeviceID\":"
-		out.RawString(prefix[1:])
-		out.String(string(in.DeviceID))
-	}
-	{
-		const prefix string = ",\"DiskNodeName\":"
-		out.RawString(prefix)
-		out.String(string(in.DiskNodeName))
-	}
-	in.MarshalUnknowns(out, false)
-	out.RawByte('}')
-}
-
-// MarshalJSON supports json.Marshaler interface
-func (v BlockInfo) MarshalJSON() ([]byte, error) {
-	w := jwriter.Writer{}
 	easyjsonB7f3de24Encode226(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
-func (v BlockInfo) MarshalEasyJSON(w *jwriter.Writer) {
+func (v BrandingOptions) MarshalEasyJSON(w *jwriter.Writer) {
 	easyjsonB7f3de24Encode226(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
-func (v *BlockInfo) UnmarshalJSON(data []byte) error {
+func (v *BrandingOptions) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
 	easyjsonB7f3de24Decode226(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *BlockInfo) UnmarshalEasyJSON(l *jlexer.Lexer) {
+func (v *BrandingOptions) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjsonB7f3de24Decode226(l, v)
 }
 func easyjsonB7f3de24Decode227(in *jlexer.Lexer, out *BackupRuleEventTriggers) {
@@ -28466,9 +28636,9 @@ func easyjsonB7f3de24Decode228(in *jlexer.Lexer, out *BackupRuleConfig) {
 					out.PreExec = (out.PreExec)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v397 string
-					v397 = string(in.String())
-					out.PreExec = append(out.PreExec, v397)
+					var v402 string
+					v402 = string(in.String())
+					out.PreExec = append(out.PreExec, v402)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -28489,9 +28659,9 @@ func easyjsonB7f3de24Decode228(in *jlexer.Lexer, out *BackupRuleConfig) {
 					out.ThawExec = (out.ThawExec)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v398 string
-					v398 = string(in.String())
-					out.ThawExec = append(out.ThawExec, v398)
+					var v403 string
+					v403 = string(in.String())
+					out.ThawExec = append(out.ThawExec, v403)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -28512,9 +28682,9 @@ func easyjsonB7f3de24Decode228(in *jlexer.Lexer, out *BackupRuleConfig) {
 					out.PostExec = (out.PostExec)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v399 string
-					v399 = string(in.String())
-					out.PostExec = append(out.PostExec, v399)
+					var v404 string
+					v404 = string(in.String())
+					out.PostExec = append(out.PostExec, v404)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -28541,6 +28711,8 @@ func easyjsonB7f3de24Decode228(in *jlexer.Lexer, out *BackupRuleConfig) {
 			out.ConcurrencyCount = int64(in.Int64())
 		case "LogLevel":
 			out.LogLevel = string(in.String())
+		case "Tags":
+			out.Tags = string(in.String())
 		case "Schedules":
 			if in.IsNull() {
 				in.Skip()
@@ -28557,9 +28729,9 @@ func easyjsonB7f3de24Decode228(in *jlexer.Lexer, out *BackupRuleConfig) {
 					out.Schedules = (out.Schedules)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v400 ScheduleConfig
-					(v400).UnmarshalEasyJSON(in)
-					out.Schedules = append(out.Schedules, v400)
+					var v405 ScheduleConfig
+					(v405).UnmarshalEasyJSON(in)
+					out.Schedules = append(out.Schedules, v405)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -28602,11 +28774,11 @@ func easyjsonB7f3de24Encode228(out *jwriter.Writer, in BackupRuleConfig) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v401, v402 := range in.PreExec {
-				if v401 > 0 {
+			for v406, v407 := range in.PreExec {
+				if v406 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v402))
+				out.String(string(v407))
 			}
 			out.RawByte(']')
 		}
@@ -28618,11 +28790,11 @@ func easyjsonB7f3de24Encode228(out *jwriter.Writer, in BackupRuleConfig) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v403, v404 := range in.ThawExec {
-				if v403 > 0 {
+			for v408, v409 := range in.ThawExec {
+				if v408 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v404))
+				out.String(string(v409))
 			}
 			out.RawByte(']')
 		}
@@ -28634,11 +28806,11 @@ func easyjsonB7f3de24Encode228(out *jwriter.Writer, in BackupRuleConfig) {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v405, v406 := range in.PostExec {
-				if v405 > 0 {
+			for v410, v411 := range in.PostExec {
+				if v410 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v406))
+				out.String(string(v411))
 			}
 			out.RawByte(']')
 		}
@@ -28699,17 +28871,22 @@ func easyjsonB7f3de24Encode228(out *jwriter.Writer, in BackupRuleConfig) {
 		out.String(string(in.LogLevel))
 	}
 	{
+		const prefix string = ",\"Tags\":"
+		out.RawString(prefix)
+		out.String(string(in.Tags))
+	}
+	{
 		const prefix string = ",\"Schedules\":"
 		out.RawString(prefix)
 		if in.Schedules == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v407, v408 := range in.Schedules {
-				if v407 > 0 {
+			for v412, v413 := range in.Schedules {
+				if v412 > 0 {
 					out.RawByte(',')
 				}
-				(v408).MarshalEasyJSON(out)
+				(v413).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -28917,8 +29094,6 @@ func easyjsonB7f3de24Decode230(in *jlexer.Lexer, out *BackupJobDetail) {
 			out.TotalLicensedMailsCount = int64(in.Int64())
 		case "TotalUnlicensedMailsCount":
 			out.TotalUnlicensedMailsCount = int64(in.Int64())
-		case "BillingCrc32":
-			out.BillingCrc32 = uint32(in.Uint32())
 		case "ConflictingJobID":
 			out.ConflictingJobID = string(in.String())
 		case "CancellationID":
@@ -28929,6 +29104,8 @@ func easyjsonB7f3de24Decode230(in *jlexer.Lexer, out *BackupJobDetail) {
 			(out.DestinationSizeStart).UnmarshalEasyJSON(in)
 		case "DestinationSizeEnd":
 			(out.DestinationSizeEnd).UnmarshalEasyJSON(in)
+		case "Tags":
+			out.Tags = string(in.String())
 		default:
 			out.UnmarshalUnknown(in, key)
 		}
@@ -29068,11 +29245,6 @@ func easyjsonB7f3de24Encode230(out *jwriter.Writer, in BackupJobDetail) {
 		out.RawString(prefix)
 		out.Int64(int64(in.TotalUnlicensedMailsCount))
 	}
-	if in.BillingCrc32 != 0 {
-		const prefix string = ",\"BillingCrc32\":"
-		out.RawString(prefix)
-		out.Uint32(uint32(in.BillingCrc32))
-	}
 	if in.ConflictingJobID != "" {
 		const prefix string = ",\"ConflictingJobID\":"
 		out.RawString(prefix)
@@ -29097,6 +29269,11 @@ func easyjsonB7f3de24Encode230(out *jwriter.Writer, in BackupJobDetail) {
 		const prefix string = ",\"DestinationSizeEnd\":"
 		out.RawString(prefix)
 		(in.DestinationSizeEnd).MarshalEasyJSON(out)
+	}
+	if in.Tags != "" {
+		const prefix string = ",\"Tags\":"
+		out.RawString(prefix)
+		out.String(string(in.Tags))
 	}
 	in.MarshalUnknowns(out, false)
 	out.RawByte('}')
@@ -29162,6 +29339,8 @@ func easyjsonB7f3de24Decode231(in *jlexer.Lexer, out *BackupJobAdvancedOptions) 
 			out.ConcurrencyCount = int64(in.Int64())
 		case "LogLevel":
 			out.LogLevel = string(in.String())
+		case "Tags":
+			out.Tags = string(in.String())
 		default:
 			out.UnmarshalUnknown(in, key)
 		}
@@ -29220,6 +29399,11 @@ func easyjsonB7f3de24Encode231(out *jwriter.Writer, in BackupJobAdvancedOptions)
 		const prefix string = ",\"LogLevel\":"
 		out.RawString(prefix)
 		out.String(string(in.LogLevel))
+	}
+	{
+		const prefix string = ",\"Tags\":"
+		out.RawString(prefix)
+		out.String(string(in.Tags))
 	}
 	in.MarshalUnknowns(out, false)
 	out.RawByte('}')
@@ -29445,9 +29629,9 @@ func easyjsonB7f3de24Decode234(in *jlexer.Lexer, out *B2StorageExtraInfo) {
 				for !in.IsDelim('}') {
 					key := int64(in.Int64Str())
 					in.WantColon()
-					var v409 B2TransactionTotals
-					(v409).UnmarshalEasyJSON(in)
-					(out.TotalTransactionsInTimeInterval)[key] = v409
+					var v414 B2TransactionTotals
+					(v414).UnmarshalEasyJSON(in)
+					(out.TotalTransactionsInTimeInterval)[key] = v414
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -29473,16 +29657,16 @@ func easyjsonB7f3de24Encode234(out *jwriter.Writer, in B2StorageExtraInfo) {
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v410First := true
-			for v410Name, v410Value := range in.TotalTransactionsInTimeInterval {
-				if v410First {
-					v410First = false
+			v415First := true
+			for v415Name, v415Value := range in.TotalTransactionsInTimeInterval {
+				if v415First {
+					v415First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.Int64Str(int64(v410Name))
+				out.Int64Str(int64(v415Name))
 				out.RawByte(':')
-				(v410Value).MarshalEasyJSON(out)
+				(v415Value).MarshalEasyJSON(out)
 			}
 			out.RawByte('}')
 		}
@@ -29865,9 +30049,9 @@ func easyjsonB7f3de24Decode238(in *jlexer.Lexer, out *AuthenticationRoleOptions)
 					out.RemoteStorage = (out.RemoteStorage)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v411 RemoteStorageOption
-					(v411).UnmarshalEasyJSON(in)
-					out.RemoteStorage = append(out.RemoteStorage, v411)
+					var v416 RemoteStorageOption
+					(v416).UnmarshalEasyJSON(in)
+					out.RemoteStorage = append(out.RemoteStorage, v416)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -29888,9 +30072,9 @@ func easyjsonB7f3de24Decode238(in *jlexer.Lexer, out *AuthenticationRoleOptions)
 					out.ReplicateTo = (out.ReplicateTo)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v412 ReplicaServer
-					(v412).UnmarshalEasyJSON(in)
-					out.ReplicateTo = append(out.ReplicateTo, v412)
+					var v417 ReplicaServer
+					(v417).UnmarshalEasyJSON(in)
+					out.ReplicateTo = append(out.ReplicateTo, v417)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -29948,11 +30132,11 @@ func easyjsonB7f3de24Encode238(out *jwriter.Writer, in AuthenticationRoleOptions
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v413, v414 := range in.RemoteStorage {
-				if v413 > 0 {
+			for v418, v419 := range in.RemoteStorage {
+				if v418 > 0 {
 					out.RawByte(',')
 				}
-				(v414).MarshalEasyJSON(out)
+				(v419).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -29964,11 +30148,11 @@ func easyjsonB7f3de24Encode238(out *jwriter.Writer, in AuthenticationRoleOptions
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v415, v416 := range in.ReplicateTo {
-				if v415 > 0 {
+			for v420, v421 := range in.ReplicateTo {
+				if v420 > 0 {
 					out.RawByte(',')
 				}
-				(v416).MarshalEasyJSON(out)
+				(v421).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -30167,9 +30351,9 @@ func easyjsonB7f3de24Decode240(in *jlexer.Lexer, out *AllowedAdminUser) {
 					out.U2FRegistrations = (out.U2FRegistrations)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v417 AdminU2FRegistration
-					(v417).UnmarshalEasyJSON(in)
-					out.U2FRegistrations = append(out.U2FRegistrations, v417)
+					var v422 AdminU2FRegistration
+					(v422).UnmarshalEasyJSON(in)
+					out.U2FRegistrations = append(out.U2FRegistrations, v422)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -30190,9 +30374,9 @@ func easyjsonB7f3de24Decode240(in *jlexer.Lexer, out *AllowedAdminUser) {
 					out.WebAuthnRegistrations = (out.WebAuthnRegistrations)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v418 AdminWebAuthnRegistration
-					(v418).UnmarshalEasyJSON(in)
-					out.WebAuthnRegistrations = append(out.WebAuthnRegistrations, v418)
+					var v423 AdminWebAuthnRegistration
+					(v423).UnmarshalEasyJSON(in)
+					out.WebAuthnRegistrations = append(out.WebAuthnRegistrations, v423)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -30271,11 +30455,11 @@ func easyjsonB7f3de24Encode240(out *jwriter.Writer, in AllowedAdminUser) {
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v419, v420 := range in.U2FRegistrations {
-				if v419 > 0 {
+			for v424, v425 := range in.U2FRegistrations {
+				if v424 > 0 {
 					out.RawByte(',')
 				}
-				(v420).MarshalEasyJSON(out)
+				(v425).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -30285,11 +30469,11 @@ func easyjsonB7f3de24Encode240(out *jwriter.Writer, in AllowedAdminUser) {
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v421, v422 := range in.WebAuthnRegistrations {
-				if v421 > 0 {
+			for v426, v427 := range in.WebAuthnRegistrations {
+				if v426 > 0 {
 					out.RawByte(',')
 				}
-				(v422).MarshalEasyJSON(out)
+				(v427).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -30520,9 +30704,9 @@ func easyjsonB7f3de24Decode242(in *jlexer.Lexer, out *AdminUserPermissions) {
 					out.AllowedProvidersWhenRestricted = (out.AllowedProvidersWhenRestricted)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v426 uint64
-					v426 = uint64(in.Uint64())
-					out.AllowedProvidersWhenRestricted = append(out.AllowedProvidersWhenRestricted, v426)
+					var v431 uint64
+					v431 = uint64(in.Uint64())
+					out.AllowedProvidersWhenRestricted = append(out.AllowedProvidersWhenRestricted, v431)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -30543,9 +30727,9 @@ func easyjsonB7f3de24Decode242(in *jlexer.Lexer, out *AdminUserPermissions) {
 					out.AllowedUserPolicies = (out.AllowedUserPolicies)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v427 string
-					v427 = string(in.String())
-					out.AllowedUserPolicies = append(out.AllowedUserPolicies, v427)
+					var v432 string
+					v432 = string(in.String())
+					out.AllowedUserPolicies = append(out.AllowedUserPolicies, v432)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -30732,11 +30916,11 @@ func easyjsonB7f3de24Encode242(out *jwriter.Writer, in AdminUserPermissions) {
 		}
 		{
 			out.RawByte('[')
-			for v428, v429 := range in.AllowedProvidersWhenRestricted {
-				if v428 > 0 {
+			for v433, v434 := range in.AllowedProvidersWhenRestricted {
+				if v433 > 0 {
 					out.RawByte(',')
 				}
-				out.Uint64(uint64(v429))
+				out.Uint64(uint64(v434))
 			}
 			out.RawByte(']')
 		}
@@ -30751,11 +30935,11 @@ func easyjsonB7f3de24Encode242(out *jwriter.Writer, in AdminUserPermissions) {
 		}
 		{
 			out.RawByte('[')
-			for v430, v431 := range in.AllowedUserPolicies {
-				if v430 > 0 {
+			for v435, v436 := range in.AllowedUserPolicies {
+				if v435 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v431))
+				out.String(string(v436))
 			}
 			out.RawByte(']')
 		}
@@ -30930,9 +31114,9 @@ func easyjsonB7f3de24Decode244(in *jlexer.Lexer, out *AdminSecurityOptions) {
 					out.U2FRegistrations = (out.U2FRegistrations)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v435 AdminU2FRegistration
-					(v435).UnmarshalEasyJSON(in)
-					out.U2FRegistrations = append(out.U2FRegistrations, v435)
+					var v440 AdminU2FRegistration
+					(v440).UnmarshalEasyJSON(in)
+					out.U2FRegistrations = append(out.U2FRegistrations, v440)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -30953,9 +31137,9 @@ func easyjsonB7f3de24Decode244(in *jlexer.Lexer, out *AdminSecurityOptions) {
 					out.WebAuthnRegistrations = (out.WebAuthnRegistrations)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v436 AdminWebAuthnRegistration
-					(v436).UnmarshalEasyJSON(in)
-					out.WebAuthnRegistrations = append(out.WebAuthnRegistrations, v436)
+					var v441 AdminWebAuthnRegistration
+					(v441).UnmarshalEasyJSON(in)
+					out.WebAuthnRegistrations = append(out.WebAuthnRegistrations, v441)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -31017,11 +31201,11 @@ func easyjsonB7f3de24Encode244(out *jwriter.Writer, in AdminSecurityOptions) {
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v437, v438 := range in.U2FRegistrations {
-				if v437 > 0 {
+			for v442, v443 := range in.U2FRegistrations {
+				if v442 > 0 {
 					out.RawByte(',')
 				}
-				(v438).MarshalEasyJSON(out)
+				(v443).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -31031,11 +31215,11 @@ func easyjsonB7f3de24Encode244(out *jwriter.Writer, in AdminSecurityOptions) {
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v439, v440 := range in.WebAuthnRegistrations {
-				if v439 > 0 {
+			for v444, v445 := range in.WebAuthnRegistrations {
+				if v444 > 0 {
 					out.RawByte(',')
 				}
-				(v440).MarshalEasyJSON(out)
+				(v445).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
