@@ -20,10 +20,10 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "25.9.6"
+const APPLICATION_VERSION string = "25.9.8"
 const APPLICATION_VERSION_MAJOR int = 25
 const APPLICATION_VERSION_MINOR int = 9
-const APPLICATION_VERSION_REVISION int = 6
+const APPLICATION_VERSION_REVISION int = 8
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
@@ -979,6 +979,15 @@ const SEVT_SERVER_STARTED StreamableEventType = 4400
 
 // StreamableEventType: Server configuration has been updated. Data is the server config object
 const SEVT_SERVER_UPDATED StreamableEventType = 4403
+
+// StreamableEventType
+const SEVT_SQUOTA_NEW StreamableEventType = 4803
+
+// StreamableEventType
+const SEVT_SQUOTA_REMOVED StreamableEventType = 4804
+
+// StreamableEventType
+const SEVT_SQUOTA_UPDATED StreamableEventType = 4805
 
 // StreamableEventType: Tenant created. Data is the tenant object
 const SEVT_TENANT_NEW StreamableEventType = 4500
@@ -2245,7 +2254,10 @@ type DestinationConfig struct {
 	StorageLimitEnabled bool
 	// Storage Vault quota
 	StorageLimitBytes int64
-	Statistics        DestinationStatistics `json:",omitempty"`
+	// If set, use a shared Storage Vault quota from the Comet Management Console. The direct value of
+	// StorageLimitBytes is ignored.
+	StorageLimitID string
+	Statistics     DestinationStatistics `json:",omitempty"`
 	// Configure the retention policy for this Storage Vault. The rules will be applied to any snapshot
 	// inside this Storage Vault, unless that snapshot belongs to a Protected Item source that has an
 	// overriding retention policy.
@@ -2685,6 +2697,18 @@ type GetProfileHashResponseMessage struct {
 	easyjson.UnknownFieldsProxy
 }
 
+type GetSharedStorageQuotaResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
+	Status                 int
+	Message                string
+	SharedStorageQuota     SharedStorageQuota
+	SharedStorageQuotaHash string
+	// Bytes
+	CurrentUsage int64
+
+	easyjson.UnknownFieldsProxy
+}
+
 type GetUserGroupResponse struct {
 	UserGroup     UserGroup
 	UserGroupHash string
@@ -2861,6 +2885,15 @@ type LicenseLimits struct {
 type LicenseOptions struct {
 	Email        string `json:",omitempty"`
 	SerialNumber string
+
+	easyjson.UnknownFieldsProxy
+}
+
+type ListSharedStorageQuotaResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
+	Status  int
+	Message string
+	Entries map[string]SharedStorageQuota
 
 	easyjson.UnknownFieldsProxy
 }
@@ -3319,8 +3352,9 @@ type PVEParams struct {
 
 // PVEStorageName contains the name and type of storage configured on a Proxmox Cluster
 type PVEStorageName struct {
-	Name string
-	Type string
+	Name    string
+	Type    string
+	Content []string
 
 	easyjson.UnknownFieldsProxy
 }
@@ -4129,6 +4163,26 @@ type SessionOptions struct {
 	// The number of seconds, after which an administrator should be automatically logged out of the
 	// Comet Server web interface. If zero, will be replaced with DEFAULT_SESSIONTIMEOUT.
 	ExpiredInSeconds uint64
+
+	easyjson.UnknownFieldsProxy
+}
+
+type SetSharedStorageQuotaResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
+	Status                 int
+	Message                string
+	SharedStorageQuotaHash string
+
+	easyjson.UnknownFieldsProxy
+}
+
+// A SharedStorageQuota can be applied to multiple Storage Vaults in the
+// 'DestinationConfig.StorageLimitID' field.
+type SharedStorageQuota struct {
+	Description    string
+	OrganizationID string
+	// Bytes
+	LimitBytes int64
 
 	easyjson.UnknownFieldsProxy
 }
@@ -7582,7 +7636,8 @@ func (c *CometAPIClient) AdminDispatcherRequestBrowseProxmoxNodes(ctx context.Co
 // - Params
 // TargetID: The live connection GUID
 // Credentials: The SSH connection settings
-func (c *CometAPIClient) AdminDispatcherRequestBrowseProxmoxStorage(ctx context.Context, TargetID string, Credentials SSHConnection) (*BrowseProxmoxStorageResponse, error) {
+// Node: The target node
+func (c *CometAPIClient) AdminDispatcherRequestBrowseProxmoxStorage(ctx context.Context, TargetID string, Credentials SSHConnection, Node string) (*BrowseProxmoxStorageResponse, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -7594,6 +7649,8 @@ func (c *CometAPIClient) AdminDispatcherRequestBrowseProxmoxStorage(ctx context.
 		return nil, err
 	}
 	data["Credentials"] = []string{string(b)}
+
+	data["Node"] = []string{Node}
 
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/request-browse-proxmox/storage", data)
 	if err != nil {
@@ -10856,6 +10913,120 @@ func (c *CometAPIClient) AdminSetUserProfileHash(ctx context.Context, TargetUser
 	return result, nil
 }
 
+// AdminSquotaDelete: Delete a shared storage quota and detach all users
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// SharedStorageQuotaID: (No description available)
+func (c *CometAPIClient) AdminSquotaDelete(ctx context.Context, SharedStorageQuotaID string) (*CometAPIResponseMessage, error) {
+	data := map[string][]string{}
+	var err error
+
+	data["SharedStorageQuotaID"] = []string{SharedStorageQuotaID}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/squota/delete", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CometAPIResponseMessage{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminSquotaGetWithHash: Get properties for a shared storage quota
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// SharedStorageQuotaID: (No description available)
+func (c *CometAPIClient) AdminSquotaGetWithHash(ctx context.Context, SharedStorageQuotaID string) (*GetSharedStorageQuotaResponse, error) {
+	data := map[string][]string{}
+	var err error
+
+	data["SharedStorageQuotaID"] = []string{SharedStorageQuotaID}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/squota/get-with-hash", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &GetSharedStorageQuotaResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminSquotaListAll: List available shared storage quota objects
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+func (c *CometAPIClient) AdminSquotaListAll(ctx context.Context) (*ListSharedStorageQuotaResponse, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/squota/list-all", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &ListSharedStorageQuotaResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminSquotaSetWithHash: Create or update a shared storage quota
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// SharedStorageQuotaID: (No description available)
+// SharedStorageQuota: (No description available)
+// CheckHash: (Optional) If supplied, validate the change against this hash. Omit to forcibly apply
+// changes.
+func (c *CometAPIClient) AdminSquotaSetWithHash(ctx context.Context, SharedStorageQuotaID string, SharedStorageQuota SharedStorageQuota, CheckHash *string) (*SetSharedStorageQuotaResponse, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	data["SharedStorageQuotaID"] = []string{SharedStorageQuotaID}
+
+	b, err = json.Marshal(SharedStorageQuota)
+	if err != nil {
+		return nil, err
+	}
+	data["SharedStorageQuota"] = []string{string(b)}
+
+	if CheckHash != nil {
+		data["CheckHash"] = []string{*CheckHash}
+	}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/squota/set-with-hash", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &SetSharedStorageQuotaResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // AdminStorageBucketProperties: Retrieve properties for a single bucket
 // This API can also be used to refresh the size measurement for a single bucket by passing a valid
 // AfterTimestamp parameter.
@@ -12131,7 +12302,8 @@ func (c *CometAPIClient) UserWebDispatcherRequestBrowseProxmoxNodes(ctx context.
 // - Params
 // TargetID: The live connection GUID
 // Credentials: SSH connection settings
-func (c *CometAPIClient) UserWebDispatcherRequestBrowseProxmoxStorage(ctx context.Context, TargetID string, Credentials SSHConnection) (*BrowseProxmoxStorageResponse, error) {
+// Node: The target node
+func (c *CometAPIClient) UserWebDispatcherRequestBrowseProxmoxStorage(ctx context.Context, TargetID string, Credentials SSHConnection, Node string) (*BrowseProxmoxStorageResponse, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -12143,6 +12315,8 @@ func (c *CometAPIClient) UserWebDispatcherRequestBrowseProxmoxStorage(ctx contex
 		return nil, err
 	}
 	data["Credentials"] = []string{string(b)}
+
+	data["Node"] = []string{Node}
 
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/request-browse-proxmox/storage", data)
 	if err != nil {
