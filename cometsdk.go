@@ -20,9 +20,9 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "25.9.8"
-const APPLICATION_VERSION_MAJOR int = 25
-const APPLICATION_VERSION_MINOR int = 9
+const APPLICATION_VERSION string = "26.8.8"
+const APPLICATION_VERSION_MAJOR int = 26
+const APPLICATION_VERSION_MINOR int = 8
 const APPLICATION_VERSION_REVISION int = 8
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
@@ -39,18 +39,18 @@ const BACKUPJOBAUTORETENTION_LESS_OFTEN AutoRetentionLevel = 3
 // AutoRetentionLevel: The system will follow the automatic ruleset for a 'High Power' device.
 const BACKUPJOBAUTORETENTION_MORE_OFTEN AutoRetentionLevel = 2
 
-// If set, will be automatically replaced with one of the other BRANDINGSTYLETYPE_ constants after
-// next server upgrade.
-const BRANDINGSTYLETYPE_AUTO_LEGACY int = 0
+// BrandingStyleType: If set, will be automatically replaced with one of the other
+// BRANDINGSTYLETYPE_ constants after next server upgrade.
+const BRANDINGSTYLETYPE_AUTO_LEGACY BrandingStyleType = 0
 
-// Use custom branding and colours, with a supplied image in the main logo area.
-const BRANDINGSTYLETYPE_CUSTOM_LOGO int = 3
+// BrandingStyleType: Use custom branding and colours, with a supplied image in the main logo area.
+const BRANDINGSTYLETYPE_CUSTOM_LOGO BrandingStyleType = 3
 
-// Use custom branding and colours, with text in the main logo area.
-const BRANDINGSTYLETYPE_CUSTOM_TEXT int = 2
+// BrandingStyleType: Use custom branding and colours, with text in the main logo area.
+const BRANDINGSTYLETYPE_CUSTOM_TEXT BrandingStyleType = 2
 
-// Use Comet company branding and colours for all web interface branding
-const BRANDINGSTYLETYPE_DEFAULT int = 1
+// BrandingStyleType: Use Comet company branding and colours for all web interface branding
+const BRANDINGSTYLETYPE_DEFAULT BrandingStyleType = 1
 
 // ClientBrandingBuildMode: The software client will be custom-built by this Comet Server, allowing
 // custom branding, default server URL, and codesigning.
@@ -84,6 +84,26 @@ const COMPRESS_LVL_5 CompressMode = 5
 // CompressMode
 const COMPRESS_MAX CompressMode = COMPRESS_LVL_5
 
+// CustomBrandingContentType: The item is CSS stylesheet code
+const CUSTOMBRANDING_CONTENT_CSS CustomBrandingContentType = "css"
+
+// CustomBrandingContentType: The item is JavaScript code
+const CUSTOMBRANDING_CONTENT_JAVASCRIPT CustomBrandingContentType = "javascript"
+
+// CustomBrandingPlacementType: Insert the item at the end of the document body, after the web
+// application markup
+const CUSTOMBRANDING_PLACEMENT_BODY_END CustomBrandingPlacementType = "body-end"
+
+// CustomBrandingPlacementType: Insert the item at the end of the document head. This is the
+// default, and matches the installation instructions of most analytics vendors
+const CUSTOMBRANDING_PLACEMENT_HEAD CustomBrandingPlacementType = "head"
+
+// CustomBrandingSourceType: The item content is supplied inline in the Content field
+const CUSTOMBRANDING_SOURCE_INLINE CustomBrandingSourceType = "inline"
+
+// CustomBrandingSourceType: The item is loaded from the external URL in the URL field
+const CUSTOMBRANDING_SOURCE_URL CustomBrandingSourceType = "url"
+
 // CustomRemoteBucketCustomBodyType
 const CUSTOMREMOTEBUCKET_CUSTOMBODY_FORM CustomRemoteBucketCustomBodyType = "form"
 
@@ -108,51 +128,58 @@ const DEFAULT_RETRY_COUNT int = 1
 const DEFAULT_RETRY_TIME int = 30
 const DEFAULT_TIMEZONE string = "UTC"
 
-// When defining a schedule via policy, use this option to create a schedule for each Storage Vault
-// in the user's profile.
-const DESTINATIONTYPE_ALL uint64 = 1101
+// DestinationType: When defining a schedule via policy, use this option to create a schedule for
+// each Storage Vault in the user's profile.
+const DESTINATIONTYPE_ALL DestinationType = 1101
 
-// Azure Blob Storage
-const DESTINATIONTYPE_AZUREBLOB uint64 = 1005
+// DestinationType: Azure Blob Storage
+const DESTINATIONTYPE_AZUREBLOB DestinationType = 1005
 
-// Backblaze B2 (Native API)
-const DESTINATIONTYPE_B2 uint64 = 1008
+// DestinationType: Backblaze B2 (Native API)
+const DESTINATIONTYPE_B2 DestinationType = 1008
 
-// The Comet Server Storage Role protocol
-const DESTINATIONTYPE_COMET uint64 = 1003
+// DestinationType: The Comet Server Storage Role protocol
+const DESTINATIONTYPE_COMET DestinationType = 1003
 
-// Storage type that is applied when Storage Gateway fails to launch correctly
-const DESTINATIONTYPE_ERROR uint64 = 1
+// DestinationType: Storage type that is applied when Storage Gateway fails to launch correctly
+const DESTINATIONTYPE_ERROR DestinationType = 1
 
-// FTP protocol
-const DESTINATIONTYPE_FTP uint64 = 1004
+// DestinationType: FTP protocol
+const DESTINATIONTYPE_FTP DestinationType = 1004
 
-// When defining a schedule via policy, use this option to dynamically select the Storage Vault that
-// was created most recently.
-const DESTINATIONTYPE_LATEST uint64 = 1100
+// DestinationType: When defining a schedule via policy, use this option to dynamically select the
+// Storage Vault that was created most recently.
+const DESTINATIONTYPE_LATEST DestinationType = 1100
 
-// Local Path
-const DESTINATIONTYPE_LOCALCOPY uint64 = 1002
+// DestinationType: Local Path
+const DESTINATIONTYPE_LOCALCOPY DestinationType = 1002
 
-// S3-compatible, or a specific S3 service such as AWS S3, Wasabi, or iDrive e2
-const DESTINATIONTYPE_S3 uint64 = 1000
+// DestinationType
+const DESTINATIONTYPE_NFS DestinationType = 1012
 
-// SFTP protocol
-const DESTINATIONTYPE_SFTP uint64 = 1001
+// DestinationType: S3-compatible, or a specific S3 service such as AWS S3, Wasabi, or iDrive e2
+const DESTINATIONTYPE_S3 DestinationType = 1000
 
-// SMB Path
-const DESTINATIONTYPE_SMB uint64 = 1011
+// DestinationType: SFTP protocol
+const DESTINATIONTYPE_SFTP DestinationType = 1001
 
-// Spanned
-const DESTINATIONTYPE_SPANNED uint64 = 1006
+// DestinationType: SMB Path
+const DESTINATIONTYPE_SMB DestinationType = 1011
 
-// Storj
-const DESTINATIONTYPE_STORJ uint64 = 1009
+// DestinationType: Spanned
+const DESTINATIONTYPE_SPANNED DestinationType = 1006
 
-// Openstack Swift
-const DESTINATIONTYPE_SWIFT uint64 = 1007
-const DESTINATIONTYPE_WEBDAV uint64 = 1010
-const DESTINATIONTYPE___INVALID uint64 = 0
+// DestinationType: Storj
+const DESTINATIONTYPE_STORJ DestinationType = 1009
+
+// DestinationType: Openstack Swift
+const DESTINATIONTYPE_SWIFT DestinationType = 1007
+
+// DestinationType
+const DESTINATIONTYPE_WEBDAV DestinationType = 1010
+
+// DestinationType
+const DESTINATIONTYPE___INVALID DestinationType = 0
 
 // SftpAuthMode
 const DESTINATION_SFTP_AUTHMODE_NATIVE SftpAuthMode = 0
@@ -198,67 +225,69 @@ const EMAIL_DELIVERY_SMTP EmailDeliveryType = "smtp"
 // EmailDeliveryType
 const EMAIL_DELIVERY_SMTP_SSL EmailDeliveryType = "smtp-ssl"
 
-// The Comet Server is currently searching through email report configuration, to determine when the
-// next email report is due to be sent.
-const EMAIL_WORKER_STATE_CALCULATING int = 2
+// EmailWorkerState: The Comet Server is currently searching through email report configuration, to
+// determine when the next email report is due to be sent.
+const EMAIL_WORKER_STATE_CALCULATING EmailWorkerState = 2
 
-// The Comet Server is still starting up and has not yet checked whether any email reports are due
-// to be sent.
-const EMAIL_WORKER_STATE_NOT_STARTED int = 0
+// EmailWorkerState: The Comet Server is still starting up and has not yet checked whether any email
+// reports are due to be sent.
+const EMAIL_WORKER_STATE_NOT_STARTED EmailWorkerState = 0
 
-// The Comet Server is currently sending a scheduled email report.
-const EMAIL_WORKER_STATE_SENDING int = 4
+// EmailWorkerState: The Comet Server is currently sending a scheduled email report.
+const EMAIL_WORKER_STATE_SENDING EmailWorkerState = 4
 
-// The Comet Server is still starting up and has not yet checked whether any email reports are due
-// to be sent.
-const EMAIL_WORKER_STATE_STARTED int = 1
+// EmailWorkerState: The Comet Server is still starting up and has not yet checked whether any email
+// reports are due to be sent.
+const EMAIL_WORKER_STATE_STARTED EmailWorkerState = 1
 
-// The Comet Server knows when the next scheduled email report is due to be sent, and is waiting
-// until that time.
-const EMAIL_WORKER_STATE_WAITING int = 3
-const ENCRYPTIONMETHOD_UNCONFIGURED uint64 = 0
+// EmailWorkerState: The Comet Server knows when the next scheduled email report is due to be sent,
+// and is waiting until that time.
+const EMAIL_WORKER_STATE_WAITING EmailWorkerState = 3
 
-// Microsoft Exchange Server
-const ENGINE_BUILTIN_EXCHANGEEDB string = "engine1/exchangeedb"
+// EncryptionMethodType
+const ENCRYPTIONMETHOD_UNCONFIGURED EncryptionMethodType = 0
 
-// Files and Folders
-const ENGINE_BUILTIN_FILE string = "engine1/file"
+// EngineType: Microsoft Exchange Server
+const ENGINE_BUILTIN_EXCHANGEEDB EngineType = "engine1/exchangeedb"
 
-// Microsoft Hyper-V
-const ENGINE_BUILTIN_HYPERV string = "engine1/hyperv"
+// EngineType: Files and Folders
+const ENGINE_BUILTIN_FILE EngineType = "engine1/file"
 
-// MongoDB
-const ENGINE_BUILTIN_MONGODB string = "engine1/mongodb"
+// EngineType: Microsoft Hyper-V
+const ENGINE_BUILTIN_HYPERV EngineType = "engine1/hyperv"
 
-// Office 365
-const ENGINE_BUILTIN_MSOFFICE string = "engine1/winmsofficemail"
+// EngineType: MongoDB
+const ENGINE_BUILTIN_MONGODB EngineType = "engine1/mongodb"
 
-// Microsoft SQL Server
-const ENGINE_BUILTIN_MSSQL string = "engine1/mssql"
+// EngineType: Office 365
+const ENGINE_BUILTIN_MSOFFICE EngineType = "engine1/winmsofficemail"
 
-// MySQL
-const ENGINE_BUILTIN_MYSQL string = "engine1/mysql"
+// EngineType: Microsoft SQL Server
+const ENGINE_BUILTIN_MSSQL EngineType = "engine1/mssql"
 
-// Proxmox (PVE)
-const ENGINE_BUILTIN_PROXMOX string = "engine1/proxmox"
+// EngineType: MySQL
+const ENGINE_BUILTIN_MYSQL EngineType = "engine1/mysql"
 
-// Program Output
-const ENGINE_BUILTIN_STDOUT string = "engine1/stdout"
+// EngineType: Proxmox (PVE)
+const ENGINE_BUILTIN_PROXMOX EngineType = "engine1/proxmox"
 
-// Windows Server System State
-const ENGINE_BUILTIN_SYSTEMSTATE string = "engine1/systemstate"
+// EngineType: Program Output
+const ENGINE_BUILTIN_STDOUT EngineType = "engine1/stdout"
 
-// VMware
-const ENGINE_BUILTIN_VMWARE string = "engine1/vmware"
+// EngineType: Windows Server System State
+const ENGINE_BUILTIN_SYSTEMSTATE EngineType = "engine1/systemstate"
 
-// Application-Aware Writer
-const ENGINE_BUILTIN_VSSWRITER string = "engine1/vsswriter"
+// EngineType: VMware
+const ENGINE_BUILTIN_VMWARE EngineType = "engine1/vmware"
 
-// Disk Image
-const ENGINE_BUILTIN_WINDISK string = "engine1/windisk"
+// EngineType: Application-Aware Writer
+const ENGINE_BUILTIN_VSSWRITER EngineType = "engine1/vsswriter"
 
-// Windows System Backup, deprecated from version 24.12.2
-const ENGINE_BUILTIN_WINDOWSSYSTEM string = "engine1/windowssystem"
+// EngineType: Disk Image
+const ENGINE_BUILTIN_WINDISK EngineType = "engine1/windisk"
+
+// EngineType: Windows System Backup, deprecated from version 24.12.2
+const ENGINE_BUILTIN_WINDOWSSYSTEM EngineType = "engine1/windowssystem"
 
 // FtpsModeType: Use explicit FTPS, first creating an insecure connection and then upgrading to
 // SSL/TLS using AUTH TLS (like STARTTLS).
@@ -406,6 +435,13 @@ const LDAPSECURITYMETHOD_PLAIN LDAPSecurityMethod = "plain"
 // LDAPSecurityMethod
 const LDAPSECURITYMETHOD_STARTTLS LDAPSecurityMethod = "starttls"
 
+// LinuxRpmCodesignMethod: Do not sign the client backup-tool RPM
+const LINUXRPMCODESIGN_METHOD_DISABLED LinuxRpmCodesignMethod = 0
+
+// LinuxRpmCodesignMethod: Sign the RPM with a GPG private key stored locally on the Comet Server
+// host
+const LINUXRPMCODESIGN_METHOD_LOCALGPG LinuxRpmCodesignMethod = 1
+
 // MacOSCodesignLevel: Sign only
 const MACOSCODESIGN_LEVEL_SIGN MacOSCodesignLevel = 0
 
@@ -439,30 +475,46 @@ const MSSQL_RESTORE_NORECOVERY MSSQLRestoreOpt = "NO_RECOVERY"
 
 // MSSQLRestoreOpt
 const MSSQL_RESTORE_RECOVERY MSSQLRestoreOpt = "RECOVERY"
+const MYSQL_METADATA_STREAM_NAME string = ".metadata"
+const MYSQL_USERS_GRANTS_STREAM_NAME string = ".users-grants.sql"
 
-// No Storage Vault will be created when a new device is added
-const NEW_STORAGE_VAULT_MODE_NONE string = "none"
+// NewStorageVaultMode: No Storage Vault will be created when a new device is added
+const NEW_STORAGE_VAULT_MODE_NONE NewStorageVaultMode = "none"
 
-// When a new device is added, a Storage Vault will be created using the servers default Storage
-// Template
-const NEW_STORAGE_VAULT_MODE_SERVER string = "server_controlled"
+// NewStorageVaultMode: When a new device is added, a Storage Vault will be created using the
+// servers default Storage Template
+const NEW_STORAGE_VAULT_MODE_SERVER NewStorageVaultMode = "server_controlled"
 
-// Used in policy to define that the automatic Storage Vaults for new devices is not enforced by the
-// policy
-const NEW_STORAGE_VAULT_MODE_USER string = "user_controlled"
+// NewStorageVaultMode: Used in policy to define that the automatic Storage Vaults for new devices
+// is not enforced by the policy
+const NEW_STORAGE_VAULT_MODE_USER NewStorageVaultMode = "user_controlled"
 
-// Enable Object Lock capability if the corresponding Days field is greater than zero.
+// ObjectLockMode: Enable Object Lock capability if the corresponding Days field is greater than
+// zero.
 // New code should explicitly use OBJECT_LOCK_ON / OBJECT_LOCK_OFF instead.
 // Deprecated: This const has been deprecated since Comet version 23.x.x
-const OBJECT_LOCK_LEGACY uint8 = 0
-const OBJECT_LOCK_OFF uint8 = 2
-const OBJECT_LOCK_ON uint8 = 1
-const OFFICE365_REGION_CHINA string = "ChinaCloud"
-const OFFICE365_REGION_GERMANY string = "GermanCloud"
-const OFFICE365_REGION_PUBLIC string = "GlobalPublicCloud"
-const OFFICE365_REGION_PUBLIC_TEST string = "GlobalPublicCloudTest"
-const OFFICE365_REGION_US_DOD string = "USGovtGccDoDCloud"
-const OFFICE365_REGION_US_GOVT string = "USGovtGccCloud"
+const OBJECT_LOCK_LEGACY ObjectLockMode = 0
+
+// ObjectLockMode
+const OBJECT_LOCK_OFF ObjectLockMode = 2
+
+// ObjectLockMode
+const OBJECT_LOCK_ON ObjectLockMode = 1
+
+// Office365RegionType
+const OFFICE365_REGION_CHINA Office365RegionType = "ChinaCloud"
+
+// Office365RegionType
+const OFFICE365_REGION_PUBLIC Office365RegionType = "GlobalPublicCloud"
+
+// Office365RegionType
+const OFFICE365_REGION_PUBLIC_TEST Office365RegionType = "GlobalPublicCloudTest"
+
+// Office365RegionType
+const OFFICE365_REGION_US_DOD Office365RegionType = "USGovtGccDoDCloud"
+
+// Office365RegionType
+const OFFICE365_REGION_US_GOVT Office365RegionType = "USGovtGccCloud"
 
 // ExtraFileExclusionOSRestriction: Applies to any device
 const OS_ANY ExtraFileExclusionOSRestriction = 0
@@ -483,9 +535,9 @@ const OS_ONLY_WINDOWS_X8632 ExtraFileExclusionOSRestriction = 2
 // ExtraFileExclusionOSRestriction: Applies to Windows devices with x86_64 CPU
 const OS_ONLY_WINDOWS_X8664 ExtraFileExclusionOSRestriction = 3
 
-// When resetting a password with the API, set the PasswordFormat to this value. The Comet Server
-// will re-hash the credential automatically.
-const PASSWORD_FORMAT_PLAINTEXT int = 0
+// PasswordFormatType: When resetting a password with the API, set the PasswordFormat to this value.
+// The Comet Server will re-hash the credential automatically.
+const PASSWORD_FORMAT_PLAINTEXT PasswordFormatType = 0
 
 // OidcProvider
 const PROVIDER_AZUREADV2 OidcProvider = "azure-ad-v2"
@@ -498,14 +550,26 @@ const PROVIDER_GENERIC OidcProvider = "oidc"
 
 // OidcProvider
 const PROVIDER_GOOGLE OidcProvider = "google"
-const PROXMOX_TYPE_CONTAINER string = "lxc"
-const PROXMOX_TYPE_VM string = "qemu"
+
+// ProxmoxVMType
+const PROXMOX_TYPE_CONTAINER ProxmoxVMType = "lxc"
+
+// ProxmoxVMType
+const PROXMOX_TYPE_VM ProxmoxVMType = "qemu"
+
+// PSAType
+// This const is available in Comet 26.8.1 and later.
+const PSA_TYPE_CONNECTWISE PSAType = 4
 
 // PSAType
 const PSA_TYPE_GENERIC PSAType = 0
 
 // PSAType
+// Deprecated: This const has been deprecated since Comet version 26.5.2
 const PSA_TYPE_GRADIENT PSAType = 1
+
+// PSAType
+const PSA_TYPE_NINJAONE PSAType = 3
 
 // PSAType
 const PSA_TYPE_SYNCRO PSAType = 2
@@ -598,6 +662,11 @@ const RESTOREARCHIVEFORMAT_TARZSTD RestoreArchiveFormat = 4
 // RestoreArchiveFormat: Zip file format
 const RESTOREARCHIVEFORMAT_ZIP RestoreArchiveFormat = 2
 
+// RestoreType: Restore selected files and folders to a cloud storage location described by a
+// DestinationLocation
+// This const is available in Comet 26.8.1 and later.
+const RESTORETYPE_CLOUD_STORAGE RestoreType = 15
+
 // RestoreType: Restore as files and folders
 const RESTORETYPE_FILE RestoreType = 0
 
@@ -608,9 +677,11 @@ const RESTORETYPE_FILE_ARCHIVE RestoreType = 5
 const RESTORETYPE_INVALID RestoreType = -1
 
 // RestoreType: Stream restore as T-SQL BACKUP output into a target Microsoft SQL Server
+// This const is available in Comet 22.9.2 and later.
 const RESTORETYPE_MSSQL RestoreType = 11
 
 // RestoreType: Stream restore as SQL statements into a target MySQL server
+// This const is available in Comet 22.9.0 and later.
 const RESTORETYPE_MYSQL RestoreType = 10
 
 // RestoreType: Download and reconstruct files, but do not save them (for test purposes)
@@ -618,6 +689,7 @@ const RESTORETYPE_NULL RestoreType = 1
 
 // RestoreType: Restore selected Office 365 emails, contacts, calendars, and SharePoint/OneDrive
 // data directly to the Office 365 cloud service
+// This const is available in Comet 21.6.5 and later.
 const RESTORETYPE_OFFICE365_CLOUD RestoreType = 6
 
 // RestoreType: Stream an archive of each restored file into the target command stdin. The target
@@ -639,6 +711,11 @@ const RESTORETYPE_VMDK_FILE RestoreType = 7
 // creating an archive file of all selected files
 const RESTORETYPE_VMDK_FILE_ARCHIVE RestoreType = 9
 
+// RestoreType: Granular restore of single files from within a Disk Image or Hyper-V backup, into a
+// cloud storage location described by a DestinationLocation
+// This const is available in Comet 26.8.1 and later.
+const RESTORETYPE_VMDK_FILE_CLOUD_STORAGE RestoreType = 16
+
 // RestoreType: Granular restore of single files from within a Disk Image or Hyper-V backup,
 // downloading and reconstructing files, but without saving them (for test purposes)
 const RESTORETYPE_VMDK_FILE_NULL RestoreType = 8
@@ -651,9 +728,11 @@ const RESTORETYPE_VMHOST RestoreType = 14
 const RESTORETYPE_WINDISK RestoreType = 4
 
 // RestoreType: Restore disk image backup as VMware-compatible virtual disks
+// This const is available in Comet 23.9.5 and later.
 const RESTORETYPE_WINDISK_ESXI RestoreType = 12
 
 // RestoreType: Restore disk image backup as Hyper-V-compatible virtual disks (.vhdx format)
+// This const is available in Comet 24.9.2 and later.
 const RESTORETYPE_WINDISK_VHDX RestoreType = 13
 
 // RetentionMode: Delete everything except for jobs matching the ranges in RetentionPolicy.Ranges.
@@ -708,28 +787,38 @@ const RETENTIONRANGE__LOWEST RetentionRangeType = 900
 const RETENTIONRANGE__RESERVED904 RetentionRangeType = 904
 const ROTATE_STORAGE_VAULT_KEYS_DEFAULT int = 48
 
-// SecondsPast is the number of seconds past 00:00, in the device's local timezone.
-const SCHEDULE_FREQUENCY_DAILY uint64 = 8011
-const SCHEDULE_FREQUENCY_HIGHEST uint64 = 8016
+// ScheduleFrequencyType: SecondsPast is the number of seconds past 00:00, in the device's local
+// timezone.
+const SCHEDULE_FREQUENCY_DAILY ScheduleFrequencyType = 8011
 
-// SecondsPast is the number of seconds past *:00, in the device's local timezone.
-const SCHEDULE_FREQUENCY_HOURLY uint64 = 8012
-const SCHEDULE_FREQUENCY_LOWEST uint64 = 8010
+// ScheduleFrequencyType
+const SCHEDULE_FREQUENCY_HIGHEST ScheduleFrequencyType = 8016
 
-// SecondsPast is the number of seconds past 00:00 1st, in the device's local timezone.
-const SCHEDULE_FREQUENCY_MONTHLY uint64 = 8014
+// ScheduleFrequencyType: SecondsPast is the number of seconds past *:00, in the device's local
+// timezone.
+const SCHEDULE_FREQUENCY_HOURLY ScheduleFrequencyType = 8012
 
-// SecondsPast should be a Unix timestamp, in seconds
-const SCHEDULE_FREQUENCY_ONCEONLY uint64 = 8010
+// ScheduleFrequencyType
+const SCHEDULE_FREQUENCY_LOWEST ScheduleFrequencyType = 8010
 
-// SecondsPast is the number of seconds per period. Offset: Shunt seconds after unix epoch
-const SCHEDULE_FREQUENCY_PERIODIC uint64 = 8015
+// ScheduleFrequencyType: SecondsPast is the number of seconds past 00:00 1st, in the device's local
+// timezone.
+const SCHEDULE_FREQUENCY_MONTHLY ScheduleFrequencyType = 8014
 
-// SecondsPast is the number of seconds past 00:00 Sunday, in the device's local timezone.
-const SCHEDULE_FREQUENCY_WEEKLY uint64 = 8013
+// ScheduleFrequencyType: SecondsPast should be a Unix timestamp, in seconds
+const SCHEDULE_FREQUENCY_ONCEONLY ScheduleFrequencyType = 8010
 
-// SecondsPast is the number of seconds past 00:00 1st, in the device's local timezone.
-const SCHEDULE_FREQUENCY_YEARLY uint64 = 8016
+// ScheduleFrequencyType: SecondsPast is the number of seconds per period. Offset: Shunt seconds
+// after unix epoch
+const SCHEDULE_FREQUENCY_PERIODIC ScheduleFrequencyType = 8015
+
+// ScheduleFrequencyType: SecondsPast is the number of seconds past 00:00 Sunday, in the device's
+// local timezone.
+const SCHEDULE_FREQUENCY_WEEKLY ScheduleFrequencyType = 8013
+
+// ScheduleFrequencyType: SecondsPast is the number of seconds past 00:00 1st, in the device's local
+// timezone.
+const SCHEDULE_FREQUENCY_YEARLY ScheduleFrequencyType = 8016
 const SCHEDULE_MAXINT int = 1125899906842624
 
 // Maximum random delay (5 hours)
@@ -750,83 +839,83 @@ const SEARCHCLAUSE_OR SearchClauseType = "or"
 // SearchClauseType: The search clause is an explicit rule
 const SEARCHCLAUSE_RULE SearchClauseType = ""
 
-// Boolean field matches value
-const SEARCHOPERATOR_BOOL_IS string = "bool_is"
+// SearchOperatorType: Boolean field matches value
+const SEARCHOPERATOR_BOOL_IS SearchOperatorType = "bool_is"
 
-// Boolean field does not match value
-const SEARCHOPERATOR_BOOL_NIS string = "bool_nis"
+// SearchOperatorType: Boolean field does not match value
+const SEARCHOPERATOR_BOOL_NIS SearchOperatorType = "bool_nis"
 
-// Integer field is equal to value
-const SEARCHOPERATOR_INT_EQ string = "int_eq"
+// SearchOperatorType: Integer field is equal to value
+const SEARCHOPERATOR_INT_EQ SearchOperatorType = "int_eq"
 
-// Integer field is greater than value
-const SEARCHOPERATOR_INT_GT string = "int_gt"
+// SearchOperatorType: Integer field is greater than value
+const SEARCHOPERATOR_INT_GT SearchOperatorType = "int_gt"
 
-// Integer field is greater than or equal to value
-const SEARCHOPERATOR_INT_GTE string = "int_gte"
+// SearchOperatorType: Integer field is greater than or equal to value
+const SEARCHOPERATOR_INT_GTE SearchOperatorType = "int_gte"
 
-// Integer field is less than value
-const SEARCHOPERATOR_INT_LT string = "int_lt"
+// SearchOperatorType: Integer field is less than value
+const SEARCHOPERATOR_INT_LT SearchOperatorType = "int_lt"
 
-// Integer field is less than or equal to value
-const SEARCHOPERATOR_INT_LTE string = "int_lte"
+// SearchOperatorType: Integer field is less than or equal to value
+const SEARCHOPERATOR_INT_LTE SearchOperatorType = "int_lte"
 
-// Integer field is not equal to value
-const SEARCHOPERATOR_INT_NEQ string = "int_neq"
+// SearchOperatorType: Integer field is not equal to value
+const SEARCHOPERATOR_INT_NEQ SearchOperatorType = "int_neq"
 
-// String contains anywhere (case sensitive)
-const SEARCHOPERATOR_STRING_CONTAINS string = "str_contains"
+// SearchOperatorType: String contains anywhere (case sensitive)
+const SEARCHOPERATOR_STRING_CONTAINS SearchOperatorType = "str_contains"
 
-// String contains anywhere (case sensitive)
-const SEARCHOPERATOR_STRING_CONTAINS_CI string = "str_contains_ci"
+// SearchOperatorType: String contains anywhere (case sensitive)
+const SEARCHOPERATOR_STRING_CONTAINS_CI SearchOperatorType = "str_contains_ci"
 
-// String ends with suffix (case sensitive)
-const SEARCHOPERATOR_STRING_ENDSWITH string = "str_endswith"
+// SearchOperatorType: String ends with suffix (case sensitive)
+const SEARCHOPERATOR_STRING_ENDSWITH SearchOperatorType = "str_endswith"
 
-// String ends with suffix (case sensitive)
-const SEARCHOPERATOR_STRING_ENDSWITH_CI string = "str_endswith_ci"
+// SearchOperatorType: String ends with suffix (case sensitive)
+const SEARCHOPERATOR_STRING_ENDSWITH_CI SearchOperatorType = "str_endswith_ci"
 
-// String equals (case sensitive)
-const SEARCHOPERATOR_STRING_EQ string = "str_eq"
+// SearchOperatorType: String equals (case sensitive)
+const SEARCHOPERATOR_STRING_EQ SearchOperatorType = "str_eq"
 
-// String equals (case insensitive)
-const SEARCHOPERATOR_STRING_EQ_CI string = "str_eq_ci"
+// SearchOperatorType: String equals (case insensitive)
+const SEARCHOPERATOR_STRING_EQ_CI SearchOperatorType = "str_eq_ci"
 
-// String does not contain anywhere (case sensitive)
-const SEARCHOPERATOR_STRING_NCONTAINS string = "str_ncontains"
+// SearchOperatorType: String does not contain anywhere (case sensitive)
+const SEARCHOPERATOR_STRING_NCONTAINS SearchOperatorType = "str_ncontains"
 
-// String does not contain anywhere (case sensitive)
-const SEARCHOPERATOR_STRING_NCONTAINS_CI string = "str_ncontains_ci"
+// SearchOperatorType: String does not contain anywhere (case sensitive)
+const SEARCHOPERATOR_STRING_NCONTAINS_CI SearchOperatorType = "str_ncontains_ci"
 
-// String does not end with suffix (case sensitive)
-const SEARCHOPERATOR_STRING_NENDSWITH string = "str_nendswith"
+// SearchOperatorType: String does not end with suffix (case sensitive)
+const SEARCHOPERATOR_STRING_NENDSWITH SearchOperatorType = "str_nendswith"
 
-// String does not end with suffix (case sensitive)
-const SEARCHOPERATOR_STRING_NENDSWITH_CI string = "str_nendswith_ci"
+// SearchOperatorType: String does not end with suffix (case sensitive)
+const SEARCHOPERATOR_STRING_NENDSWITH_CI SearchOperatorType = "str_nendswith_ci"
 
-// String does not equal (case sensitive)
-const SEARCHOPERATOR_STRING_NEQ string = "str_neq"
+// SearchOperatorType: String does not equal (case sensitive)
+const SEARCHOPERATOR_STRING_NEQ SearchOperatorType = "str_neq"
 
-// String does not equal (case insensitive)
-const SEARCHOPERATOR_STRING_NEQ_CI string = "str_neq_ci"
+// SearchOperatorType: String does not equal (case insensitive)
+const SEARCHOPERATOR_STRING_NEQ_CI SearchOperatorType = "str_neq_ci"
 
-// String does not match provided regular expression (using Go regex syntax)
-const SEARCHOPERATOR_STRING_NREGEXMATCH string = "str_nregexmatch"
+// SearchOperatorType: String does not match provided regular expression (using Go regex syntax)
+const SEARCHOPERATOR_STRING_NREGEXMATCH SearchOperatorType = "str_nregexmatch"
 
-// String does not start with prefix (case sensitive)
-const SEARCHOPERATOR_STRING_NSTARTSWITH string = "str_nstartswith"
+// SearchOperatorType: String does not start with prefix (case sensitive)
+const SEARCHOPERATOR_STRING_NSTARTSWITH SearchOperatorType = "str_nstartswith"
 
-// String does not start with (case sensitive)
-const SEARCHOPERATOR_STRING_NSTARTSWITH_CI string = "str_nstartswith_ci"
+// SearchOperatorType: String does not start with (case sensitive)
+const SEARCHOPERATOR_STRING_NSTARTSWITH_CI SearchOperatorType = "str_nstartswith_ci"
 
-// String matches provided regular expression (using Go regex syntax)
-const SEARCHOPERATOR_STRING_REGEXMATCH string = "str_regexmatch"
+// SearchOperatorType: String matches provided regular expression (using Go regex syntax)
+const SEARCHOPERATOR_STRING_REGEXMATCH SearchOperatorType = "str_regexmatch"
 
-// String starts with prefix (case sensitive)
-const SEARCHOPERATOR_STRING_STARTSWITH string = "str_startswith"
+// SearchOperatorType: String starts with prefix (case sensitive)
+const SEARCHOPERATOR_STRING_STARTSWITH SearchOperatorType = "str_startswith"
 
-// String starts with prefix (case sensitive)
-const SEARCHOPERATOR_STRING_STARTSWITH_CI string = "str_startswith_ci"
+// SearchOperatorType: String starts with prefix (case sensitive)
+const SEARCHOPERATOR_STRING_STARTSWITH_CI SearchOperatorType = "str_startswith_ci"
 
 // 0000 0001. If this value is present in the bitset, then the Calendar service is selected for
 // backup.
@@ -896,6 +985,19 @@ const SEVT_ACCOUNT_ADMIN_SESSION_REVOKE StreamableEventType = 4156
 
 // StreamableEventType: Admin session token created. Data is the session object
 const SEVT_ACCOUNT_ADMIN_SESSION_START StreamableEventType = 4155
+
+// StreamableEventType: Admin personal API token created. Data is the redacted token metadata
+// This const is available in Comet 26.8.4 and later.
+const SEVT_ACCOUNT_ADMIN_TOKEN_NEW StreamableEventType = 4158
+
+// StreamableEventType: Admin personal API token revoked. Data is the redacted token metadata
+// This const is available in Comet 26.8.4 and later.
+const SEVT_ACCOUNT_ADMIN_TOKEN_REMOVED StreamableEventType = 4159
+
+// StreamableEventType: Admin personal API token authentication succeeded. Emitted for every
+// authenticated request, in place of SEVT_ACCOUNT_ADMIN_LOGIN. Resource is the token ID
+// This const is available in Comet 26.8.4 and later.
+const SEVT_ACCOUNT_ADMIN_TOKEN_USED StreamableEventType = 4160
 
 // StreamableEventType: Admin updated
 const SEVT_ACCOUNT_ADMIN_UPDATED StreamableEventType = 4152
@@ -1012,6 +1114,15 @@ const SEVT__MAX StreamableEventType = 4999
 
 // StreamableEventType
 const SEVT__MIN StreamableEventType = 4000
+
+// SourceFieldType
+const SOURCEFIELD_BOOL SourceFieldType = "bool"
+
+// SourceFieldType
+const SOURCEFIELD_INT SourceFieldType = "int"
+
+// SourceFieldType
+const SOURCEFIELD_STRING SourceFieldType = "string"
 
 // SSHAuthMode
 const SSHCONNECTION_AUTHMODE_PASSWORD SSHAuthMode = 1
@@ -1132,6 +1243,11 @@ const STREAM_LEVEL_NONE StreamLevel = "none"
 // insufficient, and you must supply additional two-factor authentication credentials.
 const TOTPRequiredError string = "ERR_TOTP_REQUIRED"
 
+// UpdateStatus: The device's reported operating system version is below the minimum supported
+// version for the target build
+// This const is available in Comet 26.5.2 and later.
+const UPDATESTATUS_INCOMPATIBLE_OS UpdateStatus = 6
+
 // UpdateStatus: The selected device does not meet the filter criteria from the Bulk Update
 // Campaign's configuration.
 const UPDATESTATUS_INELIGIBLE UpdateStatus = 1
@@ -1210,6 +1326,14 @@ const WEBAUTHN_DEVICE_TYPE__TPM_WINDOWS WebAuthnDeviceType = 5
 // WebAuthnDeviceType
 const WEBAUTHN_DEVICE_TYPE__UNKNOWN WebAuthnDeviceType = 0
 
+// WebhookFormat: The default. The event is delivered as the raw StreamableEvent JSON object.
+const WEBHOOK_FORMAT_RAW WebhookFormat = ""
+
+// WebhookFormat: The event is reformatted as a Slack-compatible message, suitable for posting
+// directly to a Slack Incoming Webhook URL.
+// This const is available in Comet 26.5.2 and later.
+const WEBHOOK_FORMAT_SLACK WebhookFormat = "slack"
+
 // WindowsCodesignMethod: When upgrading from a version of Comet Server prior to 23.3.0, this option
 // will be automatically converted to a more specific type.
 // Deprecated: This const has been deprecated since Comet version 23.3.0
@@ -1230,6 +1354,8 @@ const WINDOWSCODESIGN_METHOD_PKCS12FILE WindowsCodesignMethod = 2
 
 // WindowsCodesignMethod: Use a configured SAS Relic server for Authenticode codesigning
 const WINDOWSCODESIGN_METHOD_RELICSERVER WindowsCodesignMethod = 5
+const customBrandingMaxInlineItemSize int = 262144
+const customBrandingMaxTotalSize int = 1048576
 const USER_AGENT_HEADER string = "User-Agent"
 const DEFAULT_USER_AGENT string = "comet-go-sdk/" + APPLICATION_VERSION
 
@@ -1238,15 +1364,23 @@ const DEFAULT_USER_AGENT string = "comet-go-sdk/" + APPLICATION_VERSION
 //
 
 type AutoRetentionLevel int64
+type BrandingStyleType int
 type BucketPropertyList map[string]BucketProperties
 type BucketUsageMap map[string]BucketUsageInfo
 type ClientBrandingBuildMode int
 type CompressMode int
+type CustomBrandingContentType string
+type CustomBrandingPlacementType string
+type CustomBrandingSourceType string
 type CustomRemoteBucketCustomBodyType string
 type DefaultSettingMode int
 type DefaultSourceOSRestriction int
+type DestinationType uint64
 type EmailDeliveryType string
 type EmailReportType int
+type EmailWorkerState int
+type EncryptionMethodType uint64
+type EngineType string
 type ExtraFileExclusionOSRestriction int
 type FtpsModeType int
 type HypervMethod string
@@ -1254,6 +1388,7 @@ type JobClassification uint64
 type JobStatus uint64
 type LDAPSecurityMethod string
 type LanguageCode string
+type LinuxRpmCodesignMethod int
 type LiveUserConnectionID string
 type LiveUserConnectionMap map[LiveUserConnectionID]LiveUserConnection
 type LogDay int
@@ -1261,9 +1396,14 @@ type MSSQLAuthMode string
 type MSSQLMethod string
 type MSSQLRestoreOpt string
 type MacOSCodesignLevel int
+type NewStorageVaultMode string
 type NewsEntries map[string]NewsEntry
+type ObjectLockMode uint8
+type Office365RegionType string
 type OidcProvider string
 type PSAType int
+type PasswordFormatType int
+type ProxmoxVMType string
 type PveBackupMethod string
 type RegistrationLobbyConnectionID string
 type RegistrationLobbyConnectionMap map[RegistrationLobbyConnectionID]RegistrationLobbyConnection
@@ -1277,10 +1417,12 @@ type RestoreType int
 type RetentionMode int64
 type RetentionRangeType int64
 type SSHAuthMode uint64
+type ScheduleFrequencyType uint64
 type SearchClauseType string
 type SearchOperatorType string
 type Severity string
 type SftpAuthMode uint64
+type SourceFieldType string
 type StoredObjectType string
 type StreamLevel string
 type StreamableEventType int
@@ -1289,8 +1431,9 @@ type UpdateStatus int
 type VMwareConnectionType string
 type VmwareBackupType string
 type VmwareSnapshotType string
-type WebAuthnAuthenticationExtensions map[string]interface{}
+type WebAuthnAuthenticationExtensions map[string]any
 type WebAuthnDeviceType int
+type WebhookFormat string
 type WindowsCodesignMethod int
 
 type AddBucketResponseMessage struct {
@@ -1303,11 +1446,74 @@ type AddBucketResponseMessage struct {
 	easyjson.UnknownFieldsProxy
 }
 
+// This struct is available in Comet 26.8.4 and later.
+type AdminAPIToken struct {
+	// Random identifier embedded in the plaintext token, used to locate this record during
+	// authentication
+	TokenID string
+	// Human-readable label chosen at creation time
+	Description string
+	// Unix timestamp, in seconds
+	CreatedTime int64
+	// Unix timestamp, in seconds. Zero means the token never expires
+	ExpireTime int64 `json:",omitempty"`
+	// Unix timestamp, in seconds. Persisted at most once per hour
+	LastUsedTime int64 `json:",omitempty"`
+	// One of the PASSWORD_FORMAT_ constants
+	SecretFormat PasswordFormatType
+	SecretHash   string
+
+	easyjson.UnknownFieldsProxy
+}
+
+type AdminAPITokenInfo struct {
+	TokenID     string
+	Description string
+	// Unix timestamp, in seconds
+	CreatedTime int64
+	// Unix timestamp, in seconds. Zero means the token never expires
+	ExpireTime int64 `json:",omitempty"`
+	// Unix timestamp, in seconds. Zero if never used. Persisted at most once per hour, so it may be up
+	// to an hour stale after a server restart
+	LastUsedTime int64 `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
+}
+
+type AdminAccountAPITokenCreateResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
+	Status    int
+	Message   string
+	TokenInfo AdminAPITokenInfo
+	// The full token value, e.g. "bkup_...". This is the only time it is ever returned by the server;
+	// store it securely.
+	PlaintextToken string
+
+	easyjson.UnknownFieldsProxy
+}
+
+type AdminAccountAPITokenListResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
+	Status  int
+	Message string
+	Tokens  []AdminAPITokenInfo
+
+	easyjson.UnknownFieldsProxy
+}
+
 type AdminAccountPropertiesResponse struct {
 	OrganizationID string
 	Permissions    AdminUserPermissions
 	// This field is available in Comet 18.9.9 and later.
 	Security AdminSecurityOptions
+	// True if this server and this admin account permit creating personal API tokens
+	// This field is available in Comet 26.8.4 and later.
+	AllowAPITokens bool
+	// True if AdminAccountAPITokenCreate requires the account's current password to be re-supplied.
+	// This is the case whenever the caller is not already authenticating with a password, unless the
+	// account is managed by an external authentication source and so has no local password to confirm.
+	// This field is available in Comet 26.8.4 and later.
+	APITokenCreateRequiresPassword bool
 
 	easyjson.UnknownFieldsProxy
 }
@@ -1336,7 +1542,7 @@ type AdminResourceResponse struct {
 
 type AdminSecurityOptions struct {
 	// One of the PASSWORD_FORMAT_ constants
-	PasswordFormat            int
+	PasswordFormat            PasswordFormatType
 	Password                  string
 	AllowPasswordLogin        bool
 	AllowPasswordAndTOTPLogin bool
@@ -1349,8 +1555,8 @@ type AdminSecurityOptions struct {
 	// This field is available in Comet 24.12.0 and later.
 	RequirePasswordChange bool
 	// One of the ENCRYPTIONMETHOD_ constants
-	TOTPKeyEncryptionFormat int    `json:",omitempty"`
-	TOTPKey                 string `json:",omitempty"`
+	TOTPKeyEncryptionFormat EncryptionMethodType `json:",omitempty"`
+	TOTPKey                 string               `json:",omitempty"`
 	// A regular expression in Go regex syntax, for which IP addresses are allowed to authenticate as
 	// this admin account
 	IPWhitelist string `json:",omitempty"`
@@ -1394,11 +1600,16 @@ type AdminUserPermissions struct {
 	// This field is available in Comet 23.6.0 and later.
 	ShouldRestrictProviderList bool `json:",omitempty"`
 	// This field is available in Comet 23.6.0 and later.
-	AllowedProvidersWhenRestricted []uint64 `json:",omitempty"`
+	AllowedProvidersWhenRestricted []DestinationType `json:",omitempty"`
 	// This field is available in Comet 23.9.11 and later.
 	AllowedUserPolicies []string `json:",omitempty"`
 	// This field is available in Comet 24.6.1 and later.
 	DenySoftwareBuildRole bool `json:",omitempty"`
+	// This field is available in Comet 26.8.2 and later.
+	PreventWriteActions bool `json:",omitempty"`
+	// If true, this admin cannot create personal API tokens or authenticate using existing ones
+	// This field is available in Comet 26.8.4 and later.
+	PreventAPITokens bool `json:",omitempty"`
 
 	easyjson.UnknownFieldsProxy
 }
@@ -1421,7 +1632,7 @@ type AllowedAdminUser struct {
 	OrganizationID               string
 	ExternalAuthenticationSource string `json:",omitempty"`
 	// One of the PASSWORD_FORMAT_ constants
-	PasswordFormat            int
+	PasswordFormat            PasswordFormatType
 	Password                  string
 	AllowPasswordLogin        bool
 	AllowPasswordAndTOTPLogin bool
@@ -1434,12 +1645,14 @@ type AllowedAdminUser struct {
 	// This field is available in Comet 24.12.0 and later.
 	RequirePasswordChange bool
 	// One of the ENCRYPTIONMETHOD_ constants
-	TOTPKeyEncryptionFormat int    `json:",omitempty"`
-	TOTPKey                 string `json:",omitempty"`
+	TOTPKeyEncryptionFormat EncryptionMethodType `json:",omitempty"`
+	TOTPKey                 string               `json:",omitempty"`
 	// A regular expression in Go regex syntax, for which IP addresses are allowed to authenticate as
 	// this admin account
 	IPWhitelist string `json:",omitempty"`
 	Permissions AdminUserPermissions
+	// This field is available in Comet 26.8.4 and later.
+	APITokens []AdminAPIToken `json:",omitempty"`
 
 	easyjson.UnknownFieldsProxy
 }
@@ -1459,13 +1672,62 @@ type AmazonAWSVirtualStorageRoleSettings struct {
 	UseObjectLock_Legacy_DoNotUse bool `json:"UseObjectLock"`
 	// Control whether the resulting Storage Vaults are configured for Object Lock. One of the
 	// OBJECT_LOCK_ constants
-	ObjectLockMode uint8
+	ObjectLockMode ObjectLockMode
 	ObjectLockDays int
 	// Control whether the "Allow removal of deleted files" checkbox is enabled for Storage Vaults
 	// generated from this Storage Template.
 	// When configuring a Storage Template from the Comet Server web interface, this field is set
 	// automatically for Storage Templates using Object Lock.
 	RemoveDeleted bool
+
+	easyjson.UnknownFieldsProxy
+}
+
+type AttributedContentMeasurement struct {
+	// Unix timestamp in seconds
+	MeasureStarted int64
+	// Unix timestamp in seconds
+	MeasureCompleted int64
+	Components       []AttributedContentMeasurementComponent
+	// Display names for the item segments that appear in the Components' UsedBy paths, deduplicated.
+	// The key is the "<EngineType>:<type>:<id>" segment token; the value is a human-readable name
+	// (e.g. a SharePoint site display name). A consumer can render the item tree offline from the
+	// paths and these names without a separate catalog lookup.
+	DisplayNames map[string]string
+	// The number of data chunks that could not be located in the Storage Vault index during
+	// measurement. A non-zero value means the measurement may under-attribute: per-item byte figures
+	// are an undercount, and a pack whose references all missed is bucketed as unreferenced rather
+	// than under its true source. Consumers that require exact source-level parity MUST discard a
+	// measurement with a non-zero value and remeasure later.
+	LookupMisses int64
+	// The number of data chunks that were found in more than one pack during measurement (a transient
+	// duplicate pending cleanup). The index cannot say which physical copy existing snapshots
+	// reference, so component byte totals may shift between packs. Consumers that require exact
+	// source-level parity MUST discard a measurement with a non-zero value and remeasure later.
+	AmbiguousBlobs int64
+
+	easyjson.UnknownFieldsProxy
+}
+
+type AttributedContentMeasurementComponent struct {
+	Bytes int64
+	// A list of strings describing which groups of snapshots, and which items within those snapshots,
+	// rely on reaching this component of data.
+	// Each string is one reacher path, whose parts are joined by a NUL (0x00) byte. The parts are:
+	// - Part 1: CURRENT or HISTORIC - whether the most recent (CURRENT) or an older (HISTORIC) backup
+	// job snapshot for the source reaches this data.
+	// - Part 2: the Protected Item source ID (for on-premises Protected Items) or Tenant ID (for
+	// hosted Office 365) that reaches this data.
+	// - Parts 3 and beyond (optional): typed item segments of the form "<EngineType>:<type>:<id>"
+	// identifying the item within the snapshot that reaches this data (e.g.
+	// "engine1/winmsofficemail:mailbox:user@example.com"). An id may itself contain colons; parse each
+	// segment as SplitN(":", 3).
+	// A pack shared by N distinct reachers appears once per reacher in this array.
+	// As a special case, a single empty string means the data is not currently referenced by any
+	// backup job snapshot and will be deleted on the next retention pass. (This measurement is never
+	// truncated, so there is no "TRUNCATED/*" value.)
+	// Reserved delimiter bytes (0x00 and 0x01) are stripped from part values during measurement.
+	UsedBy []string
 
 	easyjson.UnknownFieldsProxy
 }
@@ -1481,7 +1743,7 @@ type AuthenticationRoleOptions struct {
 	PruneLogsAfterDays         int
 	RemoteStorage              []RemoteStorageOption
 	ReplicateTo                []ReplicaServer
-	GlobalOverrides            GlobalOverrideOptions `json:",omitempty"`
+	GlobalOverrides            GlobalOverrideOptions
 
 	easyjson.UnknownFieldsProxy
 }
@@ -1572,6 +1834,11 @@ type BackupJobAdvancedOptions struct {
 	LogLevel string
 	// Default disabled
 	Tags string
+	// Optionally restricts LimitVaultSpeedBps to a specific time of day and days of the week. When
+	// absent, or when its RestrictTimes is false, LimitVaultSpeedBps applies at all times. Has no
+	// effect unless LimitVaultSpeedBps is set.
+	// This field is available in Comet 26.8.5 and later.
+	LimitVaultSpeedTimeWindow SpeedLimitTimeWindow `json:",omitempty"`
 
 	easyjson.UnknownFieldsProxy
 }
@@ -1602,8 +1869,10 @@ type BackupJobDetail struct {
 	TotalChunks      int64
 	UploadSize       int64
 	DownloadSize     int64
-	// For Hyper-V and VMware backup jobs, the total number of virtual machines.
+	// For Hyper-V, VMware and Proxmox backup jobs, the total number of virtual machines.
 	TotalVmCount int64 `json:",omitempty"`
+	// For Proxmox backup jobs, the total number of LXC containers.
+	TotalLxcCount int64 `json:",omitempty"`
 	// For Office 365 backup jobs, the total number of mailboxes.
 	TotalMailsCount int64 `json:",omitempty"`
 	// For Office 365 backup jobs, the total number of SharePoint sites.
@@ -1685,6 +1954,20 @@ type BackupRuleConfig struct {
 	LogLevel string
 	// Default disabled
 	Tags string
+	// Optionally restricts LimitVaultSpeedBps to a specific time of day and days of the week. When
+	// absent, or when its RestrictTimes is false, LimitVaultSpeedBps applies at all times. Has no
+	// effect unless LimitVaultSpeedBps is set.
+	// This field is available in Comet 26.8.5 and later.
+	LimitVaultSpeedTimeWindow SpeedLimitTimeWindow `json:",omitempty"`
+	// If set, the ID of the Policy default backup rule this rule was generated from.
+	// Used to keep a "latest vault" schedule on its assigned Storage Vault across policy
+	// re-enforcement.
+	// This field is available in Comet 26.5.2 and later.
+	PolicyBackupRuleID string `json:",omitempty"`
+	// If set, the originating Policy default backup rule's destination selector, snapshotted
+	// before it was resolved to a concrete Storage Vault. Identifies "latest vault" schedules.
+	// This field is available in Comet 26.5.2 and later.
+	PolicyBackupRuleSelector string `json:",omitempty"`
 	// Scheduled start times
 	Schedules []ScheduleConfig
 	// Other events that will cause this scheduled job to start
@@ -1715,7 +1998,7 @@ type BackupRuleEventTriggers struct {
 type BrandingOptions struct {
 	// One of the BRANDINGSTYLETYPE_ constants
 	// This field is available in Comet 23.3.3 and later.
-	BrandingStyleType             int
+	BrandingStyleType             BrandingStyleType
 	BrandName                     string
 	LogoImage                     string
 	TopColor                      string
@@ -1747,7 +2030,7 @@ type BrandingOptions struct {
 	WindowsCodeSignMethod         WindowsCodesignMethod
 	WindowsCodeSignPKCS12FilePath string
 	// One of the ENCRYPTIONMETHOD_ constants
-	WindowsCodeSignPKCS12PasswordFormat uint64
+	WindowsCodeSignPKCS12PasswordFormat EncryptionMethodType
 	WindowsCodeSignPKCS12Password       string
 	WindowsCodeSignPKCS11Engine         string
 	WindowsCodeSignPKCS11Module         string
@@ -1755,13 +2038,13 @@ type BrandingOptions struct {
 	WindowsCodeSignPKCS11Certfile string
 	WindowsCodeSignPKCS11KeyID    string
 	// One of the ENCRYPTIONMETHOD_ constants
-	WindowsCodeSignPKCS11PasswordFormat uint64
+	WindowsCodeSignPKCS11PasswordFormat EncryptionMethodType
 	WindowsCodeSignPKCS11Password       string
 	WindowsCodeSignAzureVaultName       string
 	WindowsCodeSignAzureCertName        string
 	WindowsCodeSignAzureAppID           string
 	// One of the ENCRYPTIONMETHOD_ constants
-	WindowsCodeSignAzureAppSecretFormat uint64
+	WindowsCodeSignAzureAppSecretFormat EncryptionMethodType
 	WindowsCodeSignAzureAppSecret       string
 	WindowsCodeSignAzureTenantID        string
 	// URL of the SAS Relic server, with protocol (https://) and trailing slash
@@ -1771,6 +2054,7 @@ type BrandingOptions struct {
 	// The name of the key to select on the remote SAS Relic server
 	WindowsCodeSignRelicKeyName string
 	MacOSCodeSign               MacOSCodeSignProperties
+	LinuxRpmCodeSign            LinuxRpmCodeSignProperties
 
 	easyjson.UnknownFieldsProxy
 }
@@ -1801,7 +2085,7 @@ type BrandingProperties struct {
 	WindowsCodeSignMethod         WindowsCodesignMethod
 	WindowsCodeSignPKCS12FilePath string
 	// One of the ENCRYPTIONMETHOD_ constants
-	WindowsCodeSignPKCS12PasswordFormat uint64
+	WindowsCodeSignPKCS12PasswordFormat EncryptionMethodType
 	WindowsCodeSignPKCS12Password       string
 	WindowsCodeSignPKCS11Engine         string
 	WindowsCodeSignPKCS11Module         string
@@ -1809,13 +2093,13 @@ type BrandingProperties struct {
 	WindowsCodeSignPKCS11Certfile string
 	WindowsCodeSignPKCS11KeyID    string
 	// One of the ENCRYPTIONMETHOD_ constants
-	WindowsCodeSignPKCS11PasswordFormat uint64
+	WindowsCodeSignPKCS11PasswordFormat EncryptionMethodType
 	WindowsCodeSignPKCS11Password       string
 	WindowsCodeSignAzureVaultName       string
 	WindowsCodeSignAzureCertName        string
 	WindowsCodeSignAzureAppID           string
 	// One of the ENCRYPTIONMETHOD_ constants
-	WindowsCodeSignAzureAppSecretFormat uint64
+	WindowsCodeSignAzureAppSecretFormat EncryptionMethodType
 	WindowsCodeSignAzureAppSecret       string
 	WindowsCodeSignAzureTenantID        string
 	// URL of the SAS Relic server, with protocol (https://) and trailing slash
@@ -1825,6 +2109,7 @@ type BrandingProperties struct {
 	// The name of the key to select on the remote SAS Relic server
 	WindowsCodeSignRelicKeyName string
 	MacOSCodeSign               MacOSCodeSignProperties
+	LinuxRpmCodeSign            LinuxRpmCodeSignProperties
 
 	easyjson.UnknownFieldsProxy
 }
@@ -1888,6 +2173,7 @@ type BrowseProxmoxResponse struct {
 	Status  int
 	Message string
 	VMs     []PVEVM
+	Nodes   []Node
 
 	easyjson.UnknownFieldsProxy
 }
@@ -1979,7 +2265,7 @@ type BucketProperties struct {
 	// Unix timestamp, in seconds.
 	CreateTime int64
 	// One of the PASSWORD_FORMAT_ constants
-	ReadWriteKeyFormat int
+	ReadWriteKeyFormat PasswordFormatType
 	ReadWriteKey       string
 	Size               SizeMeasurement
 
@@ -2108,6 +2394,44 @@ type CreateUserGroupResponse struct {
 	easyjson.UnknownFieldsProxy
 }
 
+type CustomBrandingItem struct {
+	// Display label for this item in the Comet Server web interface
+	Description string
+	// One of the CUSTOMBRANDING_CONTENT_ constants
+	ContentType CustomBrandingContentType
+	// One of the CUSTOMBRANDING_SOURCE_ constants
+	SourceType CustomBrandingSourceType
+	// One of the CUSTOMBRANDING_PLACEMENT_ constants. An empty string defaults to head placement
+	Placement CustomBrandingPlacementType
+	// Inline JavaScript or CSS source text. Only used when SourceType is inline. For inline
+	// JavaScript, the Content-Security-Policy is automatically extended with this script's SHA-256
+	// hash
+	Content string
+	// Absolute http(s) URL of an external script or stylesheet. Only used when SourceType is url. The
+	// URL's origin is automatically added to the relevant Content-Security-Policy directive
+	URL string
+	// Extra origins that the injected code needs to contact (XHR / beacon / tracking pixel), added to
+	// the web interface Content-Security-Policy
+	AdditionalNetworkOrigins []CustomBrandingOrigin
+
+	easyjson.UnknownFieldsProxy
+}
+
+type CustomBrandingOptions struct {
+	Items []CustomBrandingItem
+
+	easyjson.UnknownFieldsProxy
+}
+
+type CustomBrandingOrigin struct {
+	// A web origin in scheme://host[:port] form. It is added to the connect-src and img-src directives
+	// of the web interface Content-Security-Policy, allowing injected code to contact it (e.g. an
+	// analytics ingestion endpoint)
+	Origin string
+
+	easyjson.UnknownFieldsProxy
+}
+
 type CustomRemoteBucketSettings struct {
 	URL string
 	// This field is available in Comet 23.12.5 and later.
@@ -2115,6 +2439,20 @@ type CustomRemoteBucketSettings struct {
 	// This field is available in Comet 24.5.0 and later.
 	CustomBody     string
 	CustomBodyType CustomRemoteBucketCustomBodyType
+
+	easyjson.UnknownFieldsProxy
+}
+
+type DNSCacheOptions struct {
+	// Enable an in-process DNS cache. Recommended on Linux/macOS hosts that do not run a system DNS
+	// cache. Default: enabled on non-Windows
+	Enabled bool
+	// How long, in seconds, to cache a successful DNS resolution. If the feature is enabled, should be
+	// at least 1 second. Default: 60 seconds.
+	PositiveTTLSeconds int64
+	// How long, in seconds, to cache an NXDOMAIN response. If the feature is enabled, should be at
+	// least 1 second. Default: 5 seconds.
+	NegativeTTLSeconds int64
 
 	easyjson.UnknownFieldsProxy
 }
@@ -2155,6 +2493,8 @@ type DestinationConfig struct {
 	CreateTime int64
 	// Unix timestamp in seconds
 	ModifyTime int64
+	// Unix timestamp in seconds. A 0 value indicates unsuspended
+	SuspendedTime int64
 	// Custom commands to run before the job
 	PreExec []string
 	// Custom commands to run after taking a disk snapshot
@@ -2162,7 +2502,7 @@ type DestinationConfig struct {
 	// Custom commands to run after the job
 	PostExec []string
 	// One of the DESTINATIONTYPE_ constants
-	DestinationType uint64
+	DestinationType DestinationType
 	// The URL for the target Comet Server Storage Role, including http/https and trailing slash
 	CometServer    string
 	CometBucket    string
@@ -2177,7 +2517,7 @@ type DestinationConfig struct {
 	// If true, use legacy v2 signing. If false (default), use modern v4 signing
 	S3UsesV2Signing  bool
 	S3RemoveDeleted  bool
-	S3ObjectLockMode uint8
+	S3ObjectLockMode ObjectLockMode
 	S3ObjectLockDays int
 	SFTPServer       string
 	SFTPUsername     string
@@ -2221,15 +2561,17 @@ type DestinationConfig struct {
 	// If logging in to a Windows network share (SMB/CIFS) is required, enter the password here. The
 	// password may be hashed as per the LocalcopyWinSMBPasswordFormat field.
 	LocalcopyWinSMBPassword string
-	// One of the PASSWORD_FORMAT_ constants. It controls the hash format of the
+	// One of the ENCRYPTIONMETHOD_ constants. It controls the hash format of the
 	// LocalcopyWinSMBPassword field.
-	LocalcopyWinSMBPasswordFormat uint64
+	LocalcopyWinSMBPasswordFormat EncryptionMethodType
 	Swift                         SwiftDestinationLocation
 	B2                            B2DestinationLocation
 	// This field is available in Comet 23.6.9 and later.
 	WebDav WebDavDestinationLocation
 	Storj  StorjDestinationLocation
 	SMB    SMBDestinationLocation
+	// This field is available in Comet 26.9.x and later.
+	NFS NFSDestinationLocation
 	// A list of underlying destinations, that will be combined and presented as one.
 	SpanTargets []DestinationLocation
 	// If true, this Spanned destination will use a consistent hashing scheme
@@ -2245,7 +2587,7 @@ type DestinationConfig struct {
 	SpanUseStaticSlots bool
 	Tag                string
 	// One of the ENCRYPTIONMETHOD_ constants
-	EncryptionKeyEncryptionMethod uint64
+	EncryptionKeyEncryptionMethod EncryptionMethodType
 	EncryptedEncryptionKey        string
 	// Unix timestamp in seconds. If zero, the Storage Vault has not yet been initialized for the first
 	// time.
@@ -2257,13 +2599,18 @@ type DestinationConfig struct {
 	// If set, use a shared Storage Vault quota from the Comet Management Console. The direct value of
 	// StorageLimitBytes is ignored.
 	StorageLimitID string
-	Statistics     DestinationStatistics `json:",omitempty"`
+	Statistics     DestinationStatistics
 	// Configure the retention policy for this Storage Vault. The rules will be applied to any snapshot
 	// inside this Storage Vault, unless that snapshot belongs to a Protected Item source that has an
 	// overriding retention policy.
 	DefaultRetention RetentionPolicy
 	// The "Prevent users from viewing the actual storage type" option
 	RebrandStorage bool
+	// If true, the end-user account is prevented from modifying this Storage Vault (e.g. its quota,
+	// retention rules, or storage location), regardless of the account policy's
+	// PreventEditStorageVault setting - it takes priority over that policy. Typically set by the
+	// Storage Template that provisioned this Storage Vault.
+	PreventUserEdit bool
 	// If not empty, an error occured during a retention pass. Describes the error.
 	RetentionError    string
 	AssociatedDevices []string
@@ -2276,7 +2623,7 @@ type DestinationConfig struct {
 // This struct is available in Comet 17.3.3 and later.
 type DestinationLocation struct {
 	// One of the DESTINATIONTYPE_ constants
-	DestinationType uint64
+	DestinationType DestinationType
 	// The URL for the target Comet Server Storage Role, including http/https and trailing slash
 	CometServer    string
 	CometBucket    string
@@ -2291,7 +2638,7 @@ type DestinationLocation struct {
 	// If true, use legacy v2 signing. If false (default), use modern v4 signing
 	S3UsesV2Signing  bool
 	S3RemoveDeleted  bool
-	S3ObjectLockMode uint8
+	S3ObjectLockMode ObjectLockMode
 	S3ObjectLockDays int
 	SFTPServer       string
 	SFTPUsername     string
@@ -2335,15 +2682,17 @@ type DestinationLocation struct {
 	// If logging in to a Windows network share (SMB/CIFS) is required, enter the password here. The
 	// password may be hashed as per the LocalcopyWinSMBPasswordFormat field.
 	LocalcopyWinSMBPassword string
-	// One of the PASSWORD_FORMAT_ constants. It controls the hash format of the
+	// One of the ENCRYPTIONMETHOD_ constants. It controls the hash format of the
 	// LocalcopyWinSMBPassword field.
-	LocalcopyWinSMBPasswordFormat uint64
+	LocalcopyWinSMBPasswordFormat EncryptionMethodType
 	Swift                         SwiftDestinationLocation
 	B2                            B2DestinationLocation
 	// This field is available in Comet 23.6.9 and later.
 	WebDav WebDavDestinationLocation
 	Storj  StorjDestinationLocation
 	SMB    SMBDestinationLocation
+	// This field is available in Comet 26.9.x and later.
+	NFS NFSDestinationLocation
 	// A list of underlying destinations, that will be combined and presented as one.
 	SpanTargets []DestinationLocation
 	// If true, this Spanned destination will use a consistent hashing scheme
@@ -2389,6 +2738,8 @@ type DeviceConfig struct {
 	ClientVersion string `json:",omitempty"`
 	// This field is available in Comet 23.9.8 and later.
 	SyncroUUID string `json:",omitempty"`
+	// This field is available in Comet 26.2.4 and later.
+	NinjaOneNodeId int64 `json:",omitempty"`
 
 	easyjson.UnknownFieldsProxy
 }
@@ -2512,6 +2863,10 @@ type EmailReportConfig struct {
 	// Used to the determine the time bounds of a report
 	TimeSpan TimeSpan `json:",omitempty"`
 	Filter   SearchClause
+	// A custom name for this email report, used to distinguish it from other reports of the same type.
+	// If blank, the report is labelled by its type.
+	// This field is available in Comet 26.6.0 and later.
+	Title string `json:",omitempty"`
 
 	easyjson.UnknownFieldsProxy
 }
@@ -2797,7 +3152,7 @@ type ImpossibleCloudIAMTemplateSettings struct {
 	UseObjectLock_Legacy_DoNotUse bool `json:"UseObjectLock"`
 	// Control whether the resulting Storage Vaults are configured for Object Lock. One of the
 	// OBJECT_LOCK_ constants
-	ObjectLockMode uint8
+	ObjectLockMode ObjectLockMode
 	ObjectLockDays int
 	// Control whether the "Allow removal of deleted files" checkbox is enabled for Storage Vaults
 	// generated from this Storage Template.
@@ -2818,7 +3173,7 @@ type ImpossibleCloudPartnerTemplateSettings struct {
 	UseObjectLock_Legacy_DoNotUse bool `json:"UseObjectLock"`
 	// Control whether the resulting Storage Vaults are configured for Object Lock. One of the
 	// OBJECT_LOCK_ constants
-	ObjectLockMode uint8
+	ObjectLockMode ObjectLockMode
 	ObjectLockDays int
 	// Control whether the "Allow removal of deleted files" checkbox is enabled for Storage Vaults
 	// generated from this Storage Template.
@@ -2847,10 +3202,10 @@ type InstallToken struct {
 	Token string
 	// Unix timestamp, in seconds.
 	CreateTime int64
-	// If the token has been used, it cannot be used again.
-	Used bool
 	// Unix timestamp, in seconds.
 	ExpireTime int64
+	// If the token has been used, it cannot be used again.
+	Used bool
 
 	easyjson.UnknownFieldsProxy
 }
@@ -2876,8 +3231,8 @@ type JobEntry struct {
 }
 
 type LicenseLimits struct {
-	DeviceCount  int            `json:"deviceCount,omitempty"`
-	BoosterCount map[string]int `json:"boosterCount,omitempty"`
+	DeviceCount  int                `json:"deviceCount,omitempty"`
+	BoosterCount map[EngineType]int `json:"boosterCount,omitempty"`
 
 	easyjson.UnknownFieldsProxy
 }
@@ -2885,6 +3240,22 @@ type LicenseLimits struct {
 type LicenseOptions struct {
 	Email        string `json:",omitempty"`
 	SerialNumber string
+
+	easyjson.UnknownFieldsProxy
+}
+
+type LinuxRpmCodeSignProperties struct {
+	// One of the LINUXRPMCODESIGN_METHOD_ constants
+	Method LinuxRpmCodesignMethod
+	// ASCII-armored GPG private key, either a local filepath or a resource:// URI
+	KeyFile string
+	// One of the ENCRYPTIONMETHOD_ constants
+	KeyPasswordFormat EncryptionMethodType
+	// Passphrase for the GPG private key; may be empty for passphrase-less keys
+	KeyPassword string
+	// GPG long key ID (16 hex characters) or a full 40-hex fingerprint; only the trailing 16 hex
+	// characters are used at signing time
+	KeyID string
 
 	easyjson.UnknownFieldsProxy
 }
@@ -2930,9 +3301,9 @@ type LocalDestinationLocation struct {
 	// If logging in to a Windows network share (SMB/CIFS) is required, enter the password here. The
 	// password may be hashed as per the LocalcopyWinSMBPasswordFormat field.
 	LocalcopyWinSMBPassword string
-	// One of the PASSWORD_FORMAT_ constants. It controls the hash format of the
+	// One of the ENCRYPTIONMETHOD_ constants. It controls the hash format of the
 	// LocalcopyWinSMBPassword field.
-	LocalcopyWinSMBPasswordFormat uint64
+	LocalcopyWinSMBPasswordFormat EncryptionMethodType
 
 	easyjson.UnknownFieldsProxy
 }
@@ -2997,12 +3368,12 @@ type MacOSCodeSignProperties struct {
 	AppleID            string
 	AppleIDPass        string
 	// One of the ENCRYPTIONMETHOD_ constants
-	AppleIDPassFormat  uint64
+	AppleIDPassFormat  EncryptionMethodType
 	CertificateFile    string
 	AppCertificateFile string
 	PfxFilePassword    string
 	// One of the ENCRYPTIONMETHOD_ constants
-	PfxFilePasswordFormat uint64
+	PfxFilePasswordFormat EncryptionMethodType
 	NotaryAPIIssuerID     string
 	NotaryAPIKeyID        string
 	NotaryAPIKeyFile      string
@@ -3019,7 +3390,10 @@ type MongoDBConnection struct {
 	// Prior to Comet 22.12.3, must be a filesystem path to `mongo` (n.b. not `mongosh`). In Comet >=
 	// 22.12.3, not used.
 	// Deprecated: This member has been deprecated since Comet version 22.12.3
-	MongoShellPath          string
+	MongoShellPath string
+	// External mongodump path. This is deprecated in Comet 25.9.11, Comet now includes MongoDB dump
+	// functionality.
+	// Deprecated: This member has been deprecated since Comet version 25.9.11
 	MongodumpPath           string
 	ReadPreference          string
 	UseReplica              bool
@@ -3053,6 +3427,29 @@ type MySQLConnection struct {
 	easyjson.UnknownFieldsProxy
 }
 
+// NFSDestinationLocation describes an NFSv4 storage location.
+// Only NFS version 4 is supported; the older mount protocol (NFSv2/v3) is not.
+// This struct is available in Comet 26.9.x and later.
+type NFSDestinationLocation struct {
+	// The hostname or IP address of the NFSv4 server. An optional ":port" suffix may be supplied; the
+	// default port is 2049.
+	Server string `json:",omitempty"`
+	// The target directory path underneath the server's NFSv4 pseudo-filesystem root
+	Path string `json:",omitempty"`
+	// The numeric user ID presented to the server for AUTH_SYS authentication.
+	// NFSv4 performs no password exchange; the server grants access based on this
+	// identity and on its own export rules. Defaults to 0 (root).
+	Uid uint64 `json:",omitempty"`
+	// The numeric group ID presented to the server for AUTH_SYS authentication.
+	// Defaults to 0 (root).
+	Gid uint64 `json:",omitempty"`
+	// The client machine name presented to the server for AUTH_SYS authentication.
+	// If blank, the local hostname is used.
+	MachineName string `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
+}
+
 type NewBucketDetail struct {
 	NewBucketID  string
 	NewBucketKey string
@@ -3065,6 +3462,45 @@ type NewsEntry struct {
 	// Unix timestamp, in seconds.
 	DateTime    int64
 	TextContent string
+
+	easyjson.UnknownFieldsProxy
+}
+
+type NinjaOneAuthCallbackResponse struct {
+	RefreshToken       string
+	RefreshTokenFormat EncryptionMethodType
+
+	easyjson.UnknownFieldsProxy
+}
+
+type NinjaOneConfig struct {
+	// OAuth 2.0 Client ID for NinjaOne API
+	ClientID string `json:",omitempty"`
+	// OAuth 2.0 Client Secret for NinjaOne API
+	ClientSecret string `json:",omitempty"`
+	RefreshToken string `json:",omitempty"`
+	// One of the ENCRYPTIONMETHOD_ constants
+	RefreshTokenFormat EncryptionMethodType `json:",omitempty"`
+	// Whether to create and manage tickets in NinjaOne for backup failures
+	TicketsEnabled bool
+	// NinjaOne client (organization) ID. Required when tickets are enabled.
+	NinjaClientID int `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
+}
+
+type NinjaOneOrganization struct {
+	ID          int
+	Name        string
+	Description string
+
+	easyjson.UnknownFieldsProxy
+}
+
+// Node contains the name and online status of a Proxmox node
+type Node struct {
+	Name        string
+	IsAvailable bool
 
 	easyjson.UnknownFieldsProxy
 }
@@ -3092,7 +3528,7 @@ type ObjectLockStorageTemplateSettings struct {
 	UseObjectLock_Legacy_DoNotUse bool `json:"UseObjectLock"`
 	// Control whether the resulting Storage Vaults are configured for Object Lock. One of the
 	// OBJECT_LOCK_ constants
-	ObjectLockMode uint8
+	ObjectLockMode ObjectLockMode
 	ObjectLockDays int
 	// Control whether the "Allow removal of deleted files" checkbox is enabled for Storage Vaults
 	// generated from this Storage Template.
@@ -3116,12 +3552,25 @@ type Office365Connection struct {
 	easyjson.UnknownFieldsProxy
 }
 
+// Office365ConvertSelectionResponse contains the ordered rule list produced by
+// converting a legacy Office 365 selection.
+// This struct is available in Comet 26.8.1 and later.
+type Office365ConvertSelectionResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
+	Status  int
+	Message string
+	// The converted ordered rule list, equivalent to the legacy selection
+	Rules []Office365SelectionRule
+
+	easyjson.UnknownFieldsProxy
+}
+
 type Office365Credential struct {
 	AppID    string
 	TenantID string
 	Secret   string
 	AppCert  string
-	Region   string
+	Region   Office365RegionType
 
 	easyjson.UnknownFieldsProxy
 }
@@ -3163,6 +3612,58 @@ type Office365CustomSettingV2 struct {
 	// Key is the ID of a Group or Team Site
 	// Value is a bitset of the SERVICE_ constants, to select which services to not backup for members
 	FilterMemberOptions map[string]uint `json:",omitempty"`
+	// An ordered list of include/exclude rules. If this field is non-empty, it is the
+	// sole source of truth for account and service selection, and the Organization, FilterMode,
+	// WholeOrg, BackupOptions, MemberBackupOptions, FilterOptions and FilterMemberOptions fields are
+	// all ignored. If empty or omitted, behavior is identical to prior Comet versions.
+	// This field is available in Comet 26.8.1 and later.
+	Rules []Office365SelectionRule `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
+}
+
+// Office365EffectiveSelection is the full result of evaluating an ordered rule list
+// against an organization's accounts, including per-service rule attribution for
+// display purposes.
+// This struct is available in Comet 26.8.1 and later.
+type Office365EffectiveSelection struct {
+	// The effective selection for every account in the organization, keyed by
+	// account ID. Accounts with no matching rules are present with a zero
+	// ServiceMask.
+	Accounts map[string]Office365EffectiveSelectionAccount `json:",omitempty"`
+	// Indexes (into the evaluated rule list) of rules that are the final decider of
+	// at least one (account, service) pair. A rule index absent from this list is
+	// fully overridden by later rules (or matches nothing) and has no effect.
+	EffectiveRuleIndexes []int `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
+}
+
+// Office365EffectiveSelectionAccount is the effective backup selection that an
+// ordered rule list produces for a single account, as returned by the Office 365
+// rule evaluation APIs.
+// This struct is available in Comet 26.8.1 and later.
+type Office365EffectiveSelectionAccount struct {
+	// A bitset of the SERVICE_ constants that the rule list selects for backup for
+	// this account. Zero when the account is not backed up.
+	ServiceMask uint `json:",omitempty"`
+	// One entry per service covered by at least one matching rule, ordered by
+	// ascending ServiceOption, recording the last rule that decided that service.
+	// Services with no entry were not covered by any matching rule (default deny).
+	DecidedByRule []Office365ServiceRuleDecision `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
+}
+
+// Office365EvaluateSelectionRulesResponse contains the effective selection produced
+// by evaluating an ordered rule list against an organization's accounts.
+// This struct is available in Comet 26.8.1 and later.
+type Office365EvaluateSelectionRulesResponse struct {
+	// If the operation was successful, the status will be in the 200-299 range.
+	Status  int
+	Message string
+	// The effective selection, including per-service rule attribution
+	Selection Office365EffectiveSelection
 
 	easyjson.UnknownFieldsProxy
 }
@@ -3195,6 +3696,65 @@ type Office365ObjectInfo struct {
 	// May be an email address or a SharePoint site URL
 	Value   string
 	Members []string
+
+	easyjson.UnknownFieldsProxy
+}
+
+// Office365SelectionRule is a single entry in the ordered rule list of an
+// Office365CustomSettingV2 (see the Rules field).
+// Rules are applied in order from the first element of the array to the last, and a
+// later rule overrides earlier rules for the account services it covers. For each account and
+// each service, the last rule in the list that matches the account and covers that service
+// decides whether the service is included in or excluded from the backup.
+// Any account/service combination that is not covered by any matching rule is not backed up.
+// This struct is available in Comet 26.8.1 and later.
+type Office365SelectionRule struct {
+	// If true, services covered by this rule are excluded from the backup. If false, they
+	// are included.
+	Exclude bool `json:",omitempty"`
+	// If true, this rule matches every account in the organization, including accounts
+	// created after the rule was saved. SubjectID and SubjectType are ignored.
+	AllAccounts bool `json:",omitempty"`
+	// The ID of the target account (the Office365MixedVirtualAccount ID of a User, Group,
+	// Team, or SharePoint site). Ignored if AllAccounts is true. If the ID no longer exists in the
+	// organization, the rule matches nothing.
+	SubjectID string `json:",omitempty"`
+	// One of the MIXED_VIRTUAL_ACCOUNT_TYPE_ constants. Informational only; matching is
+	// performed by SubjectID.
+	SubjectType uint `json:",omitempty"`
+	// A cached copy of the subject's display name at the time the rule was saved.
+	// Informational only, for display when the organization cannot be queried. Never used for
+	// matching.
+	SubjectDisplayName string `json:",omitempty"`
+	// If true, this rule covers every service that the matched account supports,
+	// including services added in future Comet versions. ServiceOptions is ignored.
+	AllServices bool `json:",omitempty"`
+	// A bitset of the SERVICE_ constants covered by this rule for directly-matched
+	// accounts (the subject account itself, or every account if AllAccounts is true).
+	// If zero and AllServices is false, this rule covers no services for directly-matched
+	// accounts.
+	ServiceOptions uint `json:",omitempty"`
+	// If true, this rule covers every service for accounts that are members of the
+	// subject Group or Team, including services added in future Comet versions.
+	// MemberServiceOptions is ignored.
+	AllMemberServices bool `json:",omitempty"`
+	// A bitset of the SERVICE_ constants covered by this rule for accounts that are
+	// members of the subject Group or Team. Ignored if AllAccounts is true.
+	MemberServiceOptions uint `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
+}
+
+// Office365ServiceRuleDecision records which rule made the final include/exclude
+// decision for one service of one account, as returned by the Office 365 rule
+// evaluation APIs.
+// This struct is available in Comet 26.8.1 and later.
+type Office365ServiceRuleDecision struct {
+	// A single SERVICE_ constant bit identifying the service this decision is for.
+	ServiceOption uint `json:",omitempty"`
+	// The index (into the evaluated rule list) of the last rule that decided this
+	// service for the account.
+	RuleIndex int `json:",omitempty"`
 
 	easyjson.UnknownFieldsProxy
 }
@@ -3257,16 +3817,42 @@ type OrganizationResponse struct {
 
 type PSAConfig struct {
 	// For PSA_TYPE_GRADIENT. Defaults to enabled
+	// Deprecated: This member has been deprecated since Comet version 26.5.2
 	AlertsDisabled bool
 	// Custom headers to send with each PSA request
 	CustomHeaders map[string]string `json:",omitempty"`
+	// NinjaOne-specific PSA configuration
+	NinjaOne NinjaOneConfig `json:",omitempty"`
 	// Specified API key for the target PSA
 	PartnerKey string `json:",omitempty"`
 	// One of the PSA_TYPE_ constants
 	Type PSAType
 	// The URL or subdomain for outbound PSA requests
-	URL       string
+	URL string
+	// Deprecated: This member has been deprecated since Comet version 26.5.2
 	GroupedBy PSAGroupedBy
+	// For PSA_TYPE_CONNECTWISE. The additional connection parameters for ConnectWise Manage
+	// This field is available in Comet 26.8.1 and later.
+	ConnectWise PSAConfigConnectWise `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
+}
+
+type PSAConfigConnectWise struct {
+	// The ConnectWise Manage company ID used for API authentication
+	CompanyID string
+	// The public part of the ConnectWise Manage API member keypair
+	PublicKey string
+	// The private part of the ConnectWise Manage API member keypair
+	PrivateKey string
+	// The ConnectWise Manage developer "clientId" header value
+	ClientID string
+	// Optional. The name of the Service Board that tickets are created on. If blank, the ConnectWise
+	// Manage default board is used
+	ServiceBoard string `json:",omitempty"`
+	// Optional. The identifier of the ConnectWise Manage company that tickets are raised against, when
+	// no company matches the Comet user account's AccountName
+	TicketCompany string `json:",omitempty"`
 
 	easyjson.UnknownFieldsProxy
 }
@@ -3315,8 +3901,8 @@ type PVEBackupVM struct {
 	Name     string `json:",omitempty"`
 	Selected bool   `json:",omitempty"`
 	// One of the PROXMOX_TYPE_ constants
-	Type string `json:",omitempty"`
-	VMID string `json:",omitempty"`
+	Type ProxmoxVMType `json:",omitempty"`
+	VMID string        `json:",omitempty"`
 
 	easyjson.UnknownFieldsProxy
 }
@@ -3343,7 +3929,7 @@ type PVEParams struct {
 	// One of the PVE_BACKUP_METHOD constants
 	Method string `json:",omitempty"`
 	// Primary node URL + SSH credentials
-	SSHConnection SSHConnection   `json:",omitempty"`
+	SSHConnection SSHConnection
 	Selections    []PVEBackupNode `json:",omitempty"`
 	UseCBT        bool            `json:",omitempty"`
 
@@ -3361,14 +3947,16 @@ type PVEStorageName struct {
 
 // PVEVM describes a single Proxmox virtual machine or container.
 type PVEVM struct {
-	CPU     string
-	Disks   []PVEDisk
-	Memory  string
-	Name    string
-	Node    string
-	OSType  string
-	Running bool
-	Type    string
+	CPU   string
+	Disks []PVEDisk
+	// Memory is a human-formatted string of the VM's memory. It might be rounded.
+	Memory   string
+	Name     string
+	Node     string
+	OSType   string
+	Running  bool
+	Type     ProxmoxVMType
+	Template bool
 	// String type, but always contains an integer value
 	VMID string
 
@@ -3408,6 +3996,26 @@ type PartitionConflict struct {
 	easyjson.UnknownFieldsProxy
 }
 
+type Pkcs11AllowedDriver struct {
+	// File path of a permitted .so/.dll PKCS#11 driver module
+	// This field is available in Comet 26.8.1 and later.
+	Path string
+
+	easyjson.UnknownFieldsProxy
+}
+
+type Pkcs11AllowlistOptions struct {
+	// Permitted PKCS#11 driver modules during codesigning
+	// This field is available in Comet 26.8.1 and later.
+	AllowedDrivers []Pkcs11AllowedDriver
+	// Set to true by the server on the first boot after upgrading; the auto-seed pulls existing module
+	// paths from branding
+	// This field is available in Comet 26.8.1 and later.
+	AllowlistIsBeingEnforced bool
+
+	easyjson.UnknownFieldsProxy
+}
+
 type PolicyOptions struct {
 	DeleteSources []string
 
@@ -3429,7 +4037,7 @@ type PrivateBrandingProperties struct {
 	WindowsCodeSignMethod         WindowsCodesignMethod
 	WindowsCodeSignPKCS12FilePath string
 	// One of the ENCRYPTIONMETHOD_ constants
-	WindowsCodeSignPKCS12PasswordFormat uint64
+	WindowsCodeSignPKCS12PasswordFormat EncryptionMethodType
 	WindowsCodeSignPKCS12Password       string
 	WindowsCodeSignPKCS11Engine         string
 	WindowsCodeSignPKCS11Module         string
@@ -3437,13 +4045,13 @@ type PrivateBrandingProperties struct {
 	WindowsCodeSignPKCS11Certfile string
 	WindowsCodeSignPKCS11KeyID    string
 	// One of the ENCRYPTIONMETHOD_ constants
-	WindowsCodeSignPKCS11PasswordFormat uint64
+	WindowsCodeSignPKCS11PasswordFormat EncryptionMethodType
 	WindowsCodeSignPKCS11Password       string
 	WindowsCodeSignAzureVaultName       string
 	WindowsCodeSignAzureCertName        string
 	WindowsCodeSignAzureAppID           string
 	// One of the ENCRYPTIONMETHOD_ constants
-	WindowsCodeSignAzureAppSecretFormat uint64
+	WindowsCodeSignAzureAppSecretFormat EncryptionMethodType
 	WindowsCodeSignAzureAppSecret       string
 	WindowsCodeSignAzureTenantID        string
 	// URL of the SAS Relic server, with protocol (https://) and trailing slash
@@ -3453,13 +4061,14 @@ type PrivateBrandingProperties struct {
 	// The name of the key to select on the remote SAS Relic server
 	WindowsCodeSignRelicKeyName string
 	MacOSCodeSign               MacOSCodeSignProperties
+	LinuxRpmCodeSign            LinuxRpmCodeSignProperties
 
 	easyjson.UnknownFieldsProxy
 }
 
 type ProtectedItemEngineTypePolicy struct {
 	ShouldRestrictEngineTypeList    bool
-	AllowedEngineTypeWhenRestricted []string
+	AllowedEngineTypeWhenRestricted []EngineType
 
 	easyjson.UnknownFieldsProxy
 }
@@ -3615,8 +4224,12 @@ type RemoteStorageOption struct {
 	StorageLimitEnabled bool
 	StorageLimitBytes   int64
 	RebrandStorage      bool
-	ID                  string
-	Default             bool
+	// If true, Storage Vaults provisioned from this Storage Template are marked so that the end-user
+	// account cannot modify them. This takes priority over the account policy's
+	// PreventEditStorageVault setting.
+	PreventUserEdit bool
+	ID              string
+	Default         bool
 
 	easyjson.UnknownFieldsProxy
 }
@@ -3741,6 +4354,11 @@ type RestoreJobAdvancedOptions struct {
 	HyperVConnection HyperVRestoreTargetOptions `json:",omitempty"`
 	// For RESTORETYPE_VMHOST
 	ProxmoxConnection ProxmoxRestoreTargetOptions `json:",omitempty"`
+	// For RESTORETYPE_CLOUD_STORAGE. Describes the target cloud/remote storage
+	// location. The destination path (subdir/prefix) is taken from the fields
+	// inside this DestinationLocation - no separate DestPath is used.
+	// This field is available in Comet 26.8.1 and later.
+	DestinationLocation DestinationLocation `json:",omitempty"`
 
 	easyjson.UnknownFieldsProxy
 }
@@ -3788,7 +4406,7 @@ type S3DestinationLocation struct {
 	// If true, use legacy v2 signing. If false (default), use modern v4 signing
 	S3UsesV2Signing  bool
 	S3RemoveDeleted  bool
-	S3ObjectLockMode uint8
+	S3ObjectLockMode ObjectLockMode
 	S3ObjectLockDays int
 
 	easyjson.UnknownFieldsProxy
@@ -3813,7 +4431,7 @@ type S3GenericVirtualStorageRole struct {
 	UseObjectLock_Legacy_DoNotUse bool `json:"UseObjectLock"`
 	// Control whether the resulting Storage Vaults are configured for Object Lock. One of the
 	// OBJECT_LOCK_ constants
-	ObjectLockMode uint8
+	ObjectLockMode ObjectLockMode
 	ObjectLockDays int
 	// Control whether the "Allow removal of deleted files" checkbox is enabled for Storage Vaults
 	// generated from this Storage Template.
@@ -3882,7 +4500,7 @@ type SSHConnection struct {
 }
 
 type ScheduleConfig struct {
-	FrequencyType   uint64
+	FrequencyType   ScheduleFrequencyType
 	SecondsPast     uint64
 	Offset          int64 `json:",omitempty"`
 	RestrictRuntime bool
@@ -3961,7 +4579,7 @@ type SelfBackupExportOptions struct {
 	Location      DestinationLocation
 	EncryptionKey string
 	// One of the ENCRYPTIONMETHOD_ constants
-	EncryptionKeyFormat uint64
+	EncryptionKeyFormat EncryptionMethodType
 	// One of the COMPRESS_LVL_ constants
 	Compression CompressMode
 	// The jobs database is often the largest component of the System Self-Backup archive. By excluding
@@ -3998,7 +4616,7 @@ type SelfBackupTarget struct {
 	Location         DestinationLocation
 	EncryptionKey    string
 	// One of the ENCRYPTIONMETHOD_ constants
-	EncryptionKeyFormat uint64
+	EncryptionKeyFormat EncryptionMethodType
 	// One of the COMPRESS_LVL_ constants
 	Compression CompressMode
 	// The jobs database is often the largest component of the System Self-Backup archive. By excluding
@@ -4028,9 +4646,12 @@ type ServerConfigOptions struct {
 	ExternalAdminUserSources map[string]ExternalAuthenticationSource
 	// The Comet Server can enforce a bandwidth limit based on the target IP address
 	IPRateLimit RatelimitOptions
+	// Enable these options to block repeated failed login attempts to the Comet Server.
 	// This field is available in Comet 24.9.x and later.
 	LoginProtection LoginProtectionOptions
-	License         LicenseOptions
+	// Configure the in-process DNS cache used for outbound HTTP requests.
+	DNSCache DNSCacheOptions
+	License  LicenseOptions
 	// Configure ip, port, and SSL settings for this self-hosted Comet Server.
 	ListenAddresses []HTTPConnectorOptions
 	// Tenants
@@ -4042,12 +4663,39 @@ type ServerConfigOptions struct {
 	SessionSettings   SessionOptions
 	SoftwareBuildRole SoftwareBuildRoleOptions
 	StorageRole       StorageRoleOptions
+	// Defense-in-depth allowlist of permitted PKCS#11 driver module paths during Authenticode
+	// codesigning. Top-level only - not read from per-tenant configuration.
+	// This field is available in Comet 26.8.1 and later.
+	Pkcs11Allowlist Pkcs11AllowlistOptions
 	// If true, the X-Forwarded-For header will be trusted for the purposes of IP allowlisting. This
 	// should only be enabled when you explicitly configure Comet Server behind a reverse proxy,
 	// otherwise it could allow malicious users to bypass the IP allowlist.
 	TrustXForwardedFor bool
-	WebhookOptions     map[string]WebhookOption
-	AuditFileOptions   map[string]FileOption
+	// If true, this Comet Server may send email through SMTP servers on loopback, RFC1918, or other
+	// private/link-local IP addresses. Enable this only if you intentionally run an SMTP relay on the
+	// LAN. Otherwise a tenant admin who controls SMTP host or recipient settings could direct outbound
+	// SMTP traffic at internal network services. If unset (null), Comet Server picks a value at
+	// startup by DNS-resolving the currently configured SMTP servers: enabled if any resolve to a
+	// private address (preserves the behavior of servers upgrading from a version without this
+	// setting), disabled otherwise.
+	// This field is available in Comet 26.9.x and later.
+	AllowEmailDeliveryToPrivateAddresses bool `json:",omitempty"`
+	WebhookOptions                       map[string]WebhookOption
+	AuditFileOptions                     map[string]FileOption
+	// Start a new Bulk Upgrade Campaign at each server start using the saved campaign options
+	// This field is available in Comet 26.5.5 and later.
+	AutoStartUpgradeCampaign bool
+	// Saved campaign options reused at startup
+	// This field is available in Comet 26.5.5 and later.
+	AutoStartUpgradeCampaignOptions UpdateCampaignOptions
+	// Custom JavaScript / CSS injected into the web interface of the top-level organization and all
+	// tenants. Can only be configured by a top-level admin
+	// This field is available in Comet 26.8.2 and later.
+	CustomBranding CustomBrandingOptions
+	// If true, admin accounts may create personal API tokens and authenticate using them. Defaults to
+	// true on new installations, and false when upgrading from a version without this feature.
+	// This field is available in Comet 26.8.4 and later.
+	AllowAdminAPITokens bool
 
 	easyjson.UnknownFieldsProxy
 }
@@ -4130,13 +4778,13 @@ type ServerMetaVersionInfo struct {
 	ConfiguredDevices int
 	// The current number of Protected Item types configured on the server.
 	// This field is available in Comet 24.6.3 and later.
-	BoosterLimit map[string]int
+	BoosterLimit map[EngineType]int
 	// Unix timestamp, in seconds.
 	LicenseValidUntil                              int64
 	EmailsSentSuccessfully                         int64
 	EmailsSentErrors                               int64
 	EmailsWaitingInQueue                           int64
-	ScheduledEmailThreadCurrentState               int64
+	ScheduledEmailThreadCurrentState               EmailWorkerState
 	ScheduledEmailThreadLastCalculateDurationNanos int64
 	ScheduledEmailThreadWaitingUntil               int64
 	ScheduledEmailThreadLastWakeTime               int64
@@ -4189,8 +4837,8 @@ type SharedStorageQuota struct {
 
 type SingleFieldSource struct {
 	FieldName string
-	// One of "bool" / "int" / "string"
-	FieldType string
+	// One of the SOURCEFIELD_ constants
+	FieldType SourceFieldType
 	BoolVal   bool
 	IntVal    int64
 	StrVal    string
@@ -4235,10 +4883,11 @@ type SoftwareUpdateNewsResponse struct {
 // SourceBasicInfo is the minimal amount of information one device knows about another device's
 // Protected Items, in order to safely perform retention passes on their behalf.
 type SourceBasicInfo struct {
-	Engine           string
+	Engine           EngineType
 	Description      string
 	O365AccountCount int64
 	TotalVmCount     int64
+	TotalLxcCount    int64
 	// Bytes
 	Size                         int64
 	OverrideDestinationRetention map[string]RetentionPolicy `json:",omitempty"`
@@ -4248,7 +4897,7 @@ type SourceBasicInfo struct {
 
 type SourceConfig struct {
 	// One of the ENGINE_BUILTIN_ constants
-	Engine      string
+	Engine      EngineType
 	Description string
 	OwnerDevice string
 	// Unix timestamp in seconds
@@ -4314,6 +4963,41 @@ type SourceConfig struct {
 	// - SAVEAS: The virtual filename inside the backup snapshot
 	// - Any key starting with EXTRACOMMAND- : Additional commands to run. Each value should be a JSON
 	// array of 3 strings, equivalent to the COMMAND, WORKDIR, SAVEAS values.
+	//
+	// For engine1/mysql, Comet understands the following EngineProp keys:
+	//
+	// - USERNAME: The username to connect to the MySQL server
+	// - PASSWORD: The password to connect to the MySQL server
+	// - HOST: The hostname or IP address of the MySQL server
+	// - PORT: The TCP port of the MySQL server. If not present, defaults to 3306
+	// - USE_TLS: If set to "1", connect using TLS
+	// - TLS_SKIP_VERIFY: If set to "1" and USE_TLS is set, skip verifying the server certificate
+	// - TLS_CUSTOM_SERVER_CA_PATH: Path to a custom CA file or directory for verifying the server
+	// certificate
+	// - TLS_CUSTOM_CLIENT_CRT_PATH: Path to a client TLS certificate file
+	// - TLS_CUSTOM_CLIENT_KEY_PATH: Path to a client TLS private key file
+	// - MYSQLDUMP: Path to a custom mysqldump binary, or "$internal$" to force the internal
+	// implementation. If not present, autodiscover a mysqldump binary and fall back to the internal
+	// implementation
+	// - ISOLATION_MODE: One of "ST" (single transaction), "FL" (lock tables), or "UNSAFE". If not
+	// present, defaults to "ST"
+	// - EXTRA_PARAMS: Extra space-separated arguments to pass to mysqldump
+	// - ALL_DATABASES: If present, include all databases with specified exclusions. If not present,
+	// only back up the specified inclusions
+	// - Any key starting with DATABASE: A database that is included. Only valid if ALL_DATABASES is
+	// not present.
+	// - Any key starting with EXCEPT-DATABASE: A database that is excluded. Only valid if
+	// ALL_DATABASES is present.
+	// - METADATA_FILE: Path to a local file whose content will be stored in the backup snapshot under
+	// the reserved ".metadata" filename. The file is read at backup time on the device. Restore jobs
+	// of type RESTORETYPE_MYSQL skip this stream; it can be retrieved with a file restore. If not
+	// present, no metadata stream is added
+	// - INCLUDE_USERS_GRANTS: Optional. If set to "1", additionally capture the MySQL server's user
+	// accounts and their privilege grants as a generated SQL script, stored in the backup snapshot
+	// under the reserved ".users-grants.sql" filename. Requires the connecting MySQL user to have
+	// privileges to read the grant tables. Restore jobs of type RESTORETYPE_MYSQL skip this stream; it
+	// can be retrieved with a file restore. If not present, or set to any other value, no
+	// users-and-grants stream is added
 	EngineProps map[string]string
 	// If set, this SourceConfig was added from a Policy with the specified ID.
 	// This field is available in Comet 23.6.0 and later.
@@ -4326,7 +5010,7 @@ type SourceConfig struct {
 	// to the overall retention policy for the Storage Vault. You can override the policy
 	// for specific Storage Vaults by putting their destination ID as a key here.
 	OverrideDestinationRetention map[string]RetentionPolicy `json:",omitempty"`
-	Statistics                   SourceStatistics           `json:",omitempty"`
+	Statistics                   SourceStatistics
 
 	easyjson.UnknownFieldsProxy
 }
@@ -4375,6 +5059,30 @@ type SpannedStorageExtraInfo struct {
 	easyjson.UnknownFieldsProxy
 }
 
+// SpeedLimitTimeWindow optionally restricts the vault speed limit
+// (BackupJobAdvancedOptions.LimitVaultSpeedBps) to a specific time of day and, optionally, certain
+// days of the week.
+// When RestrictTimes is set, the speed limit applies only while the current local time is inside
+// the window; outside the window the job runs unlimited.
+// It has no effect unless a LimitVaultSpeedBps is also set.
+type SpeedLimitTimeWindow struct {
+	// If true, LimitVaultSpeedBps only applies during the window defined below; outside it the job
+	// runs unlimited.
+	RestrictTimes bool
+	// The local time-of-day when the window starts.
+	FromTime HourSchedConfig
+	// The local time-of-day when the window ends. If earlier than FromTime, the window wraps past
+	// midnight. If equal to FromTime, the window covers the whole day.
+	ToTime HourSchedConfig
+	// If true, the window only applies on the days of the week selected in DaysSelect. If no day is
+	// selected at all, the day-of-week restriction is ignored and the window applies on every day.
+	RestrictDays bool
+	// The days of the week the window applies on, when RestrictDays is true.
+	DaysSelect DaysOfWeekConfig
+
+	easyjson.UnknownFieldsProxy
+}
+
 type StatResult struct {
 	Buckets        int64
 	Users          int64
@@ -4407,7 +5115,7 @@ type StorageRoleOptions struct {
 
 type StorageVaultProviderPolicy struct {
 	ShouldRestrictProviderList     bool
-	AllowedProvidersWhenRestricted []uint64
+	AllowedProvidersWhenRestricted []DestinationType
 
 	easyjson.UnknownFieldsProxy
 }
@@ -4466,9 +5174,9 @@ type StreamableEvent struct {
 	OwnerOrganizationID string
 	ResourceID          string `json:",omitempty"`
 	Type                StreamableEventType
-	Timestamp           int64       `json:",omitempty"`
-	TypeString          string      `json:",omitempty"`
-	Data                interface{} `json:",omitempty"`
+	Timestamp           int64  `json:",omitempty"`
+	TypeString          string `json:",omitempty"`
+	Data                any    `json:",omitempty"`
 
 	easyjson.UnknownFieldsProxy
 }
@@ -4509,7 +5217,7 @@ type TestResponse struct {
 
 type TimeSpan struct {
 	// SCHEDULE_FREQUENCY_<TYPE>
-	FrequencyType uint64
+	FrequencyType ScheduleFrequencyType
 	// Used for Periodic and Once Only
 	Seconds int64
 
@@ -4593,7 +5301,8 @@ type UninstallConfig struct {
 
 type UpdateCampaignDeviceStatus struct {
 	// One of the UPDATESTATUS_ constants
-	Status UpdateStatus
+	Status     UpdateStatus
+	SkipDetail UpdateCampaignSkipDetail
 
 	easyjson.UnknownFieldsProxy
 }
@@ -4637,6 +5346,17 @@ type UpdateCampaignProperties struct {
 	easyjson.UnknownFieldsProxy
 }
 
+type UpdateCampaignSkipDetail struct {
+	// GOOS value: "darwin", "linux", or "windows".
+	Platform string `json:",omitempty"`
+	// OS version reported by the device, e.g. "10.13".
+	DeviceVersion string `json:",omitempty"`
+	// Minimum OS version required by the target Comet build, e.g. "12.0".
+	RequiredVersion string `json:",omitempty"`
+
+	easyjson.UnknownFieldsProxy
+}
+
 type UpdateCampaignStatus struct {
 	Active              bool
 	UpgradeOlder        bool
@@ -4661,7 +5381,8 @@ type UpdateCampaignStatusDeviceEntry struct {
 	Username string
 	DeviceID string
 	// One of the UPDATESTATUS_ constants
-	Status UpdateStatus
+	Status     UpdateStatus
+	SkipDetail UpdateCampaignSkipDetail
 
 	easyjson.UnknownFieldsProxy
 }
@@ -4691,45 +5412,46 @@ type UserOnServer struct {
 }
 
 type UserPolicy struct {
-	PreventRequestStorageVault       bool
-	PreventAddCustomStorageVault     bool
-	PreventEditStorageVault          bool
-	HideCloudStorageBranding         bool
-	PreventDeleteStorageVault        bool
-	StorageVaultProviders            StorageVaultProviderPolicy
-	DefaultNewStorageVault           string
-	PreventNewProtectedItem          bool
-	PreventEditProtectedItem         bool
-	PreventDeleteProtectedItem       bool
-	ProtectedItemEngineTypes         ProtectedItemEngineTypePolicy
-	FileAndFolderMandatoryExclusions []ExtraFileExclusion `json:",omitempty"`
-	ModeScheduleSkipAlreadyRunning   DefaultSettingMode   `json:",omitempty"`
-	ModeScheduleLastJobFailDoRetry   DefaultSettingMode   `json:",omitempty"`
-	ModeLastJobFailDoRetryTime       uint64               `json:",omitempty"`
-	ModeLastJobFailDoRetryCount      uint64               `json:",omitempty"`
-	ModeAdminResetPassword           DefaultSettingMode   `json:",omitempty"`
-	ModeAdminViewFilenames           DefaultSettingMode   `json:",omitempty"`
-	ModeRequireUserResetPassword     DefaultSettingMode   `json:",omitempty"`
-	PreventDeleteSingleSnapshots     bool
-	PreventChangeAccountPassword     bool
-	PreventChangeEmailSettings       bool
-	PreventChangeAccountName         bool
-	PreventOpenAppUI                 bool
-	RequirePasswordOpenAppUI         bool
-	HideAppImport                    bool
-	HideAppVersion                   bool
-	PreventOpenWebUI                 bool
-	PreventViewDeviceNames           bool
-	DefaultEmailReports              DefaultEmailReportPolicy
-	DefaultStorageVaultRetention     RetentionPolicy
-	EnforceStorageVaultRetention     bool
-	PreventProtectedItemRetention    bool
-	AllowEditObjectLockRetention     bool
-	DefaultSources                   map[string]SourceConfig
-	DefaultSourcesBackupRules        map[string]BackupRuleConfig
-	DefaultSourcesWithOSRestriction  map[string]DefaultSourceWithOSRestriction
-	DefaultBackupRules               map[string]BackupRuleConfig
-	RandomDelaySecs                  uint64 `json:",omitempty"`
+	PreventRequestStorageVault         bool
+	PreventAddCustomStorageVault       bool
+	PreventEditStorageVault            bool
+	HideCloudStorageBranding           bool
+	PreventDeleteStorageVault          bool
+	StorageVaultProviders              StorageVaultProviderPolicy
+	DefaultNewStorageVault             NewStorageVaultMode
+	SVSelectionRuleIncludeUnassociated bool
+	PreventNewProtectedItem            bool
+	PreventEditProtectedItem           bool
+	PreventDeleteProtectedItem         bool
+	ProtectedItemEngineTypes           ProtectedItemEngineTypePolicy
+	FileAndFolderMandatoryExclusions   []ExtraFileExclusion `json:",omitempty"`
+	ModeScheduleSkipAlreadyRunning     DefaultSettingMode   `json:",omitempty"`
+	ModeScheduleLastJobFailDoRetry     DefaultSettingMode   `json:",omitempty"`
+	ModeLastJobFailDoRetryTime         uint64               `json:",omitempty"`
+	ModeLastJobFailDoRetryCount        uint64               `json:",omitempty"`
+	ModeAdminResetPassword             DefaultSettingMode   `json:",omitempty"`
+	ModeAdminViewFilenames             DefaultSettingMode   `json:",omitempty"`
+	ModeRequireUserResetPassword       DefaultSettingMode   `json:",omitempty"`
+	PreventDeleteSingleSnapshots       bool
+	PreventChangeAccountPassword       bool
+	PreventChangeEmailSettings         bool
+	PreventChangeAccountName           bool
+	PreventOpenAppUI                   bool
+	RequirePasswordOpenAppUI           bool
+	HideAppImport                      bool
+	HideAppVersion                     bool
+	PreventOpenWebUI                   bool
+	PreventViewDeviceNames             bool
+	DefaultEmailReports                DefaultEmailReportPolicy
+	DefaultStorageVaultRetention       RetentionPolicy
+	EnforceStorageVaultRetention       bool
+	PreventProtectedItemRetention      bool
+	AllowEditObjectLockRetention       bool
+	DefaultSources                     map[string]SourceConfig
+	DefaultSourcesBackupRules          map[string]BackupRuleConfig
+	DefaultSourcesWithOSRestriction    map[string]DefaultSourceWithOSRestriction
+	DefaultBackupRules                 map[string]BackupRuleConfig
+	RandomDelaySecs                    uint64 `json:",omitempty"`
 	// Rotate access keys of a conflicting jobs Storage Vault, if no update from the conflicting job
 	// for X hours. If value is 0, ROTATE_STORAGE_VAULT_KEYS_DEFAULT is used.
 	RotateStorageVaultKeysHours int
@@ -4795,11 +5517,17 @@ type UserProfileConfig struct {
 	// Items in this account. Set to zero to allow unlimited Office 365 Protected Accounts.
 	QuotaOffice365ProtectedAccounts int64
 	// A limit on the total number of Hyper-V guests across all Hyper-V Protected Items in this
-	// account. Set to zero to allow unlimited Office 365 Protected Accounts.
+	// account. Set to zero to allow unlimited Hyper-V guests.
 	QuotaHyperVGuests int64
 	// A limit on the total number of VMware guests across all VMware Protected Items in this account.
-	// Set to zero to allow unlimited Office 365 Protected Accounts.
+	// Set to zero to allow unlimited VMware guests.
 	QuotaVMwareGuests int64
+	// A limit on the total number of Proxmox guest VMs across all Proxmox Protected Items in this
+	// account. Set to zero to allow unlimited Proxmox guest VMs.
+	QuotaProxmoxGuestVMs int64
+	// A limit on the total number of Proxmox guest LXCs across all Proxmox Protected Items in this
+	// account. Set to zero to allow unlimited Proxmox guest LXCs.
+	QuotaProxmoxGuestLXCs int64
 	// If the PolicyID field is set to a non-empty string, the Comet Server will enforce the contents
 	// of the Policy field based on the matching server's policy. Otherwise if the PolicyID field is
 	// set to an empty string, the administrator may configure any custom values in the Policy field.
@@ -4810,7 +5538,7 @@ type UserProfileConfig struct {
 	// One of the PASSWORD_FORMAT_ constants
 	// To change the user's password, use the AdminResetUserPassword API instead of accessing these
 	// fields directly. Otherwise, other encrypted fields in the user profile may become corrupted.
-	PasswordFormat int
+	PasswordFormat PasswordFormatType
 	PasswordHash   string
 	// If this field is empty, the "Allow administrator to reset my password" feature is turned off. If
 	// this field is filled, it contains a cryptographic root of trust that can decrypt and re-encrypt
@@ -4823,7 +5551,7 @@ type UserProfileConfig struct {
 	// this user's credentials.
 	AllowPasswordAndTOTPLogin bool
 	// One of the ENCRYPTIONMETHOD_ constants
-	TOTPKeyEncryptionFormat int
+	TOTPKeyEncryptionFormat EncryptionMethodType
 	TOTPKey                 string
 	// This field is available in Comet 20.3.4 and later.
 	RequirePasswordChange bool
@@ -4833,11 +5561,20 @@ type UserProfileConfig struct {
 	// this to help disambiguate users with the same username across multiple Comet Servers.
 	CreationGUID string
 	// Additional server-wide settings that are enforced for this user profile
-	ServerConfig            UserServerConfig `json:",omitempty"`
+	ServerConfig            UserServerConfig
 	AutoStorageTemplateGUID string
-	// If enabled, Linux devices in this user account will sandbox all read/write operations to paths
-	// inside user home directories
+	// Deprecated: This member has been deprecated since Comet version 26.2.4 Linux home-directory sandboxing is always enabled; this field is ignored.
 	LinuxHomedirSandbox bool
+	// A freeform key-value map that can be used for any custom metadata. The Comet Server does not use
+	// this field for any purpose, but it is stored and replicated along with the rest of the user
+	// profile.
+	// This field is available in Comet 26.2.1 and later.
+	UserExtra map[string]string
+	// A freeform key-value map that can be used for any custom metadata that should only be visible to
+	// administrators. The Comet Server does not use this field for any purpose, but it is stored and
+	// replicated along with the rest of the user profile.
+	// This field is available in Comet 26.2.1 and later.
+	AdminExtra map[string]string
 
 	easyjson.UnknownFieldsProxy
 }
@@ -5002,7 +5739,7 @@ type VSphereConnection struct {
 type VaultSnapshot struct {
 	Snapshot string
 	// This field is available in Comet 24.3.x and later.
-	EngineType string
+	EngineType EngineType
 	Source     string
 	CreateTime int64
 	// This field is available in Comet 20.12.4 and later.
@@ -5029,7 +5766,7 @@ type WasabiVirtualStorageRoleSettings struct {
 	UseObjectLock_Legacy_DoNotUse bool `json:"UseObjectLock"`
 	// Control whether the resulting Storage Vaults are configured for Object Lock. One of the
 	// OBJECT_LOCK_ constants
-	ObjectLockMode uint8
+	ObjectLockMode ObjectLockMode
 	ObjectLockDays int
 	// Control whether the "Allow removal of deleted files" checkbox is enabled for Storage Vaults
 	// generated from this Storage Template.
@@ -5096,7 +5833,7 @@ type WebAuthnPublicKeyCredentialCreationOptions struct {
 	RelyingParty           WebAuthnRelyingPartyEntity       `json:"rp"`
 	User                   WebAuthnUserEntity               `json:"user"`
 	Parameters             []WebAuthnCredentialParameter    `json:"pubKeyCredParams,omitempty"`
-	AuthenticatorSelection WebAuthnAuthenticatorSelection   `json:"authenticatorSelection,omitempty"`
+	AuthenticatorSelection WebAuthnAuthenticatorSelection   `json:"authenticatorSelection"`
 	Timeout                int                              `json:"timeout,omitempty"`
 	CredentialExcludeList  []WebAuthnCredentialDescriptor   `json:"excludeCredentials,omitempty"`
 	Extensions             WebAuthnAuthenticationExtensions `json:"extensions,omitempty"`
@@ -5176,7 +5913,7 @@ type WebDavDestinationLocation struct {
 type WebInterfaceBrandingProperties struct {
 	// One of the BRANDINGSTYLETYPE_ constants
 	// This field is available in Comet 23.3.3 and later.
-	BrandingStyleType int
+	BrandingStyleType BrandingStyleType
 	BrandName         string
 	LogoImage         string
 	TopColor          string
@@ -5202,6 +5939,12 @@ type WebhookOption struct {
 	// Configure a subset of allowed event types (see SEVT_ constants). If the array is empty, all
 	// events will be sent
 	WhiteListedEventTypes []StreamableEventType
+	// One of the WEBHOOK_FORMAT_ constants. This controls how the event payload is encoded in the
+	// outgoing POST request. If empty (WEBHOOK_FORMAT_RAW), the raw StreamableEvent JSON object is
+	// sent. When set to WEBHOOK_FORMAT_SLACK ("slack"), the event is reformatted as a Slack
+	// Incoming Webhook message so it renders natively in a Slack channel.
+	// This field is available in Comet 26.5.2 and later.
+	PayloadFormat WebhookFormat `json:",omitempty"`
 
 	easyjson.UnknownFieldsProxy
 }
@@ -5212,11 +5955,11 @@ type WinSMBAuth struct {
 	// The username to log in to the Windows network share (SMB).
 	Username string
 	// The password might be hashed. To set this in cleartext, set PasswordFormat to 0
-	// (PASSWORD_FORMAT_PLAINTEXT).
+	// (ENCRYPTIONMETHOD_PLAINTEXT).
 	Password string
-	// The hash algorithm that is used for the Password field. It is one of the PASSWORD_FORMAT_
+	// The encryption method that is used for the Password field. It is one of the ENCRYPTIONMETHOD_
 	// constants.
-	PasswordFormat uint64
+	PasswordFormat EncryptionMethodType
 
 	easyjson.UnknownFieldsProxy
 }
@@ -5226,7 +5969,7 @@ type WindowsCodeSignProperties struct {
 	WindowsCodeSignMethod         WindowsCodesignMethod
 	WindowsCodeSignPKCS12FilePath string
 	// One of the ENCRYPTIONMETHOD_ constants
-	WindowsCodeSignPKCS12PasswordFormat uint64
+	WindowsCodeSignPKCS12PasswordFormat EncryptionMethodType
 	WindowsCodeSignPKCS12Password       string
 	WindowsCodeSignPKCS11Engine         string
 	WindowsCodeSignPKCS11Module         string
@@ -5234,13 +5977,13 @@ type WindowsCodeSignProperties struct {
 	WindowsCodeSignPKCS11Certfile string
 	WindowsCodeSignPKCS11KeyID    string
 	// One of the ENCRYPTIONMETHOD_ constants
-	WindowsCodeSignPKCS11PasswordFormat uint64
+	WindowsCodeSignPKCS11PasswordFormat EncryptionMethodType
 	WindowsCodeSignPKCS11Password       string
 	WindowsCodeSignAzureVaultName       string
 	WindowsCodeSignAzureCertName        string
 	WindowsCodeSignAzureAppID           string
 	// One of the ENCRYPTIONMETHOD_ constants
-	WindowsCodeSignAzureAppSecretFormat uint64
+	WindowsCodeSignAzureAppSecretFormat EncryptionMethodType
 	WindowsCodeSignAzureAppSecret       string
 	WindowsCodeSignAzureTenantID        string
 	// URL of the SAS Relic server, with protocol (https://) and trailing slash
@@ -5286,6 +6029,12 @@ type CometAPIClient struct {
 	ReuseSessionKey bool
 	// Custom headers that will be set for the requests being made to the server.
 	CustomHeaders map[string]string
+	// Transport (optional) overrides the http.RoundTripper used to dispatch
+	// requests. When nil, http.DefaultClient is used. Set this to route
+	// requests through a custom transport — for example, to dispatch the
+	// request to an in-process http.Handler instead of sending it over the
+	// network. *http.Transport satisfies http.RoundTripper directly.
+	Transport http.RoundTripper
 }
 
 // NewCometAPIClient constructs and returns an instance of CometAPIClient
@@ -5447,7 +6196,12 @@ func (c *CometAPIClient) Request(ctx context.Context, contentType, method, path 
 		return nil, fmt.Errorf("Unexpected content type: %s", contentType)
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	var resp *http.Response
+	if c.Transport != nil {
+		resp, err = c.Transport.RoundTrip(req)
+	} else {
+		resp, err = http.DefaultClient.Do(req)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -5478,11 +6232,109 @@ func (c *CometAPIClient) Request(ctx context.Context, contentType, method, path 
 // DEFAULT CLIENT METHODS
 //
 
+// AdminAccountApiTokenCreate: Create a new personal API token for the current admin account
+// The response contains the plaintext token. It is shown exactly once and cannot be retrieved again
+// - store it securely.
+// The token inherits the current permissions of the admin account that created it, evaluated live
+// on each request; it does not capture a fixed snapshot of permissions.
+// Creating a token requires you to supply your current password, unless the request is already
+// authenticated with a password, or the account is managed by an external authentication source.
+// Check AdminAccountProperties.APITokenCreateRequiresPassword to know whether it is needed.
+//
+// You must supply administrator authentication credentials to use this API.
+// This API does not accept admin personal API token authentication (AuthType=Token).
+//
+// - Params
+// Description: Human-readable label for this token
+// ExpireTime: (Optional) Unix timestamp, in seconds, when the token stops working. Must be in the
+// future. If this parameter is omitted entirely, the token expires after 90 days. Pass zero
+// explicitly for a token that never expires
+func (c *CometAPIClient) AdminAccountApiTokenCreate(ctx context.Context, Description string, ExpireTime *int64) (*AdminAccountAPITokenCreateResponse, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	data["Description"] = []string{Description}
+
+	if ExpireTime != nil {
+		b, err = json.Marshal(ExpireTime)
+		if err != nil {
+			return nil, err
+		}
+		data["ExpireTime"] = []string{string(b)}
+	}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/api-token/create", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &AdminAccountAPITokenCreateResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminAccountApiTokenList: List the metadata for all API tokens of the current admin account
+// This does not include the token itself, which is only returned once when the token is created.
+//
+// You must supply administrator authentication credentials to use this API.
+// This API does not accept admin personal API token authentication (AuthType=Token).
+func (c *CometAPIClient) AdminAccountApiTokenList(ctx context.Context) (*AdminAccountAPITokenListResponse, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/api-token/list", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &AdminAccountAPITokenListResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminAccountApiTokenRevoke: Revoke a personal API token of the current admin account
+// An admin may always revoke their own tokens, even if API tokens have since been disabled for
+// their account or this server.
+//
+// You must supply administrator authentication credentials to use this API.
+// This API does not accept admin personal API token authentication (AuthType=Token).
+//
+// - Params
+// TokenID: The token identifier, as shown in the token list
+func (c *CometAPIClient) AdminAccountApiTokenRevoke(ctx context.Context, TokenID string) (*CometAPIResponseMessage, error) {
+	data := map[string][]string{}
+	var err error
+
+	data["TokenID"] = []string{TokenID}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/api-token/revoke", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CometAPIResponseMessage{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // AdminAccountProperties: Retrieve properties about the current admin account
 // Some key parameters are obscured, but the obscured values are safely recognised by the
 // corresponding AdminAccountSetProperties API.
+// In Comet 26.8.4 and later, when authenticating with an admin API token, the account's password
+// hash is additionally obscured.
 //
 // You must supply administrator authentication credentials to use this API.
+// This API accepts admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminAccountProperties(ctx context.Context) (*AdminAccountPropertiesResponse, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/properties", nil)
 	if err != nil {
@@ -5503,6 +6355,7 @@ func (c *CometAPIClient) AdminAccountProperties(ctx context.Context) (*AdminAcco
 // to the current admin account.
 //
 // You must supply administrator authentication credentials to use this API.
+// This API does not accept admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminAccountRegenerateTotp(ctx context.Context) (*TotpRegeneratedResponse, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/regenerate-totp", nil)
 	if err != nil {
@@ -5521,6 +6374,7 @@ func (c *CometAPIClient) AdminAccountRegenerateTotp(ctx context.Context) (*TotpR
 // AdminAccountSessionRevoke: Revoke a session key (log out)
 //
 // You must supply administrator authentication credentials to use this API.
+// This API does not accept admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminAccountSessionRevoke(ctx context.Context) (*CometAPIResponseMessage, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/session-revoke", nil)
 	if err != nil {
@@ -5539,12 +6393,13 @@ func (c *CometAPIClient) AdminAccountSessionRevoke(ctx context.Context) (*CometA
 // AdminAccountSessionStart: Generate a session key (log in)
 //
 // You must supply administrator authentication credentials to use this API.
+// This API does not accept admin personal API token authentication (AuthType=Token).
 //
 // The SessionKey will be set in the client and used for any further api calls using the same client.
 // You can manually clear the SessionKey if you wish to use Username, Password based authentication again.
 //
 // - Params
-// SelfAddress: (Optional) External URL of this server
+// SelfAddress: (Optional) External URL of this server (>= 18.9.9)
 func (c *CometAPIClient) AdminAccountSessionStart(ctx context.Context, SelfAddress *string) (*SessionKeyRegeneratedResponse, error) {
 	data := map[string][]string{}
 	var err error
@@ -5577,6 +6432,7 @@ func (c *CometAPIClient) AdminAccountSessionStart(ctx context.Context, SelfAddre
 // AdminAccountSessionStartAsUser: Generate a session key for an end-user (log in as end-user)
 //
 // You must supply administrator authentication credentials to use this API.
+// This API does not accept admin personal API token authentication (AuthType=Token).
 //
 // The SessionKey will be set in the client and used for any further api calls using the same client.
 // You can manually clear the SessionKey if you wish to use Username, Password based authentication again.
@@ -5608,28 +6464,28 @@ func (c *CometAPIClient) AdminAccountSessionStartAsUser(ctx context.Context, Tar
 	return result, nil
 }
 
-// AdminAccountSessionUpgrade: Upgrade a session key which is pending an MFA upgrade to a full
-// session key
+// AdminAccountSessionUpgrade: Exchange an SSO one-time token for a session key
 //
 // You must supply administrator authentication credentials to use this API.
+// This API does not accept admin personal API token authentication (AuthType=Token).
 //
-// - Params
-// SessionKey: The session key to upgrade
-func (c *CometAPIClient) AdminAccountSessionUpgrade(ctx context.Context, SessionKey string) (*CometAPIResponseMessage, error) {
-	data := map[string][]string{}
-	var err error
-
-	data["SessionKey"] = []string{SessionKey}
-
-	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/session-upgrade", data)
+// The SessionKey will be set in the client and used for any further api calls using the same client.
+// You can manually clear the SessionKey if you wish to use Username, Password based authentication again.
+func (c *CometAPIClient) AdminAccountSessionUpgrade(ctx context.Context) (*SessionKeyRegeneratedResponse, error) {
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/account/session-upgrade", nil)
 	if err != nil {
 		return nil, err
 	}
 
-	result := &CometAPIResponseMessage{}
+	result := &SessionKeyRegeneratedResponse{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err
+	}
+
+	if c.ReuseSessionKey {
+		// Set the SessionKey so that future invocations use the SessionKey.
+		c.SessionKey = result.SessionKey
 	}
 
 	return result, nil
@@ -5643,6 +6499,7 @@ func (c *CometAPIClient) AdminAccountSessionUpgrade(ctx context.Context, Session
 // the IPWhitelist field were ignored.
 //
 // You must supply administrator authentication credentials to use this API.
+// This API does not accept admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // Security: Updated account properties
@@ -5677,6 +6534,7 @@ func (c *CometAPIClient) AdminAccountSetProperties(ctx context.Context, Security
 // to allow their use with the WebAuthn endpoints.
 //
 // You must supply administrator authentication credentials to use this API.
+// This API does not accept admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // SelfAddress: External URL of this server, used as U2F AppID and Facet
@@ -5706,6 +6564,7 @@ func (c *CometAPIClient) AdminAccountU2fRequestRegistrationChallenge(ctx context
 // to allow their use with the WebAuthn endpoints.
 //
 // You must supply administrator authentication credentials to use this API.
+// This API does not accept admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // U2FChallengeID: Associated value from AdminAccountU2fRequestRegistrationChallenge API
@@ -5746,6 +6605,7 @@ func (c *CometAPIClient) AdminAccountU2fSubmitChallengeResponse(ctx context.Cont
 // AdminAccountValidateTotp: Validate the TOTP code before turning 2fa(TOTP) on
 //
 // You must supply administrator authentication credentials to use this API.
+// This API does not accept admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TOTPCode: Six-digit code after scanning barcode image
@@ -5772,6 +6632,7 @@ func (c *CometAPIClient) AdminAccountValidateTotp(ctx context.Context, TOTPCode 
 // AdminAccountWebauthnRequestRegistrationChallenge: Register a new FIDO2 WebAuthn token
 //
 // You must supply administrator authentication credentials to use this API.
+// This API does not accept admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // SelfAddress: External URL of this server, used as WebAuthn ID
@@ -5798,6 +6659,7 @@ func (c *CometAPIClient) AdminAccountWebauthnRequestRegistrationChallenge(ctx co
 // AdminAccountWebauthnSubmitChallengeResponse: Register a new FIDO2 WebAuthn token
 //
 // You must supply administrator authentication credentials to use this API.
+// This API does not accept admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // SelfAddress: External URL of this server, used as WebAuthn ID
@@ -5858,16 +6720,17 @@ func (c *CometAPIClient) AdminAddFirstAdminUser(ctx context.Context, TargetUser 
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
-// TargetUser: New account username
-// TargetPassword: New account password
+// TargetUser: New account username (>= 17.2.0)
+// TargetPassword: New account password (>= 17.2.0)
 // StoreRecoveryCode: (Optional) If set to 1, store and keep a password recovery code for the
 // generated user (>= 18.3.9)
 // RequirePasswordChange: (Optional) If set to 1, require to reset password at the first login for
 // the generated user (>= 20.3.4)
 // TargetOrganization: (Optional) If present, create the user account on behalf of another
-// organization. Only allowed for administrator accounts in the top-level organization. (>= 22.3.7)
+// organization. Only allowed for administrator accounts in the top-level organization. (>= 22.5.0)
 func (c *CometAPIClient) AdminAddUser(ctx context.Context, TargetUser string, TargetPassword string, StoreRecoveryCode *int, RequirePasswordChange *int, TargetOrganization *string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
@@ -5918,12 +6781,13 @@ func (c *CometAPIClient) AdminAddUser(ctx context.Context, TargetUser string, Ta
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
-// TargetUser: New account username
-// ProfileData: New account profile
+// TargetUser: New account username (>= 17.2.0)
+// ProfileData: New account profile (>= 17.2.0)
 // TargetOrganization: (Optional) If present, create the user account on behalf of another
-// organization. Only allowed for administrator accounts in the top-level organization. (>= 22.3.7)
+// organization. Only allowed for administrator accounts in the top-level organization. (>= 22.5.0)
 func (c *CometAPIClient) AdminAddUserFromProfile(ctx context.Context, TargetUser string, ProfileData UserProfileConfig, TargetOrganization *string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
@@ -5961,6 +6825,7 @@ func (c *CometAPIClient) AdminAddUserFromProfile(ctx context.Context, TargetUser
 // Access to this API may be prevented on a per-administrator basis.
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
+// This API does not accept admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetUser: the username of the admin to be deleted
@@ -5990,6 +6855,7 @@ func (c *CometAPIClient) AdminAdminUserDelete(ctx context.Context, TargetUser st
 // Access to this API may be prevented on a per-administrator basis.
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
+// This API does not accept admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminAdminUserList(ctx context.Context) ([]AllowedAdminUser, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/admin-user/list", nil)
 	if err != nil {
@@ -6011,6 +6877,7 @@ func (c *CometAPIClient) AdminAdminUserList(ctx context.Context) ([]AllowedAdmin
 // Access to this API may be prevented on a per-administrator basis.
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
+// This API does not accept admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetUser: the username for this new admin
@@ -6134,7 +7001,7 @@ func (c *CometAPIClient) AdminBrandingGenerateClientLinuxDeb(ctx context.Context
 // This API requires the Auth Role to be enabled.
 //
 // - Params
-// SelfAddress: (Optional) The external URL of this server, used to resolve conflicts
+// SelfAddress: (Optional) The external URL of this server, used to resolve conflicts (>= 17.3.12)
 func (c *CometAPIClient) AdminBrandingGenerateClientLinuxgeneric(ctx context.Context, SelfAddress *string) ([]byte, error) {
 	data := map[string][]string{}
 	var err error
@@ -6480,10 +7347,11 @@ func (c *CometAPIClient) AdminBrandingGenerateClientWindowsX8664Zip(ctx context.
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
-// Subject: Bulletin subject line
-// Content: Bulletin message content
+// Subject: Bulletin subject line (>= 17.3.5)
+// Content: Bulletin message content (>= 17.3.5)
 func (c *CometAPIClient) AdminBulletinSubmit(ctx context.Context, Subject string, Content string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
@@ -6510,6 +7378,7 @@ func (c *CometAPIClient) AdminBulletinSubmit(ctx context.Context, Subject string
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Constellation Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminConstellationLastReport(ctx context.Context) (*ConstellationCheckReport, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/constellation/last-report", nil)
 	if err != nil {
@@ -6529,6 +7398,7 @@ func (c *CometAPIClient) AdminConstellationLastReport(ctx context.Context) (*Con
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Constellation Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminConstellationNewReport(ctx context.Context) (*ConstellationCheckReport, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/constellation/new-report", nil)
 	if err != nil {
@@ -6550,6 +7420,7 @@ func (c *CometAPIClient) AdminConstellationNewReport(ctx context.Context) (*Cons
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
 // This API requires the Constellation Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminConstellationPruneNow(ctx context.Context) (*CometAPIResponseMessage, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/constellation/prune-now", nil)
 	if err != nil {
@@ -6569,6 +7440,7 @@ func (c *CometAPIClient) AdminConstellationPruneNow(ctx context.Context) (*Comet
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Constellation Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminConstellationStatus(ctx context.Context) (*ConstellationStatusAPIResponse, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/constellation/status", nil)
 	if err != nil {
@@ -6587,6 +7459,7 @@ func (c *CometAPIClient) AdminConstellationStatus(ctx context.Context) (*Constel
 // AdminConvertStorageRole: Convert IAM Storage Role vault to its underlying S3 type
 //
 // You must supply administrator authentication credentials to use this API.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetUser: The user to receive the new Storage Vault
@@ -6617,6 +7490,7 @@ func (c *CometAPIClient) AdminConvertStorageRole(ctx context.Context, TargetUser
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // Query: (No description available)
@@ -6655,10 +7529,11 @@ func (c *CometAPIClient) AdminCountJobsForCustomSearch(ctx context.Context, Quer
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetUser: Selected account username
-// TargetPassword: Selected account password
+// TargetPassword: Selected account password (>= 20.9.1)
 // Server: (Optional) External URL of the authentication server that is different from the current
 // server
 func (c *CometAPIClient) AdminCreateInstallToken(ctx context.Context, TargetUser string, TargetPassword string, Server *string) (*InstallTokenResponse, error) {
@@ -6691,6 +7566,7 @@ func (c *CometAPIClient) AdminCreateInstallToken(ctx context.Context, TargetUser
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetUser: Selected account username
@@ -6726,9 +7602,10 @@ func (c *CometAPIClient) AdminDeleteProtectedItem(ctx context.Context, TargetUse
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
-// TargetUser: Selected account username
+// TargetUser: Selected account username (>= 17.2.0)
 // UninstallConfig: (Optional) Uninstall software configuration (>= 20.3.5)
 func (c *CometAPIClient) AdminDeleteUser(ctx context.Context, TargetUser string, UninstallConfig *UninstallConfig) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
@@ -6763,6 +7640,7 @@ func (c *CometAPIClient) AdminDeleteUser(ctx context.Context, TargetUser string,
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetUser: Selected account username
@@ -6791,6 +7669,7 @@ func (c *CometAPIClient) AdminDisableUserTotp(ctx context.Context, TargetUser st
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -6821,6 +7700,7 @@ func (c *CometAPIClient) AdminDispatcherApplyRetentionRules(ctx context.Context,
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -6856,6 +7736,7 @@ func (c *CometAPIClient) AdminDispatcherBrowseVirtualMachines(ctx context.Contex
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -6886,6 +7767,7 @@ func (c *CometAPIClient) AdminDispatcherDeepverifyStorageVault(ctx context.Conte
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -6921,6 +7803,7 @@ func (c *CometAPIClient) AdminDispatcherDeleteSnapshot(ctx context.Context, Targ
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -6960,9 +7843,10 @@ func (c *CometAPIClient) AdminDispatcherDeleteSnapshots(ctx context.Context, Tar
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
-// TargetID: The live connection GUID
+// TargetID: The live connection GUID (>= 17.2.0)
 func (c *CometAPIClient) AdminDispatcherDropConnection(ctx context.Context, TargetID string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
@@ -6988,6 +7872,7 @@ func (c *CometAPIClient) AdminDispatcherDropConnection(ctx context.Context, Targ
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -7025,6 +7910,7 @@ func (c *CometAPIClient) AdminDispatcherEmailPreview(ctx context.Context, Target
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -7054,6 +7940,7 @@ func (c *CometAPIClient) AdminDispatcherForceLogin(ctx context.Context, TargetID
 // This API requires the Auth Role to be enabled.
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // OrganizationID: Target organization
@@ -7083,6 +7970,7 @@ func (c *CometAPIClient) AdminDispatcherGetDefaultLoginUrl(ctx context.Context, 
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -7115,9 +8003,10 @@ func (c *CometAPIClient) AdminDispatcherImportApply(ctx context.Context, TargetI
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
-// TargetID: The live connection GUID
+// TargetID: The live connection GUID (>= 17.2.0)
 func (c *CometAPIClient) AdminDispatcherKillProcess(ctx context.Context, TargetID string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
@@ -7142,9 +8031,10 @@ func (c *CometAPIClient) AdminDispatcherKillProcess(ctx context.Context, TargetI
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
-// UserNameFilter: (Optional) User name filter string
+// UserNameFilter: (Optional) User name filter string (>= 22.6.5)
 func (c *CometAPIClient) AdminDispatcherListActive(ctx context.Context, UserNameFilter *string) (LiveUserConnectionMap, error) {
 	data := map[string][]string{}
 	var err error
@@ -7173,6 +8063,7 @@ func (c *CometAPIClient) AdminDispatcherListActive(ctx context.Context, UserName
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -7208,6 +8099,7 @@ func (c *CometAPIClient) AdminDispatcherOffice365ListVirtualAccounts(ctx context
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -7240,13 +8132,14 @@ func (c *CometAPIClient) AdminDispatcherPingDestination(ctx context.Context, Tar
 }
 
 // AdminDispatcherRefetchProfile: Instruct a live connected device to refresh their profile
-// This command is understood by Comet Backup 17.12.0 and newer.
+// This command is understood by Comet Backup 17.2.0 and newer.
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
-// TargetID: The live connection GUID
+// TargetID: The live connection GUID (>= 17.2.0)
 func (c *CometAPIClient) AdminDispatcherRefetchProfile(ctx context.Context, TargetID string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
@@ -7275,6 +8168,7 @@ func (c *CometAPIClient) AdminDispatcherRefetchProfile(ctx context.Context, Targ
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -7308,6 +8202,7 @@ func (c *CometAPIClient) AdminDispatcherRegisterOfficeApplicationBegin(ctx conte
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -7340,6 +8235,7 @@ func (c *CometAPIClient) AdminDispatcherRegisterOfficeApplicationCheck(ctx conte
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -7371,6 +8267,7 @@ func (c *CometAPIClient) AdminDispatcherReindexStorageVault(ctx context.Context,
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -7399,6 +8296,7 @@ func (c *CometAPIClient) AdminDispatcherRequestBrowseDiskDrives(ctx context.Cont
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -7427,6 +8325,7 @@ func (c *CometAPIClient) AdminDispatcherRequestBrowseExchangeEdb(ctx context.Con
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -7455,6 +8354,7 @@ func (c *CometAPIClient) AdminDispatcherRequestBrowseHyperv(ctx context.Context,
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -7491,6 +8391,7 @@ func (c *CometAPIClient) AdminDispatcherRequestBrowseMongodb(ctx context.Context
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -7527,6 +8428,7 @@ func (c *CometAPIClient) AdminDispatcherRequestBrowseMssql(ctx context.Context, 
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -7562,6 +8464,7 @@ func (c *CometAPIClient) AdminDispatcherRequestBrowseMysql(ctx context.Context, 
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -7597,6 +8500,7 @@ func (c *CometAPIClient) AdminDispatcherRequestBrowseProxmox(ctx context.Context
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -7632,11 +8536,12 @@ func (c *CometAPIClient) AdminDispatcherRequestBrowseProxmoxNodes(ctx context.Co
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
 // Credentials: The SSH connection settings
-// Node: The target node
+// Node: The target node (>= 25.9.7)
 func (c *CometAPIClient) AdminDispatcherRequestBrowseProxmoxStorage(ctx context.Context, TargetID string, Credentials SSHConnection, Node string) (*BrowseProxmoxStorageResponse, error) {
 	data := map[string][]string{}
 	var b []byte
@@ -7671,6 +8576,7 @@ func (c *CometAPIClient) AdminDispatcherRequestBrowseProxmoxStorage(ctx context.
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -7708,6 +8614,7 @@ func (c *CometAPIClient) AdminDispatcherRequestBrowseVmware(ctx context.Context,
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -7745,6 +8652,7 @@ func (c *CometAPIClient) AdminDispatcherRequestBrowseVmwareDatacenters(ctx conte
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -7785,6 +8693,7 @@ func (c *CometAPIClient) AdminDispatcherRequestBrowseVmwareDatastores(ctx contex
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -7825,6 +8734,7 @@ func (c *CometAPIClient) AdminDispatcherRequestBrowseVmwareHosts(ctx context.Con
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -7864,6 +8774,7 @@ func (c *CometAPIClient) AdminDispatcherRequestBrowseVmwareNetworks(ctx context.
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -7893,6 +8804,7 @@ func (c *CometAPIClient) AdminDispatcherRequestBrowseVssAaw(ctx context.Context,
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -7927,6 +8839,7 @@ func (c *CometAPIClient) AdminDispatcherRequestFilesystemObjects(ctx context.Con
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -7956,6 +8869,7 @@ func (c *CometAPIClient) AdminDispatcherRequestImportSources(ctx context.Context
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -7992,6 +8906,7 @@ func (c *CometAPIClient) AdminDispatcherRequestOffice365Accounts(ctx context.Con
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -8033,6 +8948,7 @@ func (c *CometAPIClient) AdminDispatcherRequestOffice365Sites(ctx context.Contex
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -8040,7 +8956,7 @@ func (c *CometAPIClient) AdminDispatcherRequestOffice365Sites(ctx context.Contex
 // SnapshotID: The selected backup job snapshot
 // TreeID: (Optional) Browse objects inside subdirectory of backup snapshot. If it is for VMDK
 // single file restore, it should be the disk image's subtree ID.
-// Options: (Optional) Request a list of stored objects in vmdk file
+// Options: (Optional) Request a list of stored objects in vmdk file (>= 21.12.5)
 func (c *CometAPIClient) AdminDispatcherRequestStoredObjects(ctx context.Context, TargetID string, Destination string, SnapshotID string, TreeID *string, Options *VMDKSnapshotViewOptions) (*DispatcherStoredObjectsResponse, error) {
 	data := map[string][]string{}
 	var b []byte
@@ -8083,6 +8999,7 @@ func (c *CometAPIClient) AdminDispatcherRequestStoredObjects(ctx context.Context
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -8114,6 +9031,7 @@ func (c *CometAPIClient) AdminDispatcherRequestVaultSnapshots(ctx context.Contex
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -8147,9 +9065,10 @@ func (c *CometAPIClient) AdminDispatcherRequestWindiskSnapshot(ctx context.Conte
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
-// TargetID: The live connection GUID
+// TargetID: The live connection GUID (>= 17.2.0)
 // BackupRule: The schedule GUID
 func (c *CometAPIClient) AdminDispatcherRunBackup(ctx context.Context, TargetID string, BackupRule string) (*DispatchWithJobIDResponse, error) {
 	data := map[string][]string{}
@@ -8177,11 +9096,12 @@ func (c *CometAPIClient) AdminDispatcherRunBackup(ctx context.Context, TargetID 
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
-// TargetID: The live connection GUID
-// Source: The Protected Item GUID
-// Destination: The Storage Vault GUID
+// TargetID: The live connection GUID (>= 17.2.0)
+// Source: The Protected Item GUID (>= 17.2.0)
+// Destination: The Storage Vault GUID (>= 17.2.0)
 // Options: (Optional) Extra job parameters (>= 19.3.6)
 func (c *CometAPIClient) AdminDispatcherRunBackupCustom(ctx context.Context, TargetID string, Source string, Destination string, Options *BackupJobAdvancedOptions) (*DispatchWithJobIDResponse, error) {
 	data := map[string][]string{}
@@ -8221,6 +9141,7 @@ func (c *CometAPIClient) AdminDispatcherRunBackupCustom(ctx context.Context, Tar
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -8270,10 +9191,11 @@ func (c *CometAPIClient) AdminDispatcherRunRestore(ctx context.Context, TargetID
 }
 
 // AdminDispatcherRunRestoreCustom: Instruct a live connected device to perform a local restore
-// This command is understood by Comet Backup 18.6.0 and newer.
+// This command is understood by Comet Backup 19.6.0 and newer.
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -8285,13 +9207,13 @@ func (c *CometAPIClient) AdminDispatcherRunRestore(ctx context.Context, TargetID
 // Paths: (Optional) If present, restore these paths only. Otherwise, restore all data
 // KnownFileCount: (Optional) The number of files to restore, if known. Supplying this means we
 // don't need to walk the entire tree just to find the file count and will speed up the restoration
-// process.
+// process. (>= 23.6.0)
 // KnownByteCount: (Optional) The total size in bytes of files to restore, if known. Supplying this
 // means we don't need to walk the entire tree just to find the total file size and will speed up
-// the restoration process.
+// the restoration process. (>= 23.6.0)
 // KnownDirCount: (Optional) The number of directories to restore, if known. Supplying this means we
 // don't need to walk the entire tree just to find the number of directories and will speed up the
-// restoration process.
+// restoration process. (>= 23.6.0)
 func (c *CometAPIClient) AdminDispatcherRunRestoreCustom(ctx context.Context, TargetID string, Source string, Destination string, Options RestoreJobAdvancedOptions, Snapshot *string, Paths []string, KnownFileCount *int, KnownByteCount *int, KnownDirCount *int) (*DispatchWithJobIDResponse, error) {
 	data := map[string][]string{}
 	var b []byte
@@ -8363,6 +9285,7 @@ func (c *CometAPIClient) AdminDispatcherRunRestoreCustom(ctx context.Context, Ta
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -8404,10 +9327,47 @@ func (c *CometAPIClient) AdminDispatcherSearchSnapshots(ctx context.Context, Tar
 	return result, nil
 }
 
+// AdminDispatcherTestProxmoxConnection: Test the connection to a Proxmox cluster node over SSH
+//
+// You must supply administrator authentication credentials to use this API.
+// This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
+//
+// - Params
+// TargetID: The live connection GUID
+// Credentials: The SSH connection settings
+func (c *CometAPIClient) AdminDispatcherTestProxmoxConnection(ctx context.Context, TargetID string, Credentials SSHConnection) (*CometAPIResponseMessage, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	data["TargetID"] = []string{TargetID}
+
+	b, err = json.Marshal(Credentials)
+	if err != nil {
+		return nil, err
+	}
+	data["Credentials"] = []string{string(b)}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/dispatcher/test-proxmox-connection", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CometAPIResponseMessage{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // AdminDispatcherTestSmbAuth: Test a set of Windows SMB credentials
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -8443,6 +9403,7 @@ func (c *CometAPIClient) AdminDispatcherTestSmbAuth(ctx context.Context, TargetI
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -8480,11 +9441,13 @@ func (c *CometAPIClient) AdminDispatcherUninstallSoftware(ctx context.Context, T
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
 // Destination: The Storage Vault GUID
-// AllowUnsafe: (Optional) Allow legacy Storage Vault unlocking, which is unsafe in some cases.
+// AllowUnsafe: (Optional) Allow legacy Storage Vault unlocking, which is unsafe in some cases. (>=
+// 25.3.0)
 func (c *CometAPIClient) AdminDispatcherUnlock(ctx context.Context, TargetID string, Destination string, AllowUnsafe *bool) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
@@ -8517,9 +9480,12 @@ func (c *CometAPIClient) AdminDispatcherUnlock(ctx context.Context, TargetID str
 }
 
 // AdminDispatcherUpdateLoginPassword: Instruct a live connected device to update its login password
+// This does not change the user profile password, it only tells the device to use an updated
+// password.
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
@@ -8554,11 +9520,12 @@ func (c *CometAPIClient) AdminDispatcherUpdateLoginPassword(ctx context.Context,
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetID: The live connection GUID
 // NewURL: The new external URL of this server
-// Force: (Optional) No checks will be done using previous URL
+// Force: (Optional) No checks will be done using previous URL (>= 22.9.3)
 func (c *CometAPIClient) AdminDispatcherUpdateLoginUrl(ctx context.Context, TargetID string, NewURL string, Force *bool) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
@@ -8595,9 +9562,10 @@ func (c *CometAPIClient) AdminDispatcherUpdateLoginUrl(ctx context.Context, Targ
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
 // This API requires the Software Build Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
-// TargetID: The live connection GUID
+// TargetID: The live connection GUID (>= 17.2.0)
 // SelfAddress: (Optional) The external URL of this server, used to resolve conflicts (>= 19.3.11)
 func (c *CometAPIClient) AdminDispatcherUpdateSoftware(ctx context.Context, TargetID string, SelfAddress *string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
@@ -8628,6 +9596,7 @@ func (c *CometAPIClient) AdminDispatcherUpdateSoftware(ctx context.Context, Targ
 // AdminExternalAuthSourcesDelete: Delete an external admin authentication source
 //
 // You must supply administrator authentication credentials to use this API.
+// This API does not accept admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // SourceID: (No description available)
@@ -8654,6 +9623,7 @@ func (c *CometAPIClient) AdminExternalAuthSourcesDelete(ctx context.Context, Sou
 // AdminExternalAuthSourcesGet: Get a map of all external admin authentication sources
 //
 // You must supply administrator authentication credentials to use this API.
+// This API does not accept admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminExternalAuthSourcesGet(ctx context.Context) (map[string]ExternalAuthenticationSource, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/external-auth-sources/get", nil)
 	if err != nil {
@@ -8672,6 +9642,7 @@ func (c *CometAPIClient) AdminExternalAuthSourcesGet(ctx context.Context) (map[s
 // AdminExternalAuthSourcesNew: Create an external admin authentication source
 //
 // You must supply administrator authentication credentials to use this API.
+// This API does not accept admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // Source: (No description available)
@@ -8710,6 +9681,7 @@ func (c *CometAPIClient) AdminExternalAuthSourcesNew(ctx context.Context, Source
 // sources for the tenant; none will be preserved.
 //
 // You must supply administrator authentication credentials to use this API.
+// This API does not accept admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // Sources: (No description available)
@@ -8742,9 +9714,10 @@ func (c *CometAPIClient) AdminExternalAuthSourcesSet(ctx context.Context, Source
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
-// JobID: Selected job ID
+// JobID: Selected job ID (>= 17.2.0)
 func (c *CometAPIClient) AdminGetJobLog(ctx context.Context, JobID string) ([]byte, error) {
 	data := map[string][]string{}
 	var err error
@@ -8763,11 +9736,12 @@ func (c *CometAPIClient) AdminGetJobLog(ctx context.Context, JobID string) ([]by
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // JobID: Selected job ID
-// MinSeverity: (Optional) Return only job log entries with equal or higher severity
-// MessageContains: (Optional) Return only job log entries that contain exact string
+// MinSeverity: (Optional) Return only job log entries with equal or higher severity (>= 23.3.1)
+// MessageContains: (Optional) Return only job log entries that contain exact string (>= 23.3.1)
 func (c *CometAPIClient) AdminGetJobLogEntries(ctx context.Context, JobID string, MinSeverity *string, MessageContains *string) ([]JobEntry, error) {
 	data := map[string][]string{}
 	var err error
@@ -8800,9 +9774,10 @@ func (c *CometAPIClient) AdminGetJobLogEntries(ctx context.Context, JobID string
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
-// JobID: Selected job ID
+// JobID: Selected job ID (>= 17.2.0)
 func (c *CometAPIClient) AdminGetJobProperties(ctx context.Context, JobID string) (*BackupJobDetail, error) {
 	data := map[string][]string{}
 	var err error
@@ -8828,6 +9803,7 @@ func (c *CometAPIClient) AdminGetJobProperties(ctx context.Context, JobID string
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminGetJobsAll(ctx context.Context) ([]BackupJobDetail, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/get-jobs-all", nil)
 	if err != nil {
@@ -8848,6 +9824,7 @@ func (c *CometAPIClient) AdminGetJobsAll(ctx context.Context) ([]BackupJobDetail
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // Query: (No description available)
@@ -8891,6 +9868,7 @@ func (c *CometAPIClient) AdminGetJobsForCustomSearch(ctx context.Context, Query 
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // Start: Timestamp (Unix)
@@ -8931,9 +9909,10 @@ func (c *CometAPIClient) AdminGetJobsForDateRange(ctx context.Context, Start int
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
-// TargetUser: Selected username
+// TargetUser: Selected username (>= 17.2.0)
 func (c *CometAPIClient) AdminGetJobsForUser(ctx context.Context, TargetUser string) ([]BackupJobDetail, error) {
 	data := map[string][]string{}
 	var err error
@@ -8959,6 +9938,7 @@ func (c *CometAPIClient) AdminGetJobsForUser(ctx context.Context, TargetUser str
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminGetJobsRecent(ctx context.Context) ([]BackupJobDetail, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/get-jobs-recent", nil)
 	if err != nil {
@@ -8978,6 +9958,7 @@ func (c *CometAPIClient) AdminGetJobsRecent(ctx context.Context) ([]BackupJobDet
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetUser: Selected account username
@@ -9008,9 +9989,10 @@ func (c *CometAPIClient) AdminGetProtectedItemWithBackupRules(ctx context.Contex
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
-// TargetUser: Selected account username
+// TargetUser: Selected account username (>= 17.2.0)
 func (c *CometAPIClient) AdminGetUserProfile(ctx context.Context, TargetUser string) (*UserProfileConfig, error) {
 	data := map[string][]string{}
 	var err error
@@ -9039,9 +10021,10 @@ func (c *CometAPIClient) AdminGetUserProfile(ctx context.Context, TargetUser str
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
-// TargetUser: Selected account username
+// TargetUser: Selected account username (>= 17.2.0)
 func (c *CometAPIClient) AdminGetUserProfileAndHash(ctx context.Context, TargetUser string) (*GetProfileAndHashResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
@@ -9069,9 +10052,10 @@ func (c *CometAPIClient) AdminGetUserProfileAndHash(ctx context.Context, TargetU
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
-// TargetUser: Selected account username
+// TargetUser: Selected account username (>= 17.2.0)
 func (c *CometAPIClient) AdminGetUserProfileHash(ctx context.Context, TargetUser string) (*GetProfileHashResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
@@ -9097,6 +10081,7 @@ func (c *CometAPIClient) AdminGetUserProfileHash(ctx context.Context, TargetUser
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // DeviceID: The live connection Device GUID
@@ -9125,13 +10110,13 @@ func (c *CometAPIClient) AdminInstallationDispatchDropConnection(ctx context.Con
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // DeviceID: The live connection Device GUID
 // TargetUser: Selected account username
 // TargetPassword: Selected account password
-// TargetTOTPCode: (Optional) Selected account TOTP code
-func (c *CometAPIClient) AdminInstallationDispatchRegisterDevice(ctx context.Context, DeviceID string, TargetUser string, TargetPassword string, TargetTOTPCode *string) ([]byte, error) {
+func (c *CometAPIClient) AdminInstallationDispatchRegisterDevice(ctx context.Context, DeviceID string, TargetUser string, TargetPassword string) ([]byte, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -9140,10 +10125,6 @@ func (c *CometAPIClient) AdminInstallationDispatchRegisterDevice(ctx context.Con
 	data["TargetUser"] = []string{TargetUser}
 
 	data["TargetPassword"] = []string{TargetPassword}
-
-	if TargetTOTPCode != nil {
-		data["TargetTOTPCode"] = []string{*TargetTOTPCode}
-	}
 
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/installation/dispatch/register-device", data)
 	if err != nil {
@@ -9157,6 +10138,7 @@ func (c *CometAPIClient) AdminInstallationDispatchRegisterDevice(ctx context.Con
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminInstallationListActive(ctx context.Context) (RegistrationLobbyConnectionMap, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/installation/list-active", nil)
 	if err != nil {
@@ -9180,6 +10162,7 @@ func (c *CometAPIClient) AdminInstallationListActive(ctx context.Context) (Regis
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetUser: Username
@@ -9216,6 +10199,7 @@ func (c *CometAPIClient) AdminJobAbandon(ctx context.Context, TargetUser string,
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetUser: Username
@@ -9246,6 +10230,7 @@ func (c *CometAPIClient) AdminJobCancel(ctx context.Context, TargetUser string, 
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminListUsers(ctx context.Context) ([]string, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/list-users", nil)
 	if err != nil {
@@ -9265,6 +10250,7 @@ func (c *CometAPIClient) AdminListUsers(ctx context.Context) ([]string, error) {
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminListUsersFull(ctx context.Context) (map[string]UserProfileConfig, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/list-users-full", nil)
 	if err != nil {
@@ -9284,6 +10270,7 @@ func (c *CometAPIClient) AdminListUsersFull(ctx context.Context) (map[string]Use
 //
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
+// This API accepts admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminMetaBrandingConfigGet(ctx context.Context) (*ServerConfigOptionsBrandingFragment, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/branding-config/get", nil)
 	if err != nil {
@@ -9306,6 +10293,7 @@ func (c *CometAPIClient) AdminMetaBrandingConfigGet(ctx context.Context) (*Serve
 //
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // BrandingConfig: Updated configuration content
@@ -9338,6 +10326,7 @@ func (c *CometAPIClient) AdminMetaBrandingConfigSet(ctx context.Context, Brandin
 //
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
+// This API accepts admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminMetaBuildConfigGet(ctx context.Context) (*ServerConfigOptionsSoftwareBuildRoleFragment, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/build-config/get", nil)
 	if err != nil {
@@ -9357,6 +10346,7 @@ func (c *CometAPIClient) AdminMetaBuildConfigGet(ctx context.Context) (*ServerCo
 //
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // SoftwareBuildRoleConfig: Updated configuration content
@@ -9389,6 +10379,7 @@ func (c *CometAPIClient) AdminMetaBuildConfigSet(ctx context.Context, SoftwareBu
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Constellation Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminMetaConstellationConfigGet(ctx context.Context) (*ConstellationRoleOptions, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/constellation/config/get", nil)
 	if err != nil {
@@ -9408,6 +10399,7 @@ func (c *CometAPIClient) AdminMetaConstellationConfigGet(ctx context.Context) (*
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Constellation Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // ConstellationRoleOptions: Constellation role options to set
@@ -9440,6 +10432,7 @@ func (c *CometAPIClient) AdminMetaConstellationConfigSet(ctx context.Context, Co
 //
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
+// This API accepts admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminMetaEmailOptionsGet(ctx context.Context) (*EmailOptions, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/email-options/get", nil)
 	if err != nil {
@@ -9459,6 +10452,7 @@ func (c *CometAPIClient) AdminMetaEmailOptionsGet(ctx context.Context) (*EmailOp
 //
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // EmailOptions: The replacement email reporting options.
@@ -9492,6 +10486,7 @@ func (c *CometAPIClient) AdminMetaEmailOptionsSet(ctx context.Context, EmailOpti
 // You must supply administrator authentication credentials to use this API.
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
+// This API accepts admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminMetaListAvailableLogDays(ctx context.Context) ([]LogDay, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/list-available-log-days", nil)
 	if err != nil {
@@ -9510,6 +10505,7 @@ func (c *CometAPIClient) AdminMetaListAvailableLogDays(ctx context.Context) ([]L
 // AdminMetaPsaConfigListGet: Get the server PSA configuration
 //
 // You must supply administrator authentication credentials to use this API.
+// This API accepts admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminMetaPsaConfigListGet(ctx context.Context) ([]PSAConfig, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/psa-config-list/get", nil)
 	if err != nil {
@@ -9528,6 +10524,7 @@ func (c *CometAPIClient) AdminMetaPsaConfigListGet(ctx context.Context) ([]PSACo
 // AdminMetaPsaConfigListSet: Update the server PSA configuration
 //
 // You must supply administrator authentication credentials to use this API.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // PSAConfigList: The replacement PSA configuration list
@@ -9561,6 +10558,7 @@ func (c *CometAPIClient) AdminMetaPsaConfigListSet(ctx context.Context, PSAConfi
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminMetaPsaConfigListSyncNow(ctx context.Context) (*CometAPIResponseMessage, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/psa-config-list/sync-now", nil)
 	if err != nil {
@@ -9568,6 +10566,81 @@ func (c *CometAPIClient) AdminMetaPsaConfigListSyncNow(ctx context.Context) (*Co
 	}
 
 	result := &CometAPIResponseMessage{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminMetaPsaNinjaoneAuthCallback: Exchange a NinjaOne OAuth authorization code for an encrypted
+// refresh token
+// The frontend should store the returned token on the NinjaOneConfig and persist it via the normal
+// PSA config save flow.
+//
+// You must supply administrator authentication credentials to use this API.
+// This API accepts admin personal API token authentication (AuthType=Token).
+//
+// - Params
+// Code: The authorization code from NinjaOne
+// RedirectURI: The callback URI used in the authorization request
+// BaseURL: The NinjaOne base URL
+// ClientID: The OAuth Client ID
+// ClientSecret: The OAuth Client Secret
+func (c *CometAPIClient) AdminMetaPsaNinjaoneAuthCallback(ctx context.Context, Code string, RedirectURI string, BaseURL string, ClientID string, ClientSecret string) (*NinjaOneAuthCallbackResponse, error) {
+	data := map[string][]string{}
+	var err error
+
+	data["Code"] = []string{Code}
+
+	data["RedirectURI"] = []string{RedirectURI}
+
+	data["BaseURL"] = []string{BaseURL}
+
+	data["ClientID"] = []string{ClientID}
+
+	data["ClientSecret"] = []string{ClientSecret}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/psa/ninjaone/auth-callback", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &NinjaOneAuthCallbackResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminMetaPsaNinjaoneOrganizations: List NinjaOne organizations for a given PSA configuration
+// Used to populate the NinjaOne Client ID dropdown in the admin UI.
+//
+// You must supply administrator authentication credentials to use this API.
+// This API accepts admin personal API token authentication (AuthType=Token).
+//
+// - Params
+// PSAConfig: The PSA configuration containing NinjaOne credentials
+func (c *CometAPIClient) AdminMetaPsaNinjaoneOrganizations(ctx context.Context, PSAConfig PSAConfig) ([]NinjaOneOrganization, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	b, err = json.Marshal(PSAConfig)
+	if err != nil {
+		return nil, err
+	}
+	data["PSAConfig"] = []string{string(b)}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/psa/ninjaone/organizations", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := []NinjaOneOrganization{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err
@@ -9585,6 +10658,7 @@ func (c *CometAPIClient) AdminMetaPsaConfigListSyncNow(ctx context.Context) (*Co
 // You must supply administrator authentication credentials to use this API.
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
+// This API accepts admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminMetaReadAllLogs(ctx context.Context) ([]byte, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/read-all-logs", nil)
 	if err != nil {
@@ -9603,9 +10677,10 @@ func (c *CometAPIClient) AdminMetaReadAllLogs(ctx context.Context) ([]byte, erro
 // You must supply administrator authentication credentials to use this API.
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
-// Log: A log day, selected from the options returned by the Get Log Files API
+// Log: A log day, selected from the options returned by the Get Log Files API (>= 17.2.0)
 func (c *CometAPIClient) AdminMetaReadLogs(ctx context.Context, Log int) ([]byte, error) {
 	data := map[string][]string{}
 	var b []byte
@@ -9634,6 +10709,7 @@ func (c *CometAPIClient) AdminMetaReadLogs(ctx context.Context, Log int) ([]byte
 // You must supply administrator authentication credentials to use this API.
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // Logs: An array of log days, selected from the options returned by the Get Log Files API
@@ -9660,6 +10736,7 @@ func (c *CometAPIClient) AdminMetaReadSelectLogs(ctx context.Context, Logs []int
 //
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
+// This API accepts admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminMetaRemoteStorageVaultGet(ctx context.Context) ([]RemoteStorageOption, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/remote-storage-vault/get", nil)
 	if err != nil {
@@ -9679,11 +10756,12 @@ func (c *CometAPIClient) AdminMetaRemoteStorageVaultGet(ctx context.Context) ([]
 //
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // RemoteStorageOptions: Updated configuration content
 // ReplacementAutoVaultID: (Optional) Replacement Storage Template ID for auto Storage Vault
-// configurations that use deleted Storage Templates
+// configurations that use deleted Storage Templates (>= 24.12.0)
 func (c *CometAPIClient) AdminMetaRemoteStorageVaultSet(ctx context.Context, RemoteStorageOptions []RemoteStorageOption, ReplacementAutoVaultID *string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
@@ -9717,6 +10795,7 @@ func (c *CometAPIClient) AdminMetaRemoteStorageVaultSet(ctx context.Context, Rem
 //
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TemplateOptions: Storage Template Vault Options
@@ -9749,6 +10828,7 @@ func (c *CometAPIClient) AdminMetaRemoteStorageVaultTest(ctx context.Context, Te
 // Resources are used to upload files within the server configuration.
 //
 // You must supply administrator authentication credentials to use this API.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // Hash: The resource identifier
@@ -9774,9 +10854,10 @@ func (c *CometAPIClient) AdminMetaResourceGet(ctx context.Context, Hash string) 
 // available for as long as it is referenced by the server configuration.
 //
 // You must supply administrator authentication credentials to use this API.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
-// upload: The uploaded file contents, as a multipart/form-data part.
+// upload: The uploaded file contents, as a multipart/form-data part. (>= 20.11.0)
 func (c *CometAPIClient) AdminMetaResourceNew(ctx context.Context, upload string) (*AdminResourceResponse, error) {
 	data := map[string][]string{}
 	var err error
@@ -9807,6 +10888,7 @@ func (c *CometAPIClient) AdminMetaResourceNew(ctx context.Context, upload string
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
 // Access to this API may be prevented on a per-administrator basis.
+// This API accepts admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminMetaRestartService(ctx context.Context) (*CometAPIResponseMessage, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/restart-service", nil)
 	if err != nil {
@@ -9828,6 +10910,7 @@ func (c *CometAPIClient) AdminMetaRestartService(ctx context.Context) (*CometAPI
 //
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // EmailOptions: Updated configuration content
@@ -9864,6 +10947,7 @@ func (c *CometAPIClient) AdminMetaSendTestEmail(ctx context.Context, EmailOption
 //
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // EmailReportingOption: Test email reporting option for sending
@@ -9902,6 +10986,7 @@ func (c *CometAPIClient) AdminMetaSendTestReport(ctx context.Context, EmailRepor
 //
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
+// This API does not accept admin personal API token authentication (AuthType=Token).
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
 func (c *CometAPIClient) AdminMetaServerConfigGet(ctx context.Context) (*ServerConfigOptions, error) {
@@ -9925,6 +11010,7 @@ func (c *CometAPIClient) AdminMetaServerConfigGet(ctx context.Context) (*ServerC
 //
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
+// This API accepts admin personal API token authentication (AuthType=Token).
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
 func (c *CometAPIClient) AdminMetaServerConfigNetworkInterfaces(ctx context.Context) ([]string, error) {
@@ -9950,11 +11036,12 @@ func (c *CometAPIClient) AdminMetaServerConfigNetworkInterfaces(ctx context.Cont
 //
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
+// This API does not accept admin personal API token authentication (AuthType=Token).
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
 //
 // - Params
-// Config: Updated configuration content
+// Config: Updated configuration content (>= 17.3.8)
 func (c *CometAPIClient) AdminMetaServerConfigSet(ctx context.Context, Config ServerConfigOptions) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
@@ -9990,6 +11077,7 @@ func (c *CometAPIClient) AdminMetaServerConfigSet(ctx context.Context, Config Se
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
 // Access to this API may be prevented on a per-administrator basis.
+// This API does not accept admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminMetaShutdownService(ctx context.Context) (*CometAPIResponseMessage, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/shutdown-service", nil)
 	if err != nil {
@@ -10008,6 +11096,7 @@ func (c *CometAPIClient) AdminMetaShutdownService(ctx context.Context) (*CometAP
 // AdminMetaSoftwareUpdateNews: Get software update news from the software provider
 //
 // You must supply administrator authentication credentials to use this API.
+// This API accepts admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminMetaSoftwareUpdateNews(ctx context.Context) (*SoftwareUpdateNewsResponse, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/software-update-news", nil)
 	if err != nil {
@@ -10028,9 +11117,10 @@ func (c *CometAPIClient) AdminMetaSoftwareUpdateNews(ctx context.Context) (*Soft
 // before display.
 //
 // You must supply administrator authentication credentials to use this API.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
-// Simple: Remove redundant statistics
+// Simple: Remove redundant statistics (>= 18.9.1)
 func (c *CometAPIClient) AdminMetaStats(ctx context.Context, Simple bool) (map[int64]StatResult, error) {
 	data := map[string][]string{}
 	var b []byte
@@ -10060,6 +11150,7 @@ func (c *CometAPIClient) AdminMetaStats(ctx context.Context, Simple bool) (map[i
 // Retrieve the version number and basic properties about the server.
 //
 // You must supply administrator authentication credentials to use this API.
+// This API accepts admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminMetaVersion(ctx context.Context) (*ServerMetaVersionInfo, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/version", nil)
 	if err != nil {
@@ -10079,6 +11170,7 @@ func (c *CometAPIClient) AdminMetaVersion(ctx context.Context) (*ServerMetaVersi
 //
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
+// This API accepts admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminMetaWebhookOptionsGet(ctx context.Context) (map[string]WebhookOption, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/meta/webhook-options/get", nil)
 	if err != nil {
@@ -10100,9 +11192,10 @@ func (c *CometAPIClient) AdminMetaWebhookOptionsGet(ctx context.Context) (map[st
 //
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
+// This API does not accept admin personal API token authentication (AuthType=Token).
 //
 // - Params
-// WebhookOptions: The replacement webhook target options.
+// WebhookOptions: The replacement webhook target options. (>= 20.6.8)
 func (c *CometAPIClient) AdminMetaWebhookOptionsSet(ctx context.Context, WebhookOptions map[string]WebhookOption) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
@@ -10132,6 +11225,7 @@ func (c *CometAPIClient) AdminMetaWebhookOptionsSet(ctx context.Context, Webhook
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminNewsGetAll(ctx context.Context) (NewsEntries, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/news/get-all", nil)
 	if err != nil {
@@ -10151,9 +11245,10 @@ func (c *CometAPIClient) AdminNewsGetAll(ctx context.Context) (NewsEntries, erro
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
-// NewsItem: Selected news item GUID
+// NewsItem: Selected news item GUID (>= 17.2.0)
 func (c *CometAPIClient) AdminNewsRemove(ctx context.Context, NewsItem string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
@@ -10178,9 +11273,10 @@ func (c *CometAPIClient) AdminNewsRemove(ctx context.Context, NewsItem string) (
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
-// NewsContent: Content of news item
+// NewsContent: Content of news item (>= 17.2.0)
 func (c *CometAPIClient) AdminNewsSubmit(ctx context.Context, NewsContent string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
@@ -10201,6 +11297,92 @@ func (c *CometAPIClient) AdminNewsSubmit(ctx context.Context, NewsContent string
 	return result, nil
 }
 
+// AdminOffice365ConvertLegacySelection: Convert a legacy Office 365 Protected Item selection into
+// an equivalent ordered rule list
+// This is a pure computation with no device round-trip. The optional Accounts list is used only to
+// enrich the generated rules' display metadata.
+//
+// You must supply administrator authentication credentials to use this API.
+// This API does not accept admin personal API token authentication (AuthType=Token).
+//
+// - Params
+// Selection: The legacy selection to convert
+// Accounts: (Optional) The organization's account list, for display-name enrichment
+func (c *CometAPIClient) AdminOffice365ConvertLegacySelection(ctx context.Context, Selection Office365CustomSettingV2, Accounts []Office365MixedVirtualAccount) (*Office365ConvertSelectionResponse, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	b, err = json.Marshal(Selection)
+	if err != nil {
+		return nil, err
+	}
+	data["Selection"] = []string{string(b)}
+
+	if Accounts != nil {
+		b, err = json.Marshal(Accounts)
+		if err != nil {
+			return nil, err
+		}
+		data["Accounts"] = []string{string(b)}
+	}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/office365/convert-legacy-selection", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &Office365ConvertSelectionResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// AdminOffice365EvaluateSelectionRules: Evaluate an ordered Office 365 rule list against an
+// organization's accounts
+// Returns the effective selection for every account, including per-service rule attribution. This
+// is a pure computation with no device round-trip.
+//
+// You must supply administrator authentication credentials to use this API.
+// This API does not accept admin personal API token authentication (AuthType=Token).
+//
+// - Params
+// Rules: The ordered rule list to evaluate
+// Accounts: The organization's account list
+func (c *CometAPIClient) AdminOffice365EvaluateSelectionRules(ctx context.Context, Rules []Office365SelectionRule, Accounts []Office365MixedVirtualAccount) (*Office365EvaluateSelectionRulesResponse, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	b, err = json.Marshal(Rules)
+	if err != nil {
+		return nil, err
+	}
+	data["Rules"] = []string{string(b)}
+
+	b, err = json.Marshal(Accounts)
+	if err != nil {
+		return nil, err
+	}
+	data["Accounts"] = []string{string(b)}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/office365/evaluate-selection-rules", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &Office365EvaluateSelectionRulesResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // AdminOrganizationDelete: Delete an organization and all related users
 //
 // Prior to Comet 22.6.0, this API was documented as returning the OrganizationResponse type.
@@ -10209,6 +11391,7 @@ func (c *CometAPIClient) AdminNewsSubmit(ctx context.Context, NewsContent string
 // You must supply administrator authentication credentials to use this API.
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // OrganizationID: (Optional) (No description available)
@@ -10249,6 +11432,7 @@ func (c *CometAPIClient) AdminOrganizationDelete(ctx context.Context, Organizati
 // You must supply administrator authentication credentials to use this API.
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
+// This API does not accept admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // Options: The export config options
@@ -10282,6 +11466,7 @@ func (c *CometAPIClient) AdminOrganizationExport(ctx context.Context, Options Se
 // You must supply administrator authentication credentials to use this API.
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
+// This API accepts admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminOrganizationList(ctx context.Context) (map[string]Organization, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/organization/list", nil)
 	if err != nil {
@@ -10304,6 +11489,7 @@ func (c *CometAPIClient) AdminOrganizationList(ctx context.Context) (map[string]
 // You must supply administrator authentication credentials to use this API.
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // OrganizationID: (Optional) (No description available)
@@ -10343,6 +11529,7 @@ func (c *CometAPIClient) AdminOrganizationSet(ctx context.Context, OrganizationI
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // PolicyID: The policy ID to update or create
@@ -10371,6 +11558,7 @@ func (c *CometAPIClient) AdminPoliciesDelete(ctx context.Context, PolicyID strin
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // PolicyID: The policy ID to retrieve
@@ -10400,10 +11588,11 @@ func (c *CometAPIClient) AdminPoliciesGet(ctx context.Context, PolicyID string) 
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetOrganization: (Optional) If present, list the policies belonging to another organization.
-// Only allowed for administrator accounts in the top-level organization. (>= 22.3.7)
+// Only allowed for administrator accounts in the top-level organization. (>= 22.5.0)
 func (c *CometAPIClient) AdminPoliciesList(ctx context.Context, TargetOrganization *string) (map[string]string, error) {
 	data := map[string][]string{}
 	var err error
@@ -10432,10 +11621,11 @@ func (c *CometAPIClient) AdminPoliciesList(ctx context.Context, TargetOrganizati
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetOrganization: (Optional) If present, list the policies belonging to another organization.
-// Only allowed for administrator accounts in the top-level organization. (>= 22.3.7)
+// Only allowed for administrator accounts in the top-level organization. (>= 22.5.0)
 func (c *CometAPIClient) AdminPoliciesListFull(ctx context.Context, TargetOrganization *string) (map[string]GroupPolicy, error) {
 	data := map[string][]string{}
 	var err error
@@ -10462,6 +11652,7 @@ func (c *CometAPIClient) AdminPoliciesListFull(ctx context.Context, TargetOrgani
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // Policy: The policy data
@@ -10496,12 +11687,13 @@ func (c *CometAPIClient) AdminPoliciesNew(ctx context.Context, Policy GroupPolic
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // PolicyID: The policy ID to update or create
 // Policy: The policy data
 // CheckPolicyHash: (Optional) An atomic verification hash as supplied by the AdminPoliciesGet API
-// Options: (Optional) An array of PolicySourceID that will be explicitly deleted.
+// Options: (Optional) An array of PolicySourceID that will be explicitly deleted. (>= 24.12.5)
 func (c *CometAPIClient) AdminPoliciesSet(ctx context.Context, PolicyID string, Policy GroupPolicy, CheckPolicyHash *string, Options *PolicyOptions) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
@@ -10545,6 +11737,7 @@ func (c *CometAPIClient) AdminPoliciesSet(ctx context.Context, PolicyID string, 
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetUser: Selected account username
@@ -10586,6 +11779,7 @@ func (c *CometAPIClient) AdminPreviewUserEmailReport(ctx context.Context, Target
 // You must supply administrator authentication credentials to use this API.
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
+// This API accepts admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminReplicationState(ctx context.Context) ([]ReplicatorStateAPIResponse, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/replication/state", nil)
 	if err != nil {
@@ -10610,13 +11804,15 @@ func (c *CometAPIClient) AdminReplicationState(ctx context.Context) ([]Replicato
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetUser: The user to receive the new Storage Vault
 // StorageProvider: ID for the storage template destination
 // SelfAddress: (Optional) The external URL for this server. Used to resolve conflicts
 // DeviceID: (Optional) The ID of the device to be added as a associated device of the Storage Vault
-// ProfileHash: (Optional) The profile hash of the user profile
+// (>= 24.12.0)
+// ProfileHash: (Optional) The profile hash of the user profile (>= 25.3.2)
 func (c *CometAPIClient) AdminRequestStorageVault(ctx context.Context, TargetUser string, StorageProvider string, SelfAddress *string, DeviceID *string, ProfileHash *string) (*RequestStorageVaultResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
@@ -10657,10 +11853,11 @@ func (c *CometAPIClient) AdminRequestStorageVault(ctx context.Context, TargetUse
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetOrganization: (Optional) If present, list the storage template options belonging to another
-// organization. Only allowed for administrator accounts in the top-level organization. (>= 22.3.7)
+// organization. Only allowed for administrator accounts in the top-level organization. (>= 22.5.0)
 func (c *CometAPIClient) AdminRequestStorageVaultProviders(ctx context.Context, TargetOrganization *string) (map[string]string, error) {
 	data := map[string][]string{}
 	var err error
@@ -10689,12 +11886,13 @@ func (c *CometAPIClient) AdminRequestStorageVaultProviders(ctx context.Context, 
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetUser: Selected account username
 // NewPassword: New account password
 // OldPassword: (Optional) Old account password. Required if no recovery code is present for the
-// user account.
+// user account. (>= 20.3.2)
 func (c *CometAPIClient) AdminResetUserPassword(ctx context.Context, TargetUser string, NewPassword string, OldPassword *string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
@@ -10727,6 +11925,7 @@ func (c *CometAPIClient) AdminResetUserPassword(ctx context.Context, TargetUser 
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetUser: Selected account username
@@ -10758,6 +11957,7 @@ func (c *CometAPIClient) AdminRevokeDevice(ctx context.Context, TargetUser strin
 // You must supply administrator authentication credentials to use this API.
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
+// This API accepts admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminSelfBackupStart(ctx context.Context) (*CometAPIResponseMessage, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/self-backup/start", nil)
 	if err != nil {
@@ -10777,6 +11977,7 @@ func (c *CometAPIClient) AdminSelfBackupStart(ctx context.Context) (*CometAPIRes
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetUser: Selected account username
@@ -10831,11 +12032,13 @@ func (c *CometAPIClient) AdminSetProtectedItemWithBackupRules(ctx context.Contex
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
-// TargetUser: Selected account username
-// ProfileData: Modified user profile
-func (c *CometAPIClient) AdminSetUserProfile(ctx context.Context, TargetUser string, ProfileData UserProfileConfig) (*CometAPIResponseMessage, error) {
+// TargetUser: Selected account username (>= 17.2.0)
+// ProfileData: Modified user profile (>= 17.2.0)
+// AdminOptions: (Optional) Instructions for modifying user profile (>= 24.12.5)
+func (c *CometAPIClient) AdminSetUserProfile(ctx context.Context, TargetUser string, ProfileData UserProfileConfig, AdminOptions *AdminOptions) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -10847,6 +12050,14 @@ func (c *CometAPIClient) AdminSetUserProfile(ctx context.Context, TargetUser str
 		return nil, err
 	}
 	data["ProfileData"] = []string{string(b)}
+
+	if AdminOptions != nil {
+		b, err = json.Marshal(AdminOptions)
+		if err != nil {
+			return nil, err
+		}
+		data["AdminOptions"] = []string{string(b)}
+	}
 
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/set-user-profile", data)
 	if err != nil {
@@ -10870,12 +12081,13 @@ func (c *CometAPIClient) AdminSetUserProfile(ctx context.Context, TargetUser str
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
-// TargetUser: Selected account username
-// ProfileData: Modified user profile
-// RequireHash: Previous hash parameter
-// AdminOptions: (Optional) Instructions for modifying user profile
+// TargetUser: Selected account username (>= 17.2.0)
+// ProfileData: Modified user profile (>= 17.2.0)
+// RequireHash: Previous hash parameter (>= 17.2.0)
+// AdminOptions: (Optional) Instructions for modifying user profile (>= 24.12.5)
 func (c *CometAPIClient) AdminSetUserProfileHash(ctx context.Context, TargetUser string, ProfileData UserProfileConfig, RequireHash string, AdminOptions *AdminOptions) (*GetProfileAndHashResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
@@ -10917,6 +12129,7 @@ func (c *CometAPIClient) AdminSetUserProfileHash(ctx context.Context, TargetUser
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // SharedStorageQuotaID: (No description available)
@@ -10944,6 +12157,7 @@ func (c *CometAPIClient) AdminSquotaDelete(ctx context.Context, SharedStorageQuo
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // SharedStorageQuotaID: (No description available)
@@ -10971,6 +12185,7 @@ func (c *CometAPIClient) AdminSquotaGetWithHash(ctx context.Context, SharedStora
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminSquotaListAll(ctx context.Context) (*ListSharedStorageQuotaResponse, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/squota/list-all", nil)
 	if err != nil {
@@ -10990,6 +12205,7 @@ func (c *CometAPIClient) AdminSquotaListAll(ctx context.Context) (*ListSharedSto
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // SharedStorageQuotaID: (No description available)
@@ -11033,6 +12249,7 @@ func (c *CometAPIClient) AdminSquotaSetWithHash(ctx context.Context, SharedStora
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Storage Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // BucketID: Bucket ID
@@ -11073,9 +12290,10 @@ func (c *CometAPIClient) AdminStorageBucketProperties(ctx context.Context, Bucke
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Storage Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
-// BucketID: Selected bucket name
+// BucketID: Selected bucket name (>= 17.2.0)
 func (c *CometAPIClient) AdminStorageDeleteBucket(ctx context.Context, BucketID string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
@@ -11101,6 +12319,7 @@ func (c *CometAPIClient) AdminStorageDeleteBucket(ctx context.Context, BucketID 
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
 // This API requires the Storage Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
 //
@@ -11132,6 +12351,7 @@ func (c *CometAPIClient) AdminStorageFreeSpace(ctx context.Context, BucketID *st
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Storage Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 func (c *CometAPIClient) AdminStorageListBuckets(ctx context.Context) (BucketPropertyList, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/storage/list-buckets", nil)
 	if err != nil {
@@ -11151,6 +12371,7 @@ func (c *CometAPIClient) AdminStorageListBuckets(ctx context.Context) (BucketPro
 //
 // You must supply administrator authentication credentials to use this API.
 // Access to this API may be prevented on a per-administrator basis.
+// This API accepts admin personal API token authentication (AuthType=Token).
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
 //
@@ -11188,11 +12409,12 @@ func (c *CometAPIClient) AdminStoragePingDestination(ctx context.Context, ExtraD
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Storage Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
-// SetBucketValue: (Optional) Bucket ID
-// SetKeyHashFormat: (Optional) Bucket key hashing format
-// SetKeyHashValue: (Optional) Bucket key hash
+// SetBucketValue: (Optional) Bucket ID (>= 17.2.0)
+// SetKeyHashFormat: (Optional) Bucket key hashing format (>= 17.2.0)
+// SetKeyHashValue: (Optional) Bucket key hash (>= 17.2.0)
 // SetOrganizationID: (Optional) Target organization ID (>= 20.9.0)
 func (c *CometAPIClient) AdminStorageRegisterBucket(ctx context.Context, SetBucketValue *string, SetKeyHashFormat *string, SetKeyHashValue *string, SetOrganizationID *string) (*AddBucketResponseMessage, error) {
 	data := map[string][]string{}
@@ -11234,6 +12456,7 @@ func (c *CometAPIClient) AdminStorageRegisterBucket(ctx context.Context, SetBuck
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
 // This API requires the Software Build Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 // This API requires the Auth Role to be enabled.
 //
 // - Params
@@ -11269,6 +12492,7 @@ func (c *CometAPIClient) AdminUpdateCampaignStart(ctx context.Context, Options U
 // This API is only available for top-level administrator accounts, not for Tenant administrator
 // accounts.
 // This API requires the Software Build Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 // This API requires the Auth Role to be enabled.
 func (c *CometAPIClient) AdminUpdateCampaignStatus(ctx context.Context) (*UpdateCampaignStatus, error) {
 	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/admin/update-campaign/status", nil)
@@ -11289,6 +12513,7 @@ func (c *CometAPIClient) AdminUpdateCampaignStatus(ctx context.Context) (*Update
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // GroupID: The user group ID to delete
@@ -11316,6 +12541,7 @@ func (c *CometAPIClient) AdminUserGroupsDelete(ctx context.Context, GroupID stri
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // GroupID: The user group ID to retrieve
@@ -11355,6 +12581,7 @@ func (c *CometAPIClient) AdminUserGroupsGet(ctx context.Context, GroupID string,
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetOrganization: (Optional) If present, list the user groups belonging to another
@@ -11387,6 +12614,7 @@ func (c *CometAPIClient) AdminUserGroupsList(ctx context.Context, TargetOrganiza
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // TargetOrganization: (Optional) If present, list the user groups belonging to the specified
@@ -11417,6 +12645,7 @@ func (c *CometAPIClient) AdminUserGroupsListFull(ctx context.Context, TargetOrga
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // Name: this is the name of the group.
@@ -11450,6 +12679,7 @@ func (c *CometAPIClient) AdminUserGroupsNew(ctx context.Context, Name string, Ta
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // GroupID: The user group ID to update or create
@@ -11487,6 +12717,7 @@ func (c *CometAPIClient) AdminUserGroupsSet(ctx context.Context, GroupID string,
 //
 // You must supply administrator authentication credentials to use this API.
 // This API requires the Auth Role to be enabled.
+// This API accepts admin personal API token authentication (AuthType=Token).
 //
 // - Params
 // GroupID: The user group ID to update
@@ -11539,6 +12770,8 @@ func (c *CometAPIClient) BrandingProps(ctx context.Context) (*ServerMetaBranding
 // account.
 // This API behaves like either AdminAccountSessionStart or UserWebSessionStart, depending on what
 // the supplied credentials were valid for.
+//
+// This API does not accept admin personal API token authentication (AuthType=Token).
 //
 // The SessionKey will be set in the client and used for any further api calls using the same client.
 // You can manually clear the SessionKey if you wish to use Username, Password based authentication again.
@@ -12302,7 +13535,7 @@ func (c *CometAPIClient) UserWebDispatcherRequestBrowseProxmoxNodes(ctx context.
 // - Params
 // TargetID: The live connection GUID
 // Credentials: SSH connection settings
-// Node: The target node
+// Node: The target node (>= 25.9.7)
 func (c *CometAPIClient) UserWebDispatcherRequestBrowseProxmoxStorage(ctx context.Context, TargetID string, Credentials SSHConnection, Node string) (*BrowseProxmoxStorageResponse, error) {
 	data := map[string][]string{}
 	var b []byte
@@ -12644,7 +13877,7 @@ func (c *CometAPIClient) UserWebDispatcherRequestOffice365Sites(ctx context.Cont
 // SnapshotID: The selected backup job snapshot
 // TreeID: (Optional) Browse objects inside subdirectory of backup snapshot. If it is for VMDK
 // single file restore, it should be the disk image's subtree ID.
-// Options: (Optional) Request a list of stored objects in vmdk file
+// Options: (Optional) Request a list of stored objects in vmdk file (>= 21.12.5)
 func (c *CometAPIClient) UserWebDispatcherRequestStoredObjects(ctx context.Context, TargetID string, Destination string, SnapshotID string, TreeID *string, Options *VMDKSnapshotViewOptions) (*DispatcherStoredObjectsResponse, error) {
 	data := map[string][]string{}
 	var b []byte
@@ -12759,7 +13992,7 @@ func (c *CometAPIClient) UserWebDispatcherRequestWindiskSnapshot(ctx context.Con
 // - Params
 // TargetID: The live connection GUID
 // BackupRule: The schedule GUID
-func (c *CometAPIClient) UserWebDispatcherRunBackup(ctx context.Context, TargetID string, BackupRule string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) UserWebDispatcherRunBackup(ctx context.Context, TargetID string, BackupRule string) (*DispatchWithJobIDResponse, error) {
 	data := map[string][]string{}
 	var err error
 
@@ -12772,7 +14005,7 @@ func (c *CometAPIClient) UserWebDispatcherRunBackup(ctx context.Context, TargetI
 		return nil, err
 	}
 
-	result := &CometAPIResponseMessage{}
+	result := &DispatchWithJobIDResponse{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err
@@ -12792,7 +14025,7 @@ func (c *CometAPIClient) UserWebDispatcherRunBackup(ctx context.Context, TargetI
 // Source: The Protected Item GUID
 // Destination: The Storage Vault GUID
 // Options: (Optional) Extra job parameters (>= 19.3.6)
-func (c *CometAPIClient) UserWebDispatcherRunBackupCustom(ctx context.Context, TargetID string, Source string, Destination string, Options *BackupJobAdvancedOptions) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) UserWebDispatcherRunBackupCustom(ctx context.Context, TargetID string, Source string, Destination string, Options *BackupJobAdvancedOptions) (*DispatchWithJobIDResponse, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -12816,7 +14049,7 @@ func (c *CometAPIClient) UserWebDispatcherRunBackupCustom(ctx context.Context, T
 		return nil, err
 	}
 
-	result := &CometAPIResponseMessage{}
+	result := &DispatchWithJobIDResponse{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err
@@ -12840,7 +14073,7 @@ func (c *CometAPIClient) UserWebDispatcherRunBackupCustom(ctx context.Context, T
 // Snapshot: (Optional) If present, restore a specific snapshot. Otherwise, restore the latest
 // snapshot for the selected Protected Item + Storage Vault pair
 // Paths: (Optional) If present, restore these paths only. Otherwise, restore all data (>= 19.3.0)
-func (c *CometAPIClient) UserWebDispatcherRunRestore(ctx context.Context, TargetID string, Path string, Source string, Destination string, Snapshot *string, Paths []string) (*CometAPIResponseMessage, error) {
+func (c *CometAPIClient) UserWebDispatcherRunRestore(ctx context.Context, TargetID string, Path string, Source string, Destination string, Snapshot *string, Paths []string) (*DispatchWithJobIDResponse, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -12870,7 +14103,7 @@ func (c *CometAPIClient) UserWebDispatcherRunRestore(ctx context.Context, Target
 		return nil, err
 	}
 
-	result := &CometAPIResponseMessage{}
+	result := &DispatchWithJobIDResponse{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err
@@ -12881,7 +14114,7 @@ func (c *CometAPIClient) UserWebDispatcherRunRestore(ctx context.Context, Target
 
 // UserWebDispatcherRunRestoreCustom: Instruct a live connected device in my account to perform a
 // local restore
-// This command is understood by Comet Backup 18.6.0 and newer.
+// This command is understood by Comet Backup 19.6.0 and newer.
 //
 // You must supply user authentication credentials to use this API, and the user account must be
 // authorized for web access.
@@ -12894,17 +14127,17 @@ func (c *CometAPIClient) UserWebDispatcherRunRestore(ctx context.Context, Target
 // Options: Restore targets
 // Snapshot: (Optional) If present, restore a specific snapshot. Otherwise, restore the latest
 // snapshot for the selected Protected Item + Storage Vault pair
-// Paths: (Optional) If present, restore these paths only. Otherwise, restore all data (>= 19.3.0)
+// Paths: (Optional) If present, restore these paths only. Otherwise, restore all data (>= 19.6.0)
 // KnownFileCount: (Optional) The number of files to restore, if known. Supplying this means we
 // don't need to walk the entire tree just to find the file count and will speed up the restoration
-// process.
+// process. (>= 23.6.0)
 // KnownByteCount: (Optional) The total size in bytes of files to restore, if known. Supplying this
 // means we don't need to walk the entire tree just to find the total file size and will speed up
-// the restoration process.
+// the restoration process. (>= 23.6.0)
 // KnownDirCount: (Optional) The number of directories to restore, if known. Supplying this means we
 // don't need to walk the entire tree just to find the number of directories and will speed up the
-// restoration process.
-func (c *CometAPIClient) UserWebDispatcherRunRestoreCustom(ctx context.Context, TargetID string, Source string, Destination string, Options RestoreJobAdvancedOptions, Snapshot *string, Paths []string, KnownFileCount *int, KnownByteCount *int, KnownDirCount *int) (*CometAPIResponseMessage, error) {
+// restoration process. (>= 23.6.0)
+func (c *CometAPIClient) UserWebDispatcherRunRestoreCustom(ctx context.Context, TargetID string, Source string, Destination string, Options RestoreJobAdvancedOptions, Snapshot *string, Paths []string, KnownFileCount *int, KnownByteCount *int, KnownDirCount *int) (*DispatchWithJobIDResponse, error) {
 	data := map[string][]string{}
 	var b []byte
 	var err error
@@ -12962,7 +14195,7 @@ func (c *CometAPIClient) UserWebDispatcherRunRestoreCustom(ctx context.Context, 
 		return nil, err
 	}
 
-	result := &CometAPIResponseMessage{}
+	result := &DispatchWithJobIDResponse{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err
@@ -13017,6 +14250,42 @@ func (c *CometAPIClient) UserWebDispatcherSearchSnapshots(ctx context.Context, T
 	return result, nil
 }
 
+// UserWebDispatcherTestProxmoxConnection: Test the connection to a Proxmox cluster node over SSH
+//
+// You must supply user authentication credentials to use this API, and the user account must be
+// authorized for web access.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// TargetID: The live connection GUID
+// Credentials: The SSH connection settings
+func (c *CometAPIClient) UserWebDispatcherTestProxmoxConnection(ctx context.Context, TargetID string, Credentials SSHConnection) (*CometAPIResponseMessage, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	data["TargetID"] = []string{TargetID}
+
+	b, err = json.Marshal(Credentials)
+	if err != nil {
+		return nil, err
+	}
+	data["Credentials"] = []string{string(b)}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/dispatcher/test-proxmox-connection", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &CometAPIResponseMessage{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // UserWebDispatcherTestSmbAuth: Test a set of Windows SMB credentials
 //
 // You must supply user authentication credentials to use this API, and the user account must be
@@ -13055,6 +14324,8 @@ func (c *CometAPIClient) UserWebDispatcherTestSmbAuth(ctx context.Context, Targe
 
 // UserWebDispatcherUpdateLoginPassword: Instruct a live connected device to update its login
 // password
+// This does not change the user profile password, it only tells the device to use an updated
+// password.
 //
 // You must supply user authentication credentials to use this API, and the user account must be
 // authorized for web access.
@@ -13115,8 +14386,8 @@ func (c *CometAPIClient) UserWebGetJobLog(ctx context.Context, JobID string) ([]
 //
 // - Params
 // JobID: Selected job GUID
-// MinSeverity: (Optional) Return only job log entries with equal or higher severity
-// MessageContains: (Optional) Return only job log entries that contain exact string
+// MinSeverity: (Optional) Return only job log entries with equal or higher severity (>= 23.3.1)
+// MessageContains: (Optional) Return only job log entries that contain exact string (>= 23.3.1)
 func (c *CometAPIClient) UserWebGetJobLogEntries(ctx context.Context, JobID string, MinSeverity *string, MessageContains *string) ([]JobEntry, error) {
 	data := map[string][]string{}
 	var err error
@@ -13330,6 +14601,94 @@ func (c *CometAPIClient) UserWebNewsGetAll(ctx context.Context) (NewsEntries, er
 	return result, nil
 }
 
+// UserWebOffice365ConvertLegacySelection: Convert a legacy Office 365 Protected Item selection into
+// an equivalent ordered rule list
+// This is a pure computation with no device round-trip. The optional Accounts list is used only to
+// enrich the generated rules' display metadata.
+//
+// You must supply user authentication credentials to use this API, and the user account must be
+// authorized for web access.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// Selection: The legacy selection to convert
+// Accounts: (Optional) The organization's account list, for display-name enrichment
+func (c *CometAPIClient) UserWebOffice365ConvertLegacySelection(ctx context.Context, Selection Office365CustomSettingV2, Accounts []Office365MixedVirtualAccount) (*Office365ConvertSelectionResponse, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	b, err = json.Marshal(Selection)
+	if err != nil {
+		return nil, err
+	}
+	data["Selection"] = []string{string(b)}
+
+	if Accounts != nil {
+		b, err = json.Marshal(Accounts)
+		if err != nil {
+			return nil, err
+		}
+		data["Accounts"] = []string{string(b)}
+	}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/office365/convert-legacy-selection", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &Office365ConvertSelectionResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// UserWebOffice365EvaluateSelectionRules: Evaluate an ordered Office 365 rule list against an
+// organization's accounts
+// Returns the effective selection for every account, including per-service rule attribution. This
+// is a pure computation with no device round-trip.
+//
+// You must supply user authentication credentials to use this API, and the user account must be
+// authorized for web access.
+// This API requires the Auth Role to be enabled.
+//
+// - Params
+// Rules: The ordered rule list to evaluate
+// Accounts: The organization's account list
+func (c *CometAPIClient) UserWebOffice365EvaluateSelectionRules(ctx context.Context, Rules []Office365SelectionRule, Accounts []Office365MixedVirtualAccount) (*Office365EvaluateSelectionRulesResponse, error) {
+	data := map[string][]string{}
+	var b []byte
+	var err error
+
+	b, err = json.Marshal(Rules)
+	if err != nil {
+		return nil, err
+	}
+	data["Rules"] = []string{string(b)}
+
+	b, err = json.Marshal(Accounts)
+	if err != nil {
+		return nil, err
+	}
+	data["Accounts"] = []string{string(b)}
+
+	body, err := c.Request(ctx, "application/x-www-form-urlencoded", "POST", "/api/v1/user/web/office365/evaluate-selection-rules", data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &Office365EvaluateSelectionRulesResponse{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // UserWebRequestFilesystemObjects: Request a list of filesystem objects from the device
 // The device must have granted the administrator permission to view its filenames.
 //
@@ -13379,7 +14738,8 @@ func (c *CometAPIClient) UserWebRequestFilesystemObjects(ctx context.Context, Ta
 // StorageProvider: ID for the storage template destination
 // SelfAddress: (Optional) The external URL for this server. Used to resolve conflicts
 // DeviceID: (Optional) The ID of the device to be added as a associated device of the Storage Vault
-// ProfileHash: (Optional) The profile hash of the user profile
+// (>= 24.12.0)
+// ProfileHash: (Optional) The profile hash of the user profile (>= 25.3.2)
 func (c *CometAPIClient) UserWebRequestStorageVault(ctx context.Context, StorageProvider string, SelfAddress *string, DeviceID *string, ProfileHash *string) (*RequestStorageVaultResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
