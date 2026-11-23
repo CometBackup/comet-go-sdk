@@ -1,26 +1,35 @@
 # CHANGELOG
 
-## 2026-10-12 v2.8.0
+## 2026-11-23 v3.0.0
 
-- Based on Comet 26.8.8
+- Based on Comet 26.11.3-rc
 - Add APIs for creating, listing and revoking admin personal API tokens
 - Add APIs for testing the connection to a Proxmox cluster node
 - Add NinjaOne PSA integration APIs, and PSA configuration types for ConnectWise and NinjaOne
 - Add Office 365 APIs for evaluating selection rules and converting a legacy selection into rules
 - Add custom branding options for adding CSS and JavaScript to the web interface
 - Add Linux RPM code signing properties, and a PKCS#11 driver allowlist for code signing
+- Add Windows code signing with AWS KMS, Google Cloud KMS and Azure Artifact Signing
+- Add PostgreSQL Protected Item types, and APIs for browsing PostgreSQL databases
+- Add OAuth authentication for SMTP email, and an API for completing the OAuth authorization
+- Add APIs for reading the server configuration with a hash, and for setting it only if that hash still matches
+- Add APIs for updating another admin account, and for listing and deleting the admins of a given organization
+- Add APIs for clearing a device's login password, rotating a Storage Vault bucket key, and abandoning a job from the user web interface
+- Add Slack, email, and AWS SQS, SNS and EventBridge as webhook formats, and a job filter for webhooks
+- Add self-backup events
 - Add an optional time window for Storage Vault speed limits
-- Add Slack as a webhook payload format
 - Add DNS cache options
-- Add restore types for restoring to cloud storage
+- Add restore types for restoring to cloud storage, and restore options for skipping existing Office 365 items and not sparsifying restored files
+- Add an option to wait for the device to confirm a software update
 - The user web dispatcher APIs for running backups and restores now return the job ID
 - The set-user-profile API now accepts the optional AdminOptions parameter
-- Breaking: /api/v1/admin/account/session-upgrade now exchanges an SSO one-time token and no
-longer takes a session key
+- Breaking: /api/v1/admin/account/session-upgrade now exchanges an SSO one-time token and no longer takes a session key
 - Breaking: /api/v1/admin/installation/dispatch/register-device no longer takes a TOTP code
 - Breaking: remove the OFFICE365_REGION_GERMANY constant
-- Breaking: constants and the fields that hold them now use named types, such as DestinationType,
-EngineType and ScheduleFrequencyType, instead of uint64 and string
+- Breaking: constants and the fields that hold them now use named types, such as DestinationType, EngineType and ScheduleFrequencyType, instead of uint64 and string
+- Breaking: the module path is now github.com/CometBackup/comet-go-sdk/v3
+- Breaking: requires Go 1.18 or later
+- Breaking: AdminAddUser, AdminAdminUserDelete, AdminAdminUserList, AdminDispatcherUpdateSoftware and AdminMetaServerConfigSet take a new optional parameter
 
 ## 2025-12-04 v2.7.0
 
