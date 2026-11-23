@@ -14,7 +14,7 @@ import (
 	"io/ioutil"
 	"log"
 
-	cometsdk "github.com/CometBackup/comet-go-sdk/v2"
+	cometsdk "github.com/CometBackup/comet-go-sdk/v3"
 )
 
 type Client struct {
