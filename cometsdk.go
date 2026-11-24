@@ -20,10 +20,10 @@ import (
 // CONSTANTS
 //
 
-const APPLICATION_VERSION string = "26.11.2"
+const APPLICATION_VERSION string = "26.11.3"
 const APPLICATION_VERSION_MAJOR int = 26
 const APPLICATION_VERSION_MINOR int = 11
-const APPLICATION_VERSION_REVISION int = 2
+const APPLICATION_VERSION_REVISION int = 3
 
 // AutoRetentionLevel: The system will automatically choose how often to run an automatic Retention
 // Pass after each backup job.
@@ -6476,6 +6476,11 @@ type CometAPIClient struct {
 	// TOTPKey (optional) if specified will be used for api authentication using AuthType "PasswordTOTP".
 	// The TOTPKey once used is automatically cleared as it cannot be reused.
 	TOTPKey string
+	// Token (optional) is an admin personal API token. If specified, it will be used for api
+	// authentication using AuthType "Token" instead of Password and TOTPKey. A token is not
+	// asked for 2FA, but is only accepted by APIs documented as accepting it.
+	// See NewCometAPIClientWithToken.
+	Token string
 	// SessionKey (optional) if specified will be used for api authentication using AuthType "SessionKey".
 	// This value when set takes precedence over other specified values.
 	// If ReuseSessionKey is set to true, this value is set automatically as part of any of the
@@ -6513,6 +6518,21 @@ func NewCometAPIClient(serverURL, username, password string) (*CometAPIClient, e
 			USER_AGENT_HEADER: DEFAULT_USER_AGENT,
 		},
 	}, nil
+}
+
+// NewCometAPIClientWithToken constructs and returns an instance of CometAPIClient
+// that authenticates as the given admin using an admin personal API token (AuthType "Token").
+//
+// Admin personal API tokens require Comet Server 26.8.3 or later. Since Comet Server 26.11.3, a
+// token can also be passed as the password to NewCometAPIClient.
+func NewCometAPIClientWithToken(serverURL, username, token string) (*CometAPIClient, error) {
+	c, err := NewCometAPIClient(serverURL, username, "")
+	if err != nil {
+		return nil, err
+	}
+
+	c.Token = token
+	return c, nil
 }
 
 //easyjson:skip
@@ -6572,6 +6592,10 @@ func (c *CometAPIClient) Request(ctx context.Context, contentType, method, path 
 		if c.SessionKey != "" {
 			body.Set("AuthType", "SessionKey")
 			body.Set("SessionKey", c.SessionKey)
+
+		} else if c.Token != "" {
+			body.Set("AuthType", "Token")
+			body.Set("Token", c.Token)
 
 		} else if c.TOTPKey != "" {
 			body.Set("AuthType", "PasswordTOTP")
@@ -6640,6 +6664,10 @@ func (c *CometAPIClient) Request(ctx context.Context, contentType, method, path 
 			req.Header.Add("X-Comet-Admin-AuthType", "SessionKey")
 			req.Header.Add("X-Comet-Admin-SessionKey", c.SessionKey)
 
+		} else if c.Token != "" {
+			req.Header.Add("X-Comet-Admin-AuthType", "Token")
+			req.Header.Add("X-Comet-Admin-Token", c.Token)
+
 		} else if c.TOTPKey != "" {
 			req.Header.Add("X-Comet-Admin-AuthType", "PasswordTOTP")
 			req.Header.Add("X-Comet-Admin-Password", c.Password)
@@ -6681,7 +6709,7 @@ func (c *CometAPIClient) Request(ctx context.Context, contentType, method, path 
 	// Test for CometAPIResponseMessage (Error)
 	carm := CometAPIResponseMessage{}
 	err = json.Unmarshal(respBody, &carm)
-	if err == nil && carm.Message != "" && carm.Status != 0 && carm.Status >= 400 {
+	if err == nil && carm.Message != "" && carm.Status != 0 && (carm.Status < 200 || carm.Status > 299) {
 		// ErrCometAPIResponseMessage implements error on the value receiver
 		return nil, ErrCometAPIResponseMessage{Carm: carm}
 	}
@@ -7322,7 +7350,7 @@ func (c *CometAPIClient) AdminAddUserFromProfile(ctx context.Context, TargetUser
 // - Params
 // TargetUser: the username of the admin to be deleted
 // TargetOrgID: (Optional) the organization ID of the admin to be deleted. If omitted, defaults to
-// the top-level organization. (>= 26.11.0)
+// the top-level organization. (>= 26.10.2)
 func (c *CometAPIClient) AdminAdminUserDelete(ctx context.Context, TargetUser string, TargetOrgID *string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
@@ -7358,7 +7386,7 @@ func (c *CometAPIClient) AdminAdminUserDelete(ctx context.Context, TargetUser st
 //
 // - Params
 // TargetOrgID: (Optional) If present, only list the administrators belonging to this organization.
-// Otherwise, administrators from all organizations are listed. (>= 26.11.0)
+// Otherwise, administrators from all organizations are listed. (>= 26.10.2)
 func (c *CometAPIClient) AdminAdminUserList(ctx context.Context, TargetOrgID *string) ([]AllowedAdminUser, error) {
 	data := map[string][]string{}
 	var err error
@@ -7443,10 +7471,10 @@ func (c *CometAPIClient) AdminAdminUserNew(ctx context.Context, TargetUser strin
 // supplied as the password with AuthType=Password).
 //
 // - Params
-// TargetUser: the username of the admin to be updated (>= 26.11.0)
-// Profile: the updated administrator account (>= 26.11.0)
+// TargetUser: the username of the admin to be updated (>= 26.10.2)
+// Profile: the updated administrator account (>= 26.10.2)
 // TargetOrgID: (Optional) the organization ID of the admin to be updated. If omitted, defaults to
-// the top-level organization. (>= 26.11.0)
+// the top-level organization. (>= 26.10.2)
 func (c *CometAPIClient) AdminAdminUserSet(ctx context.Context, TargetUser string, Profile AllowedAdminUser, TargetOrgID *string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
@@ -8324,7 +8352,7 @@ func (c *CometAPIClient) AdminDispatcherBrowseVirtualMachines(ctx context.Contex
 // as the password with AuthType=Password).
 //
 // - Params
-// TargetID: The live connection GUID
+// TargetID: The live connection GUID (>= 26.11.3)
 func (c *CometAPIClient) AdminDispatcherClearLoginPassword(ctx context.Context, TargetID string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
@@ -11912,7 +11940,7 @@ func (c *CometAPIClient) AdminMetaServerConfigNetworkInterfaces(ctx context.Cont
 // Config: Updated configuration content (>= 17.3.8)
 // RequireHash: (Optional) If present, the change is only applied if the server configuration is
 // unchanged since this hash was retrieved from the AdminMetaServerConfigGetAndHash API. Otherwise,
-// the change is rejected with status 409 and the server does not restart. (>= 26.11.0)
+// the change is rejected with status 409 and the server does not restart. (>= 26.10.2)
 func (c *CometAPIClient) AdminMetaServerConfigSet(ctx context.Context, Config ServerConfigOptions, RequireHash *string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var b []byte
@@ -13962,7 +13990,7 @@ func (c *CometAPIClient) UserWebDispatcherBrowseVirtualMachines(ctx context.Cont
 // This API requires the Auth Role to be enabled.
 //
 // - Params
-// TargetID: The live connection GUID
+// TargetID: The live connection GUID (>= 26.11.3)
 func (c *CometAPIClient) UserWebDispatcherClearLoginPassword(ctx context.Context, TargetID string) (*CometAPIResponseMessage, error) {
 	data := map[string][]string{}
 	var err error
